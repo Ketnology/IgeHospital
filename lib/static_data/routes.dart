@@ -14,6 +14,6 @@ final getPage = [
   ),
   GetPage(
     name: Routes.homepage,
-    page: () => Homepage(),
+    page: () => MyHomepage(),
   ),
 ];

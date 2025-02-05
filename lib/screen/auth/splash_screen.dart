@@ -32,28 +32,20 @@ class _SplashScreenState extends State<SplashScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // SvgPicture.asset(
-              //   "assets/applogo.svg",
-              //   height: 50,
-              //   width: 50,
-              // ),
-              // const SizedBox(
-              //   width: 12,
-              // ),
-              // SvgPicture.asset(
-              //   "assets/Buzz..svg",
-              //   height: 30,
-              //   width: 40,
-              // ),
-              Text(
-                "IGE Hospital",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                  fontFamily: "Gilroy",
-                ),
+              Image.asset(
+                "assets/app-logo.png",
+                height: 50,
+                // width: 50,
               ),
+              // Text(
+              //   "IGE Hospital",
+              //   style: TextStyle(
+              //     fontSize: 28,
+              //     fontWeight: FontWeight.bold,
+              //     color: Colors.blueAccent,
+              //     fontFamily: "Gilroy",
+              //   ),
+              // ),
             ],
           )
         ],

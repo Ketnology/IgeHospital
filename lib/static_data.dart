@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ige_hospital/pages/home.dart';
 
 class AppConst extends GetxController implements GetxService {
   bool showDrawer = true;
@@ -8,7 +10,7 @@ class AppConst extends GetxController implements GetxService {
     update();
   }
 
-  RxInt pageSelector = 0.obs;
+  RxString selectedPageKey = "".obs;
 
   RxInt selectColor = 0.obs;
   RxInt selectedTile = 0.obs;
@@ -43,5 +45,19 @@ class AppConst extends GetxController implements GetxService {
   //Switch
   RxBool switchIsTrue = false.obs;
 
-//
+  // Page mapping with keywords
+  final Map<String, Widget> pages = {
+    '': const DefaultPage(),
+    'overview': const DefaultPage(),
+    'appointment': const DefaultPage(),
+  };
+
+  void changePage(String newPageKey) {
+    if (pages.containsKey(newPageKey)) {
+      selectedPageKey.value = newPageKey;
+    } else {
+      print("Page key '$newPageKey' not found in pages map.");
+    }
+  }
+
 }

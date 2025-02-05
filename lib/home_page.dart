@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/app_bar.dart';
-import 'package:ige_hospital/darwer.dart';
+import 'package:ige_hospital/drawer.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/static_data/static_data.dart';
 import 'package:provider/provider.dart';
 
-class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+class MyHomepage extends StatefulWidget {
+  const MyHomepage({super.key});
 
   @override
-  State<Homepage> createState() => _HomepageState();
+  State<MyHomepage> createState() => _MyHomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _MyHomepageState extends State<MyHomepage> {
   AppConst obj = AppConst();
   final AppConst controller = Get.put(AppConst());
 
@@ -34,9 +34,9 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   controller.showDrawer
                       ? SizedBox(
-                      height: MediaQuery.of(context).size.height,
-                      width: 260,
-                      child: const SizedBox())
+                          height: MediaQuery.of(context).size.height,
+                          width: 260,
+                          child: const DrawerCode())
                       : const SizedBox(),
                   Expanded(
                     child: SizedBox(
@@ -46,7 +46,12 @@ class _HomepageState extends State<Homepage> {
                         children: [
                           const AppBarCode(),
                           Expanded(
-                            child: const SizedBox(),
+                            child: Obx(() {
+                              Widget selectedPage = controller.pages[
+                                      controller.selectedPageKey.value] ??
+                                  Container();
+                              return selectedPage;
+                            }),
                           ),
                         ],
                       ),
@@ -59,10 +64,20 @@ class _HomepageState extends State<Homepage> {
         );
       });
     } else {
-      return GetBuilder<AppConst>(builder: (controller){
+      return GetBuilder<AppConst>(builder: (controller) {
         return Scaffold(
           appBar: const AppBarCode(),
           drawer: const Drawer(width: 260, child: DrawerCode()),
+          body: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: Obx(() {
+              Widget selectedPage =
+                  controller.pages[controller.selectedPageKey.value] ??
+                      Container();
+              return selectedPage;
+            }),
+          ),
         );
       });
     }

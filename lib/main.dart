@@ -6,7 +6,7 @@ import 'package:ige_hospital/screen/auth/splash_screen.dart';
 import 'package:ige_hospital/static_data/routes.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
@@ -56,7 +56,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: SplashScreen(),
     );
   }
@@ -65,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
 }
