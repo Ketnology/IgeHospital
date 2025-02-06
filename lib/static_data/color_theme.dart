@@ -10,9 +10,8 @@ Color darkBgColor = const Color(0xff1d1e25);
 Color borderColor = Colors.grey.shade200;
 Color darkBorderColor = const Color(0xff2a323f);
 
-Color iconColor = const Color(0xff25314C);
-// Color iconColor = const Color(0xFFAF272F);
-Color darkIconColor = const Color(0xffccccce);
+Color iconColor = const Color(0xFFF44C46);
+Color darkIconColor = const Color(0xFFFFDB37);
 
 Color containerColor = const Color(0xffffffff);
 // Color containerColor = const Color(0xFF0C3150);

@@ -5,7 +5,7 @@ import 'package:ige_hospital/provider/colors_provider.dart';
 
 //..............Colors....................
 
-const Color appMainColor = Color(0xff0059E7);
+const Color appMainColor = Color(0xFFF44C46);
 const Color appWhiteColor = Color(0xffffffff);
 const Color appGreyColor = Color(0xffa1a1ae);
 

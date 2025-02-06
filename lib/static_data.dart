@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/pages/home.dart';
+import 'package:ige_hospital/pages/aaa.dart';
+import 'package:ige_hospital/pages/in_patient.dart';
 
 class AppConst extends GetxController implements GetxService {
   bool showDrawer = true;
@@ -50,6 +52,7 @@ class AppConst extends GetxController implements GetxService {
     '': const DefaultPage(),
     'overview': const DefaultPage(),
     'appointment': const DefaultPage(),
+    'in-patient': const InPatientPage(),
   };
 
   void changePage(String newPageKey) {

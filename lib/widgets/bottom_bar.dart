@@ -15,6 +15,7 @@ class _BottomBarState extends State<BottomBar> {
   Widget build(BuildContext context) {
     return Consumer<ColourNotifier>(
       builder: (BuildContext context, value, Widget? child) {
+        return Container();
         return Container(
           height: 50,
           width: MediaQuery.of(context).size.width,

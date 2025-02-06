@@ -100,7 +100,7 @@ class _DrawerCodeState extends State<DrawerCode> {
                                 iconPath: "assets/file-list.svg",
                                 index: 'patients',
                                 onTap: () {
-                                  // controller.changePage(0);
+                                  controller.changePage('patients');
                                   Get.back();
                                 }),
                             _buildSingleTile(
@@ -108,7 +108,7 @@ class _DrawerCodeState extends State<DrawerCode> {
                                 iconPath: "assets/home.svg",
                                 index: 'in-patient',
                                 onTap: () {
-                                  // controller.changePage(0);
+                                  controller.changePage('in-patient');
                                   Get.back();
                                 }),
                             _buildDivider(title: 'Clinical Documentation'),
