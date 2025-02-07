@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ige_hospital/pages/appointment.dart';
 import 'package:ige_hospital/pages/home.dart';
 import 'package:ige_hospital/pages/aaa.dart';
 import 'package:ige_hospital/pages/in_patient.dart';
@@ -51,7 +52,7 @@ class AppConst extends GetxController implements GetxService {
   final Map<String, Widget> pages = {
     '': const DefaultPage(),
     'overview': const DefaultPage(),
-    'appointment': const DefaultPage(),
+    'appointment': const AppointmentPage(),
     'in-patient': const InPatientPage(),
   };
 

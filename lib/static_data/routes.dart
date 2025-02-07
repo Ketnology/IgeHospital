@@ -4,7 +4,7 @@ import 'package:ige_hospital/screen/auth/splash_screen.dart';
 
 class Routes {
   static String initial = "/";
-  static String homepage = "/homePage";
+  static String homepage = "/home";
 }
 
 final getPage = [

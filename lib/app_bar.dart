@@ -233,23 +233,6 @@ class _AppBarCodeState extends State<AppBarCode> {
                   shadowColor: Colors.grey.withOpacity(0.5),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  tooltip: "Cart",
-                  offset: const Offset(0, 50),
-                  icon: SvgPicture.asset(
-                    "assets/shopping-basket.svg",
-                    width: 20,
-                    height: 20,
-                    color: notifier.getIconColor,
-                  ),
-                  itemBuilder: (ctx) => [
-                    _buildPopupCartMenuItem(),
-                  ],
-                ),
-                PopupMenuButton(
-                  color: notifier.getContainer,
-                  shadowColor: Colors.grey.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
                   tooltip: "Notifications",
                   offset: const Offset(0, 50),
                   icon: SvgPicture.asset(
@@ -309,7 +292,7 @@ class _AppBarCodeState extends State<AppBarCode> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("Buzz",
+                                      Text("Ketuojo",
                                           style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -356,258 +339,6 @@ class _AppBarCodeState extends State<AppBarCode> {
     });
   }
 
-  PopupMenuItem _buildPopupCartMenuItem() {
-    return PopupMenuItem(
-      enabled: false,
-      child: Column(
-        children: [
-          const SizedBox(
-            height: 20,
-          ),
-          Text(
-            "Cart",
-            style: TextStyle(
-                color: notifier!.getMainText,
-                fontWeight: FontWeight.bold,
-                fontSize: 18),
-          ),
-          const SizedBox(
-            height: 25,
-          ),
-          Divider(
-            height: 1,
-            color: notifier!.getBorderColor,
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          SizedBox(
-              height: 100,
-              width: 300,
-              child: Row(
-                children: [
-                  Container(
-                    height: 70,
-                    width: 60,
-                    decoration: BoxDecoration(
-                        image: const DecorationImage(
-                            image: AssetImage(
-                                "assets/dance-shoes-png-transparent-dance-shoes-images-5-min.png"),
-                            fit: BoxFit.fill),
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  SizedBox(
-                    height: 80,
-                    width: 178,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text("Nike Shoes",
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: notifier!.getMainText)),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            SvgPicture.asset(
-                              "assets/times.svg",
-                              height: 10,
-                              width: 10,
-                              color: Colors.red,
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Wrap(
-                          children: [
-                            CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Colors.grey.shade200,
-                              child: Center(
-                                  child:
-                                      Text("-", style: mediumBlackTextStyle)),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 3),
-                              child: Text("0",
-                                  style: mediumBlackTextStyle.copyWith(
-                                      color: notifier!.getMainText)),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Colors.grey.shade200,
-                              child: Center(
-                                  child:
-                                      Text("+", style: mediumBlackTextStyle)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        const Text("\$800",
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: appMainColor,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ],
-              )),
-          Divider(
-            height: 1,
-            color: notifier!.getBorderColor,
-          ),
-          SizedBox(
-              height: 100,
-              width: 300,
-              child: Row(
-                children: [
-                  Container(
-                    height: 70,
-                    width: 60,
-                    decoration: BoxDecoration(
-                        image: const DecorationImage(
-                            image: AssetImage(
-                                "assets/fashion-shoes-sneakers-removebg-preview-min.png"),
-                            fit: BoxFit.cover),
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  SizedBox(
-                    height: 80,
-                    width: 178,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text("Jorden Shoes",
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: notifier!.getMainText)),
-                            const SizedBox(width: 10),
-                            SvgPicture.asset(
-                              "assets/times.svg",
-                              height: 10,
-                              width: 10,
-                              color: Colors.red,
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Wrap(
-                          children: [
-                            CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Colors.grey.shade200,
-                              child: Center(
-                                  child:
-                                      Text("-", style: mediumBlackTextStyle)),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 3),
-                              child: Text("0",
-                                  style: mediumBlackTextStyle.copyWith(
-                                      color: notifier!.getMainText)),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Colors.grey.shade200,
-                              child: Center(
-                                  child:
-                                      Text("+", style: mediumBlackTextStyle)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        const Text("\$1900",
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: appMainColor,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ],
-              )),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Order Total :",
-                  style: mediumBlackTextStyle.copyWith(
-                      color: notifier!.getMainText)),
-              Text("\$2700.00",
-                  style: mediumBlackTextStyle.copyWith(
-                      color: notifier!.getMainText))
-            ],
-          ),
-          const SizedBox(
-            height: 30,
-          ),
-          const Text(
-            "GO TO YOUR CART",
-            style: TextStyle(
-                color: appMainColor,
-                decoration: TextDecoration.underline,
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(
-            height: 15,
-          ),
-          ElevatedButton(
-              onPressed: () {
-                controller.changePage('11');
-                Get.back();
-              },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: appMainColor,
-                  fixedSize: const Size(140, 35)),
-              child: const Text(
-                "CHECK OUT",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w200),
-              )),
-          const SizedBox(
-            height: 15,
-          ),
-        ],
-      ),
-    );
-  }
-
   PopupMenuItem _buildPopupAdminMenuItem() {
     return PopupMenuItem(
       enabled: false,
@@ -616,7 +347,7 @@ class _AppBarCodeState extends State<AppBarCode> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            height: 305,
+            height: 145,
             width: 155,
             child: Center(
               child: Table(
@@ -624,76 +355,15 @@ class _AppBarCodeState extends State<AppBarCode> {
                   0: FixedColumnWidth(20),
                 },
                 children: [
-                  row(title: 'Profile', icon: 'assets/user.svg', index: 'profile'),
-                  row(title: 'Chat', icon: 'assets/chat-dots.svg', index: 'chat'),
-                  row(title: 'Email', icon: 'assets/envelope.svg', index: 'dashboard'),
                   row(
-                      title: 'Todo',
-                      icon: 'assets/clipboard-check.svg',
-                      index: ''),
-                  row(title: 'Setting', icon: 'assets/settings.svg', index: 'settings'),
+                      title: 'Profile',
+                      icon: 'assets/user.svg',
+                      index: 'profile'),
                   row(
-                      title: 'Price',
-                      icon: 'assets/credit-card.svg',
-                      index: 'price'),
+                      title: 'Setting',
+                      icon: 'assets/settings.svg',
+                      index: 'settings'),
                   row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
-                  TableRow(children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: SvgPicture.asset(
-                        "assets/tool.svg",
-                        width: 18,
-                        height: 18,
-                        color: notifier!.getIconColor,
-                      ),
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              bottom: 5, left: 20, top: 12, right: 20),
-                          child: Text("RTL",
-                              style: mediumBlackTextStyle.copyWith(
-                                  color: notifier!.getMainText)),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Obx(() => Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: SizedBox(
-                                height: 20,
-                                width: 50,
-                                child: Transform.scale(
-                                  scale: 0.8,
-                                  child: Switch(
-                                    value: controller.switchIsTrue.value,
-                                    onChanged: (bool value) {
-                                      controller.switchIsTrue.value = value;
-                                      Future.delayed(
-                                        const Duration(milliseconds: 300),
-                                        () {
-                                          if (value == true) {
-                                            Get.updateLocale(
-                                                const Locale('ur', 'PK'));
-                                            Get.back();
-                                          } else {
-                                            Get.updateLocale(
-                                                const Locale('en', 'US'));
-                                            Get.back();
-                                          }
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            )),
-                      ],
-                    )
-                  ]),
                   row(title: 'Logout', icon: 'assets/log-out.svg', index: ''),
                 ],
               ),
@@ -868,15 +538,15 @@ Widget _buildCommonTile(
       padding: const EdgeInsets.only(top: 5, bottom: 5),
       child: Row(
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 15),
-          //   child: Container(
-          //     width: 7,
-          //     height: 7,
-          //     decoration: BoxDecoration(
-          //         borderRadius: BorderRadius.circular(100), color: color),
-          //   ),
-          // ),
+          Padding(
+            padding: const EdgeInsets.only(left: 15),
+            child: Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100), color: color),
+            ),
+          ),
           Flexible(
             flex: 3,
             child: ListTile(
@@ -895,31 +565,12 @@ Widget _buildCommonTile(
                     fontSize: 16,
                     overflow: TextOverflow.ellipsis),
               ),
-              subtitle: Text(subTile,
-                  style: TextStyle(
-                      color: colorSub,
-                      fontWeight: fontWeight,
-                      overflow: TextOverflow.ellipsis),),
-              leading: Material(
-                // elevation: 3,
-                borderRadius: BorderRadius.circular(100),
-                child: Container(
-                  height: 35,
-                  width: 35,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  padding: padding,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.asset(
-                      backgroundImage,
-                      width: width,
-                      height: height,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+              subtitle: Text(
+                subTile,
+                style: TextStyle(
+                    color: colorSub,
+                    fontWeight: fontWeight,
+                    overflow: TextOverflow.ellipsis),
               ),
             ),
           ),

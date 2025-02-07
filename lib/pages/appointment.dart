@@ -7,69 +7,18 @@ import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/size_box.dart';
 import 'package:provider/provider.dart';
 
-class DefaultPage extends StatefulWidget {
-  const DefaultPage({super.key});
+class AppointmentPage extends StatefulWidget {
+  const AppointmentPage({super.key});
 
   @override
-  State<DefaultPage> createState() => _DefaultPage();
+  State<AppointmentPage> createState() => _DefaultPage();
 }
 
-class _DefaultPage extends State<DefaultPage> {
+class _DefaultPage extends State<AppointmentPage> {
   @override
   void dispose() {
     super.dispose();
   }
-
-  final List<Map<String, dynamic>> dashboardData = [
-    {
-      "title": "Admins",
-      "iconPath": "assets/user29.svg",
-      "price": "5",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Doctors",
-      "iconPath": "assets/users33.svg",
-      "price": "35",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Patients",
-      "iconPath": "assets/box-check33.svg",
-      "price": "955",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Nurses",
-      "iconPath": "assets/heartfill.svg",
-      "price": "95",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Receptionists",
-      "iconPath": "assets/chat-info.svg",
-      "price": "15",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Available Beds",
-      "iconPath": "assets/home.svg",
-      "price": "235",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Accountants",
-      "iconPath": "assets/receipt-list29.svg",
-      "price": "5",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Bills",
-      "iconPath": "assets/dollar-circle33.svg",
-      "price": "\$5,295,295",
-      "mainColour": const Color(0xffF7931A),
-    },
-  ];
 
   final List<Map<String, String>> recentAppointments = [
     {
@@ -129,8 +78,6 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    _buildComp1Grid(count: 1),
-                    _buildComp3(width: constraints.maxWidth),
                     _buildComp4(),
                     const MySizeBox(),
                     const BottomBar(),
@@ -143,12 +90,6 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    Row(
-                      children: [
-                        Expanded(child: _buildComp1Grid(count: 2)),
-                      ],
-                    ),
-                    _buildComp3(width: constraints.maxWidth),
                     _buildComp4(),
                     const MySizeBox(),
                     const BottomBar(),
@@ -163,52 +104,6 @@ class _DefaultPage extends State<DefaultPage> {
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
                     Row(
                       children: [
-                        Expanded(child: _buildComp1Grid(count: 4)),
-                      ],
-                    ),
-                    // Row(
-                    //   children: [
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    // Expanded(child: _buildComp1Grid(count: 4)),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: _buildComp3(width: constraints.maxWidth),
-                        ),
                         Expanded(
                           flex: 2,
                           child: _buildComp4(),
@@ -227,32 +122,11 @@ class _DefaultPage extends State<DefaultPage> {
     );
   }
 
-  Widget _buildComp1Grid({required int count}) {
-    return GridView.builder(
-      itemCount: dashboardData.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: count,
-        mainAxisExtent: 150,
-      ),
-      itemBuilder: (context, index) {
-        final data = dashboardData[index];
-        return _buildComp1(
-          title: data["title"],
-          iconPath: data["iconPath"],
-          price: data["price"],
-          mainColour: data["mainColour"],
-        );
-      },
-    );
-  }
-
   Widget _buildComp1(
       {required String title,
-      required String iconPath,
-      required String price,
-      required Color mainColour}) {
+        required String iconPath,
+        required String price,
+        required Color mainColour}) {
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Container(
@@ -278,10 +152,10 @@ class _DefaultPage extends State<DefaultPage> {
                 ),
                 child: Center(
                     child: SvgPicture.asset(
-                  iconPath,
-                  height: 25,
-                  width: 25,
-                )),
+                      iconPath,
+                      height: 25,
+                      width: 25,
+                    )),
               ),
               title: Text(
                 title,
@@ -295,7 +169,7 @@ class _DefaultPage extends State<DefaultPage> {
                     Text(
                       price,
                       style:
-                          mainTextStyle.copyWith(color: notifier.getMainText),
+                      mainTextStyle.copyWith(color: notifier.getMainText),
                     ),
                     const SizedBox(
                       width: 10,
@@ -304,49 +178,6 @@ class _DefaultPage extends State<DefaultPage> {
                       width: 5,
                     ),
                   ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildComp3({required double width}) {
-    return Padding(
-      padding: const EdgeInsets.all(padding),
-      child: Container(
-        // height: 400,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          color: Colors.blueAccent.withOpacity(0.2),
-          boxShadow: boxShadow,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: SizedBox(
-                height: 450,
-                child: Padding(
-                  padding: const EdgeInsets.all(padding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 30,
-                        width: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: const Color(0xffffc107),
-                        ),
-                        child: Center(
-                            child:
-                            Text("Chart box", style: mediumBlackTextStyle)),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),
@@ -447,5 +278,4 @@ class _DefaultPage extends State<DefaultPage> {
       ),
     );
   }
-
 }

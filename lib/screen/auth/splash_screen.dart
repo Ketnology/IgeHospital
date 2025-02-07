@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/static_data/routes.dart';
 
@@ -35,17 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
               Image.asset(
                 "assets/app-logo.png",
                 height: 50,
-                // width: 50,
               ),
-              // Text(
-              //   "IGE Hospital",
-              //   style: TextStyle(
-              //     fontSize: 28,
-              //     fontWeight: FontWeight.bold,
-              //     color: Colors.blueAccent,
-              //     fontFamily: "Gilroy",
-              //   ),
-              // ),
             ],
           )
         ],
