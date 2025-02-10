@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/static_data/routes.dart';
 
@@ -31,8 +32,8 @@ class _SplashScreenState extends State<SplashScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                "assets/app-logo.png",
+              SvgPicture.asset(
+                "assets/app-logo.svg",
                 height: 50,
               ),
             ],

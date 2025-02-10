@@ -54,8 +54,8 @@ class _DrawerCodeState extends State<DrawerCode> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          "assets/app-logo.png",
+                        SvgPicture.asset(
+                          "assets/app-logo.svg",
                           height: 48,
                           // width: 48,
                         ),
