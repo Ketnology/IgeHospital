@@ -1,0 +1,35 @@
+name: Deploy Flutter Web App to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'latest'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        run: flutter build web
+
+      - name: Deploy to cPanel via SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          source: "build/web/*"
+          target: "/home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/"
+          strip_components: 1
