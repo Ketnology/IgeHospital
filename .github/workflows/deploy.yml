@@ -25,7 +25,7 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web
 
-      - name: Deploy to cPanel via SCP
+      - name: Deploy to cPanel via SSH
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.CPANEL_HOST }}
