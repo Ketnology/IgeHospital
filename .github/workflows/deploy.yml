@@ -34,3 +34,4 @@ jobs:
           source: "build/web/*"
           target: "/home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html"
           strip_components: 1
+          
