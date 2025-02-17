@@ -88,7 +88,7 @@ class _DrawerCodeState extends State<DrawerCode> {
                                 }),
                             _buildDivider(title: 'Hospital Operations'),
                             _buildSingleTile(
-                                header: "Appointmentsss",
+                                header: "Appointments",
                                 iconPath: "assets/calendar.svg",
                                 index: 'appointment',
                                 onTap: () {
