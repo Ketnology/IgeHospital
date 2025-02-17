@@ -43,4 +43,4 @@ jobs:
           key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
           script: |
             mv /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/web/* /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/
-            rmdir /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/web
+            rm -r /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/web
