@@ -25,6 +25,15 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web
 
+      - name: Clean public_html directory
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/* 
+
       - name: Deploy to cPanel via SSH
         uses: appleboy/scp-action@v0.1.4
         with:
