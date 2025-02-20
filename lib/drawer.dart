@@ -90,9 +90,9 @@ class _DrawerCodeState extends State<DrawerCode> {
                             _buildSingleTile(
                                 header: "Appointments",
                                 iconPath: "assets/calendar.svg",
-                                index: 'appointment',
+                                index: 'appointments',
                                 onTap: () {
-                                  controller.changePage('appointment');
+                                  controller.changePage('appointments');
                                   Get.back();
                                 }),
                             _buildSingleTile(
