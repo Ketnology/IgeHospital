@@ -38,9 +38,3 @@ const double padding = 15;
 ColourNotifier? notifier;
 
 
-
-
-
-
-
-

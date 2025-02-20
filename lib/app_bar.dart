@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/static_data/static_data.dart';
@@ -340,6 +341,8 @@ class _AppBarCodeState extends State<AppBarCode> {
   }
 
   PopupMenuItem _buildPopupAdminMenuItem() {
+    final AuthController authController = Get.find<AuthController>();
+
     return PopupMenuItem(
       enabled: false,
       padding: const EdgeInsets.all(0),
@@ -355,16 +358,33 @@ class _AppBarCodeState extends State<AppBarCode> {
                   0: FixedColumnWidth(20),
                 },
                 children: [
-                  row(
-                      title: 'Profile',
-                      icon: 'assets/user.svg',
-                      index: 'profile'),
-                  row(
-                      title: 'Setting',
-                      icon: 'assets/settings.svg',
-                      index: 'settings'),
+                  row(title: 'Profile', icon: 'assets/user.svg', index: 'profile'),
+                  row(title: 'Setting', icon: 'assets/settings.svg', index: 'settings'),
                   row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
-                  row(title: 'Logout', icon: 'assets/log-out.svg', index: ''),
+                  TableRow(children: [
+                    TableRowInkWell(
+                      onTap: () {
+                        authController.logout(); // 🔥 Logout user
+                        Get.back(); // Close menu
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: SvgPicture.asset('assets/log-out.svg',
+                            width: 18, height: 18, color: notifier!.getIconColor),
+                      ),
+                    ),
+                    TableRowInkWell(
+                      onTap: () {
+                        authController.logout(); // 🔥 Logout user
+                        Get.back(); // Close menu
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 5, left: 20, top: 12, right: 20),
+                        child: Text('Logout',
+                            style: mediumBlackTextStyle.copyWith(color: notifier!.getMainText)),
+                      ),
+                    ),
+                  ]),
                 ],
               ),
             ),

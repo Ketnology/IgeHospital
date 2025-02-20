@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/app_bar.dart';
 import 'package:ige_hospital/drawer.dart';
+import 'package:ige_hospital/pages/page_mappings.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/static_data/static_data.dart';
@@ -47,9 +48,9 @@ class _MyHomepageState extends State<MyHomepage> {
                           const AppBarCode(),
                           Expanded(
                             child: Obx(() {
-                              Widget selectedPage = controller.pages[
-                                      controller.selectedPageKey.value] ??
-                                  Container();
+                              Widget selectedPage =
+                                  pages[controller.selectedPageKey.value] ??
+                                      Container();
                               return selectedPage;
                             }),
                           ),
@@ -73,8 +74,7 @@ class _MyHomepageState extends State<MyHomepage> {
             width: MediaQuery.of(context).size.width,
             child: Obx(() {
               Widget selectedPage =
-                  controller.pages[controller.selectedPageKey.value] ??
-                      Container();
+                  pages[controller.selectedPageKey.value] ?? Container();
               return selectedPage;
             }),
           ),
