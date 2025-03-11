@@ -63,12 +63,12 @@ class _DefaultPage extends State<DefaultPage> {
       "price": "5",
       "mainColour": const Color(0xffF7931A),
     },
-    {
-      "title": "Bills",
-      "iconPath": "assets/dollar-circle33.svg",
-      "price": "\$5,295,295",
-      "mainColour": const Color(0xffF7931A),
-    },
+    // {
+    //   "title": "Bills",
+    //   "iconPath": "assets/dollar-circle33.svg",
+    //   "price": "\$5,295,295",
+    //   "mainColour": const Color(0xffF7931A),
+    // },
   ];
 
   final List<Map<String, String>> recentAppointments = [
@@ -343,7 +343,7 @@ class _DefaultPage extends State<DefaultPage> {
                         ),
                         child: Center(
                             child:
-                            Text("Chart box", style: mediumBlackTextStyle)),
+                                Text("Chart box", style: mediumBlackTextStyle)),
                       ),
                     ],
                   ),
@@ -425,7 +425,8 @@ class _DefaultPage extends State<DefaultPage> {
                                   color: notifier.getMainText),
                             ),
                             const SizedBox(height: 5),
-                            Text(appointment["date"]!, style: mediumGreyTextStyle),
+                            Text(appointment["date"]!,
+                                style: mediumGreyTextStyle),
                           ],
                         ),
                         subtitle: Padding(
@@ -447,5 +448,4 @@ class _DefaultPage extends State<DefaultPage> {
       ),
     );
   }
-
 }

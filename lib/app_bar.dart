@@ -293,7 +293,7 @@ class _AppBarCodeState extends State<AppBarCode> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("Ketuojo",
+                                      Text("Moses Ketuojo",
                                           style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
