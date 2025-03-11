@@ -55,12 +55,13 @@ class _MyTextFieldState extends State<MyTextField> {
                     borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
-                  border: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.red.withOpacity(0.3)),
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(10))),
-                  // contentPadding: widget.prefix!=null?  EdgeInsets.symmetric(vertical: 10,horizontal: 10):EdgeInsets.zero,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: notifier!.getIconColor,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
                 controller: widget.controller,
               ),
