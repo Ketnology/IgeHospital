@@ -7,6 +7,7 @@ import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/widgets/bottom_bar.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/size_box.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class DefaultPage extends StatefulWidget {
@@ -238,22 +239,22 @@ class _DefaultPage extends State<DefaultPage> {
     );
   }
 
-  // Widget _buildRefreshButton() {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 15.0),
-  //     child: Align(
-  //       alignment: Alignment.centerRight,
-  //       child: Obx(() => dashboardService.isLoading.value
-  //           ? const CircularProgressIndicator()
-  //           : IconButton(
-  //         icon: Icon(Icons.refresh, color: notifier.getMainText),
-  //         onPressed: () => dashboardService.refreshDashboardData(),
-  //         tooltip: "Refresh dashboard data",
-  //       )
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _buildRefreshButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Obx(() => dashboardService.isLoading.value
+            ? const CircularProgressIndicator()
+            : IconButton(
+          icon: Icon(Icons.refresh, color: notifier.getMainText),
+          onPressed: () => dashboardService.refreshDashboardData(),
+          tooltip: "Refresh dashboard data",
+        )
+        ),
+      ),
+    );
+  }
 
   Widget _buildDashboardStatus() {
     return Obx(() {
@@ -439,76 +440,183 @@ class _DefaultPage extends State<DefaultPage> {
                     style: mediumBlackTextStyle.copyWith(
                         color: notifier.getMainText),
                   ),
-                  const SizedBox(width: 8),
-                  SvgPicture.asset(
-                    "assets/info-circle.svg",
-                    height: 22,
-                    width: 22,
-                    color: notifier.getMainText,
-                  ),
-                  const Spacer(),
-                  Text(
-                    "See more",
-                    style: mediumGreyTextStyle,
-                  ),
-                  SvgPicture.asset(
-                    "assets/angle-right-small.svg",
-                    height: 22,
-                    width: 22,
-                    color: notifier.getMainText,
-                  )
                 ],
               ),
-              const SizedBox(height: 16),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: recentAppointments.length,
-                itemBuilder: (context, index) {
-                  final appointment = recentAppointments[index];
-                  return Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.transparent,
-                          child: SvgPicture.asset(appointment["doctorImage"]!),
-                        ),
-                        title: Text(
-                          appointment["doctor"]!,
-                          style: mediumBlackTextStyle.copyWith(
-                              color: notifier.getMainText),
-                        ),
-                        trailing: Column(
-                          children: [
-                            const SizedBox(height: 10),
-                            Text(
-                              appointment["time"]!,
-                              style: mediumBlackTextStyle.copyWith(
-                                  color: notifier.getMainText),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(appointment["date"]!,
-                                style: mediumGreyTextStyle),
-                          ],
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            "Patient: ${appointment["patient"]!}",
+              // const SizedBox(height: 16),
+
+              Obx(() {
+                if (dashboardService.isLoading.value && dashboardService.recentAppointments.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                if (dashboardService.recentAppointments.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 40,
+                            color: notifier.getIconColor,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            "No recent appointments found",
                             style: mediumGreyTextStyle,
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   );
-                },
-              ),
+                }
+
+                return ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: dashboardService.recentAppointments.length > 5
+                      ? 5
+                      : dashboardService.recentAppointments.length,
+                  itemBuilder: (context, index) {
+                    final appointment = dashboardService.recentAppointments[index];
+
+                    // Default icon or parse SVG path
+                    String icon = "assets/icons8-figma.svg";
+                    if (index % 5 == 0) icon = "assets/icons8-figma.svg";
+                    if (index % 5 == 1) icon = "assets/icons8-adobe-creative-cloud.svg";
+                    if (index % 5 == 2) icon = "assets/icons8-starbucks.svg";
+                    if (index % 5 == 3) icon = "assets/icons8-apple-logo.svg";
+                    if (index % 5 == 4) icon = "assets/icons8-facebook29.svg";
+
+                    // Format date and time
+                    String formattedDate = appointment.dateTime['formatted'] ?? 'N/A';
+                    String time = '';
+                    String date = '';
+
+                    try {
+                      if (appointment.dateTime['formatted'] != null) {
+                        DateTime parsedDate = DateTime.parse(
+                            "${appointment.dateTime['date']} ${appointment.dateTime['time']}"
+                        );
+                        time = DateFormat('hh:mm a').format(parsedDate);
+                        date = DateFormat('dd/MM/yyyy').format(parsedDate);
+                      } else {
+                        date = appointment.dateTime['date'] ?? 'N/A';
+                        time = appointment.dateTime['time'] ?? 'N/A';
+                      }
+                    } catch (e) {
+                      print("Error parsing date: $e");
+                      date = appointment.dateTime['date'] ?? 'N/A';
+                      time = appointment.dateTime['time'] ?? 'N/A';
+                    }
+
+                    return Column(
+                      children: [
+                        // const SizedBox(height: 10),
+                        ListTile(
+                          leading: Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.transparent,
+                                child: SvgPicture.asset(icon),
+                              ),
+                              Container(
+                                height: 12,
+                                width: 12,
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(appointment.status),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: notifier.getContainer,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          title: Text(
+                            appointment.doctor['name'] ?? 'Unknown Doctor',
+                            style: mediumBlackTextStyle.copyWith(
+                              color: notifier.getMainText,
+                            ),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                time,
+                                style: mediumBlackTextStyle.copyWith(
+                                  color: notifier.getMainText,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                date,
+                                style: mediumGreyTextStyle,
+                              ),
+                            ],
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              "Patient: ${appointment.patient['name'] ?? 'Unknown Patient'}",
+                              style: mediumGreyTextStyle,
+                            ),
+                          ),
+                        ),
+                        if (index < dashboardService.recentAppointments.length - 1)
+                          Divider(color: notifier.getBorderColor),
+                      ],
+                    );
+                  },
+                );
+              }),
               const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  // controller.changePage('appointments');
+                  Get.back();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: notifier.getPrimaryColor,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: notifier.getBorderColor),
+                  ),
+                ),
+                child: Text(
+                  "View All Appointments",
+                  style: TextStyle(
+                    color: notifier.getMainText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
   }
 }

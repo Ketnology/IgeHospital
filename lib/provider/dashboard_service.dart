@@ -1,9 +1,36 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/constants/api_endpoints.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+class AppointmentData {
+  final String id;
+  final Map<String, dynamic> doctor;
+  final Map<String, dynamic> patient;
+  final Map<String, dynamic> dateTime;
+  final String status;
+
+  AppointmentData({
+    required this.id,
+    required this.doctor,
+    required this.patient,
+    required this.dateTime,
+    required this.status,
+  });
+
+  factory AppointmentData.fromJson(Map<String, dynamic> json) {
+    return AppointmentData(
+      id: json['id'] ?? '',
+      doctor: json['doctor'] ?? {},
+      patient: json['patient'] ?? {},
+      dateTime: json['date_time'] ?? {},
+      status: json['status'] ?? 'pending',
+    );
+  }
+}
 
 class DashboardService extends GetxController {
   final AuthService authService = Get.find<AuthService>();
@@ -16,11 +43,14 @@ class DashboardService extends GetxController {
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
 
+  final RxList<AppointmentData> recentAppointments = <AppointmentData>[].obs;
+
   // Keys for shared preferences
   static const String _keyDoctorCount = 'dashboard_doctor_count';
   static const String _keyPatientCount = 'dashboard_patient_count';
   static const String _keyReceptionistCount = 'dashboard_receptionist_count';
   static const String _keyAdminCount = 'dashboard_admin_count';
+  static const String _keyAppointments = 'dashboard_appointments';
   static const String _keyLastUpdated = 'dashboard_last_updated';
 
   @override
@@ -39,6 +69,18 @@ class DashboardService extends GetxController {
       patientCount.value = prefs.getInt(_keyPatientCount) ?? 0;
       receptionistCount.value = prefs.getInt(_keyReceptionistCount) ?? 0;
       adminCount.value = prefs.getInt(_keyAdminCount) ?? 0;
+
+      final appointmentsJson = prefs.getString(_keyAppointments);
+      if (appointmentsJson != null) {
+        try {
+          final List<dynamic> appointmentsList = jsonDecode(appointmentsJson);
+          recentAppointments.value = appointmentsList
+              .map((json) => AppointmentData.fromJson(json))
+              .toList();
+        } catch (e) {
+          Get.log("Error parsing saved appointments: $e");
+        }
+      }
 
       // Log when the data was last updated
       final lastUpdated = prefs.getString(_keyLastUpdated);
@@ -59,6 +101,17 @@ class DashboardService extends GetxController {
       await prefs.setInt(_keyPatientCount, patientCount.value);
       await prefs.setInt(_keyReceptionistCount, receptionistCount.value);
       await prefs.setInt(_keyAdminCount, adminCount.value);
+
+      final List<Map<String, dynamic>> appointmentsJson = recentAppointments
+          .map((appointment) => {
+        'id': appointment.id,
+        'doctor': appointment.doctor,
+        'patient': appointment.patient,
+        'date_time': appointment.dateTime,
+        'status': appointment.status,
+      })
+          .toList();
+      await prefs.setString(_keyAppointments, jsonEncode(appointmentsJson));
 
       // Save current timestamp
       final now = DateTime.now().toIso8601String();
@@ -85,7 +138,6 @@ class DashboardService extends GetxController {
       );
 
       Get.log("Dashboard response status: ${response.statusCode}");
-      Get.log("Dashboard response body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -96,6 +148,13 @@ class DashboardService extends GetxController {
           patientCount.value = data["data"]["patients"] ?? patientCount.value;
           receptionistCount.value = data["data"]["receptionists"] ?? receptionistCount.value;
           adminCount.value = data["data"]["admins"] ?? adminCount.value;
+
+          if (data["data"]["recent_appointments"] != null) {
+            final appointmentsList = data["data"]["recent_appointments"] as List;
+            recentAppointments.value = appointmentsList
+                .map((json) => AppointmentData.fromJson(json))
+                .toList();
+          }
 
           // Save the updated values
           _saveData();
@@ -128,11 +187,25 @@ class DashboardService extends GetxController {
       await prefs.remove(_keyPatientCount);
       await prefs.remove(_keyReceptionistCount);
       await prefs.remove(_keyAdminCount);
+      await prefs.remove(_keyAppointments);
       await prefs.remove(_keyLastUpdated);
 
       Get.log("Dashboard saved data cleared");
     } catch (e) {
       Get.log("Error clearing dashboard data: $e");
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blue;
     }
   }
 }
