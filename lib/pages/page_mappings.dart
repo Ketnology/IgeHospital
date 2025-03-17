@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ige_hospital/pages/ProfilePage.dart';
+import 'package:ige_hospital/pages/profile_page.dart';
 import 'package:ige_hospital/pages/appointment.dart';
 import 'package:ige_hospital/pages/appointments.dart';
 import 'package:ige_hospital/pages/home.dart';

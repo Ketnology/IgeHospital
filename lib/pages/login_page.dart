@@ -192,36 +192,7 @@ class _SingUpPageState extends State<LoginPage> {
                       ],
                     )),
                 const SizedBox(
-                  height: 21,
-                ),
-                Container(
-                    height: 50,
-                    width: 180,
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                        color: appMainColor,
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Container(
-                      height: 50,
-                      width: 180,
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: appMainColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                            color: notifier!.getPrimaryColor,
-                          ),
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: 26.8,
+                  height: 25,
                 ),
                 Flexible(
                   child: Column(
