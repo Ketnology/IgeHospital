@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
+import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/static_data/static_data.dart';
@@ -21,6 +22,8 @@ class _AppBarCodeState extends State<AppBarCode> {
   bool search = false;
   bool darkMood = false;
   final AppConst controller = Get.put(AppConst());
+  final AuthController authController = Get.find<AuthController>();
+  final AuthService authService = Get.find<AuthService>();
 
   @override
   Widget build(BuildContext context) {
@@ -293,24 +296,26 @@ class _AppBarCodeState extends State<AppBarCode> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("Moses Ketuojo",
+                                      Obx(() => Text(
+                                          authService.getUserName(),
                                           style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
                                               overflow: TextOverflow.ellipsis,
-                                              color: notifier.getMainText)),
+                                              color: notifier.getMainText))),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text("admin",
+                                          Obx(() => Text(
+                                              authService.getUserType(),
                                               style: TextStyle(
                                                   fontSize: 12,
                                                   overflow:
-                                                      TextOverflow.ellipsis,
-                                                  color: notifier.getMaingey)),
+                                                  TextOverflow.ellipsis,
+                                                  color: notifier.getMaingey))),
                                           Icon(
                                             Icons.arrow_drop_down_outlined,
                                             size: 12,

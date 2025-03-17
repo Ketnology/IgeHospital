@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:ige_hospital/static_data/routes.dart';
+import 'package:ige_hospital/routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
