@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/static_data/static_data.dart';
+import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/widgets/bottom_bar.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/size_box.dart';
@@ -15,54 +17,57 @@ class DefaultPage extends StatefulWidget {
 }
 
 class _DefaultPage extends State<DefaultPage> {
+  final DashboardService dashboardService = Get.put(DashboardService());
+
   @override
   void dispose() {
     super.dispose();
   }
 
-  final List<Map<String, dynamic>> dashboardData = [
+  List<Map<String, dynamic>> get dashboardData => [
     {
       "title": "Admins",
       "iconPath": "assets/user29.svg",
-      "price": "5",
+      "price": dashboardService.adminCount.toString(),
       "mainColour": const Color(0xffF7931A),
     },
     {
       "title": "Doctors",
       "iconPath": "assets/users33.svg",
-      "price": "35",
+      "price": dashboardService.doctorCount.toString(),
       "mainColour": const Color(0xffF7931A),
     },
     {
       "title": "Patients",
       "iconPath": "assets/box-check33.svg",
-      "price": "955",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Nurses",
-      "iconPath": "assets/heartfill.svg",
-      "price": "95",
+      "price": dashboardService.patientCount.toString(),
       "mainColour": const Color(0xffF7931A),
     },
     {
       "title": "Receptionists",
       "iconPath": "assets/chat-info.svg",
-      "price": "15",
+      "price": dashboardService.receptionistCount.toString(),
       "mainColour": const Color(0xffF7931A),
     },
-    {
-      "title": "Available Beds",
-      "iconPath": "assets/home.svg",
-      "price": "235",
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Accountants",
-      "iconPath": "assets/receipt-list29.svg",
-      "price": "5",
-      "mainColour": const Color(0xffF7931A),
-    },
+
+    // {
+    //   "title": "Nurses",
+    //   "iconPath": "assets/heartfill.svg",
+    //   "price": "95",
+    //   "mainColour": const Color(0xffF7931A),
+    // },
+    // {
+    //   "title": "Available Beds",
+    //   "iconPath": "assets/home.svg",
+    //   "price": "235",
+    //   "mainColour": const Color(0xffF7931A),
+    // },
+    // {
+    //   "title": "Accountants",
+    //   "iconPath": "assets/receipt-list29.svg",
+    //   "price": "5",
+    //   "mainColour": const Color(0xffF7931A),
+    // },
     // {
     //   "title": "Bills",
     //   "iconPath": "assets/dollar-circle33.svg",
@@ -129,6 +134,8 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
+                    // _buildRefreshButton(),
+                    _buildDashboardStatus(),
                     _buildComp1Grid(count: 1),
                     _buildComp3(width: constraints.maxWidth),
                     _buildComp4(),
@@ -143,6 +150,8 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
+                    // _buildRefreshButton(),
+                    _buildDashboardStatus(),
                     Row(
                       children: [
                         Expanded(child: _buildComp1Grid(count: 2)),
@@ -161,6 +170,8 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
+                    // _buildRefreshButton(),
+                    _buildDashboardStatus(),
                     Row(
                       children: [
                         Expanded(child: _buildComp1Grid(count: 4)),
@@ -225,6 +236,58 @@ class _DefaultPage extends State<DefaultPage> {
         ),
       ),
     );
+  }
+
+  // Widget _buildRefreshButton() {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 15.0),
+  //     child: Align(
+  //       alignment: Alignment.centerRight,
+  //       child: Obx(() => dashboardService.isLoading.value
+  //           ? const CircularProgressIndicator()
+  //           : IconButton(
+  //         icon: Icon(Icons.refresh, color: notifier.getMainText),
+  //         onPressed: () => dashboardService.refreshDashboardData(),
+  //         tooltip: "Refresh dashboard data",
+  //       )
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildDashboardStatus() {
+    return Obx(() {
+      if (dashboardService.hasError.value) {
+        return Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.red.shade300),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.error, color: Colors.red),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    dashboardService.errorMessage.value,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.refresh, color: Colors.red),
+                  onPressed: () => dashboardService.refreshDashboardData(),
+                )
+              ],
+            ),
+          ),
+        );
+      }
+      return const SizedBox.shrink();
+    });
   }
 
   Widget _buildComp1Grid({required int count}) {

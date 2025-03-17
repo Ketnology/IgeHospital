@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/static_data/static_data.dart';
+import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/bottom_bar.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/size_box.dart';

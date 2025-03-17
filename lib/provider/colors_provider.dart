@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../static_data/color_theme.dart';
+import '../constants/color_theme.dart';
 
 class ColourNotifier with ChangeNotifier {
   bool _isDark = false;

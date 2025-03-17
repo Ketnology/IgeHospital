@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
+import 'package:ige_hospital/utils/snackbar_utils.dart';
 
 class AuthController extends GetxController {
   final AuthService authService = Get.find<AuthService>();
@@ -44,12 +45,12 @@ class AuthController extends GetxController {
 
   bool _validateInputs() {
     if (emailController.text.isEmpty) {
-      Get.snackbar("Error", "Email is required", snackPosition: SnackPosition.BOTTOM);
+      SnackBarUtils.showErrorSnackBar("Email is required");
       return false;
     }
 
     if (passwordController.text.isEmpty) {
-      Get.snackbar("Error", "Password is required", snackPosition: SnackPosition.BOTTOM);
+      SnackBarUtils.showErrorSnackBar("Password is required");
       return false;
     }
 

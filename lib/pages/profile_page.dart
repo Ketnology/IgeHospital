@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/static_data/static_data.dart';
+import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/common_button.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/text_field.dart';

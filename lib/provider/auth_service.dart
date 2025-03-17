@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/routes.dart';
+import 'package:ige_hospital/utils/snackbar_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserModel {
@@ -98,16 +99,16 @@ class AuthService extends GetxService {
           await _saveSession(accessToken, tokenExpiration, user);
 
           Get.offAllNamed(Routes.homepage);
-          Get.snackbar("Success", message, snackPosition: SnackPosition.BOTTOM);
+          SnackBarUtils.showSuccessSnackBar(message);
         } else {
-          Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
+          SnackBarUtils.showErrorSnackBar(message);
         }
       } else {
-        Get.snackbar("Error", message, snackPosition: SnackPosition.BOTTOM);
+        SnackBarUtils.showErrorSnackBar(message);
       }
     } catch (e) {
       Get.log("Login error: $e");
-      Get.snackbar("Error", "Something went wrong", snackPosition: SnackPosition.BOTTOM);
+      SnackBarUtils.showErrorSnackBar("Something went wrong");
     }
   }
 
