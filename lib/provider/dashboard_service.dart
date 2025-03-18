@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/constants/api_endpoints.dart';
@@ -32,20 +31,20 @@ class AppointmentData {
   }
 }
 
-class DashboardService extends GetxController {
+class DashboardService extends GetxService {
   final AuthService authService = Get.find<AuthService>();
 
   final RxInt doctorCount = 0.obs;
   final RxInt patientCount = 0.obs;
   final RxInt receptionistCount = 0.obs;
   final RxInt adminCount = 0.obs;
+
+  final RxList<AppointmentData> recentAppointments = <AppointmentData>[].obs;
+
   final RxBool isLoading = false.obs;
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
 
-  final RxList<AppointmentData> recentAppointments = <AppointmentData>[].obs;
-
-  // Keys for shared preferences
   static const String _keyDoctorCount = 'dashboard_doctor_count';
   static const String _keyPatientCount = 'dashboard_patient_count';
   static const String _keyReceptionistCount = 'dashboard_receptionist_count';
@@ -56,11 +55,9 @@ class DashboardService extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Load saved values first, then fetch fresh data
     _loadSavedData().then((_) => fetchDashboardData());
   }
 
-  // Load saved dashboard data from SharedPreferences
   Future<void> _loadSavedData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -82,7 +79,6 @@ class DashboardService extends GetxController {
         }
       }
 
-      // Log when the data was last updated
       final lastUpdated = prefs.getString(_keyLastUpdated);
       if (lastUpdated != null) {
         Get.log("Dashboard data last updated: $lastUpdated");
@@ -92,7 +88,6 @@ class DashboardService extends GetxController {
     }
   }
 
-  // Save dashboard data to SharedPreferences
   Future<void> _saveData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -113,7 +108,6 @@ class DashboardService extends GetxController {
           .toList();
       await prefs.setString(_keyAppointments, jsonEncode(appointmentsJson));
 
-      // Save current timestamp
       final now = DateTime.now().toIso8601String();
       await prefs.setString(_keyLastUpdated, now);
 
@@ -143,11 +137,12 @@ class DashboardService extends GetxController {
         final data = jsonDecode(response.body);
 
         if (data["status"] == 200) {
-          // Update observable values
-          doctorCount.value = data["data"]["doctors"] ?? doctorCount.value;
-          patientCount.value = data["data"]["patients"] ?? patientCount.value;
-          receptionistCount.value = data["data"]["receptionists"] ?? receptionistCount.value;
-          adminCount.value = data["data"]["admins"] ?? adminCount.value;
+          Get.log("Dashboard response data data: ${data["data"]["doctors_count"]}");
+
+          doctorCount.value = data["data"]["doctors_count"] ?? doctorCount.value;
+          patientCount.value = data["data"]["patients_count"] ?? patientCount.value;
+          receptionistCount.value = data["data"]["receptionists_count"] ?? receptionistCount.value;
+          adminCount.value = data["data"]["admins_count"] ?? adminCount.value;
 
           if (data["data"]["recent_appointments"] != null) {
             final appointmentsList = data["data"]["recent_appointments"] as List;
@@ -156,7 +151,6 @@ class DashboardService extends GetxController {
                 .toList();
           }
 
-          // Save the updated values
           _saveData();
         } else {
           hasError.value = true;
@@ -179,7 +173,6 @@ class DashboardService extends GetxController {
     fetchDashboardData();
   }
 
-  // Clear saved data (useful for logout)
   Future<void> clearSavedData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -193,19 +186,6 @@ class DashboardService extends GetxController {
       Get.log("Dashboard saved data cleared");
     } catch (e) {
       Get.log("Error clearing dashboard data: $e");
-    }
-  }
-
-  Color getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.blue;
     }
   }
 }

@@ -79,7 +79,6 @@ class AuthService extends GetxService {
       );
 
       Get.log("Login response status: ${response.statusCode}");
-      Get.log("Login response body: ${response.body}");
 
       final data = jsonDecode(response.body);
       final int status = data["status"] ?? 500;

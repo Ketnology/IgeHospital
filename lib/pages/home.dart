@@ -26,56 +26,56 @@ class _DefaultPage extends State<DefaultPage> {
   }
 
   List<Map<String, dynamic>> get dashboardData => [
-    {
-      "title": "Admins",
-      "iconPath": "assets/user29.svg",
-      "price": dashboardService.adminCount.toString(),
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Doctors",
-      "iconPath": "assets/users33.svg",
-      "price": dashboardService.doctorCount.toString(),
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Patients",
-      "iconPath": "assets/box-check33.svg",
-      "price": dashboardService.patientCount.toString(),
-      "mainColour": const Color(0xffF7931A),
-    },
-    {
-      "title": "Receptionists",
-      "iconPath": "assets/chat-info.svg",
-      "price": dashboardService.receptionistCount.toString(),
-      "mainColour": const Color(0xffF7931A),
-    },
+        {
+          "title": "Admins",
+          "iconPath": "assets/user29.svg",
+          "price": dashboardService.adminCount.toString(),
+          "mainColour": const Color(0xffF7931A),
+        },
+        {
+          "title": "Doctors",
+          "iconPath": "assets/users33.svg",
+          "price": dashboardService.doctorCount.toString(),
+          "mainColour": const Color(0xffF7931A),
+        },
+        {
+          "title": "Patients",
+          "iconPath": "assets/box-check33.svg",
+          "price": dashboardService.patientCount.toString(),
+          "mainColour": const Color(0xffF7931A),
+        },
+        {
+          "title": "Receptionists",
+          "iconPath": "assets/chat-info.svg",
+          "price": dashboardService.receptionistCount.toString(),
+          "mainColour": const Color(0xffF7931A),
+        },
 
-    // {
-    //   "title": "Nurses",
-    //   "iconPath": "assets/heartfill.svg",
-    //   "price": "95",
-    //   "mainColour": const Color(0xffF7931A),
-    // },
-    // {
-    //   "title": "Available Beds",
-    //   "iconPath": "assets/home.svg",
-    //   "price": "235",
-    //   "mainColour": const Color(0xffF7931A),
-    // },
-    // {
-    //   "title": "Accountants",
-    //   "iconPath": "assets/receipt-list29.svg",
-    //   "price": "5",
-    //   "mainColour": const Color(0xffF7931A),
-    // },
-    // {
-    //   "title": "Bills",
-    //   "iconPath": "assets/dollar-circle33.svg",
-    //   "price": "\$5,295,295",
-    //   "mainColour": const Color(0xffF7931A),
-    // },
-  ];
+        // {
+        //   "title": "Nurses",
+        //   "iconPath": "assets/heartfill.svg",
+        //   "price": "95",
+        //   "mainColour": const Color(0xffF7931A),
+        // },
+        // {
+        //   "title": "Available Beds",
+        //   "iconPath": "assets/home.svg",
+        //   "price": "235",
+        //   "mainColour": const Color(0xffF7931A),
+        // },
+        // {
+        //   "title": "Accountants",
+        //   "iconPath": "assets/receipt-list29.svg",
+        //   "price": "5",
+        //   "mainColour": const Color(0xffF7931A),
+        // },
+        // {
+        //   "title": "Bills",
+        //   "iconPath": "assets/dollar-circle33.svg",
+        //   "price": "\$5,295,295",
+        //   "mainColour": const Color(0xffF7931A),
+        // },
+      ];
 
   final List<Map<String, String>> recentAppointments = [
     {
@@ -135,7 +135,7 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    // _buildRefreshButton(),
+                    _buildRefreshButton(),
                     _buildDashboardStatus(),
                     _buildComp1Grid(count: 1),
                     _buildComp3(width: constraints.maxWidth),
@@ -151,7 +151,7 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    // _buildRefreshButton(),
+                    _buildRefreshButton(),
                     _buildDashboardStatus(),
                     Row(
                       children: [
@@ -171,7 +171,7 @@ class _DefaultPage extends State<DefaultPage> {
                 child: Column(
                   children: [
                     const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    // _buildRefreshButton(),
+                    _buildRefreshButton(),
                     _buildDashboardStatus(),
                     Row(
                       children: [
@@ -247,11 +247,10 @@ class _DefaultPage extends State<DefaultPage> {
         child: Obx(() => dashboardService.isLoading.value
             ? const CircularProgressIndicator()
             : IconButton(
-          icon: Icon(Icons.refresh, color: notifier.getMainText),
-          onPressed: () => dashboardService.refreshDashboardData(),
-          tooltip: "Refresh dashboard data",
-        )
-        ),
+                icon: Icon(Icons.refresh, color: notifier.getMainText),
+                onPressed: () => dashboardService.refreshDashboardData(),
+                tooltip: "Refresh dashboard data",
+              )),
       ),
     );
   }
@@ -445,7 +444,8 @@ class _DefaultPage extends State<DefaultPage> {
               // const SizedBox(height: 16),
 
               Obx(() {
-                if (dashboardService.isLoading.value && dashboardService.recentAppointments.isEmpty) {
+                if (dashboardService.isLoading.value &&
+                    dashboardService.recentAppointments.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(10.0),
@@ -483,26 +483,28 @@ class _DefaultPage extends State<DefaultPage> {
                       ? 5
                       : dashboardService.recentAppointments.length,
                   itemBuilder: (context, index) {
-                    final appointment = dashboardService.recentAppointments[index];
+                    final appointment =
+                        dashboardService.recentAppointments[index];
 
                     // Default icon or parse SVG path
                     String icon = "assets/icons8-figma.svg";
                     if (index % 5 == 0) icon = "assets/icons8-figma.svg";
-                    if (index % 5 == 1) icon = "assets/icons8-adobe-creative-cloud.svg";
+                    if (index % 5 == 1)
+                      icon = "assets/icons8-adobe-creative-cloud.svg";
                     if (index % 5 == 2) icon = "assets/icons8-starbucks.svg";
                     if (index % 5 == 3) icon = "assets/icons8-apple-logo.svg";
                     if (index % 5 == 4) icon = "assets/icons8-facebook29.svg";
 
                     // Format date and time
-                    String formattedDate = appointment.dateTime['formatted'] ?? 'N/A';
+                    String formattedDate =
+                        appointment.dateTime['formatted'] ?? 'N/A';
                     String time = '';
                     String date = '';
 
                     try {
                       if (appointment.dateTime['formatted'] != null) {
                         DateTime parsedDate = DateTime.parse(
-                            "${appointment.dateTime['date']} ${appointment.dateTime['time']}"
-                        );
+                            "${appointment.dateTime['date']} ${appointment.dateTime['time']}");
                         time = DateFormat('hh:mm a').format(parsedDate);
                         date = DateFormat('dd/MM/yyyy').format(parsedDate);
                       } else {
@@ -571,7 +573,8 @@ class _DefaultPage extends State<DefaultPage> {
                             ),
                           ),
                         ),
-                        if (index < dashboardService.recentAppointments.length - 1)
+                        if (index <
+                            dashboardService.recentAppointments.length - 1)
                           Divider(color: notifier.getBorderColor),
                       ],
                     );
