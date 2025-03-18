@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const String baseUrl = "http://127.0.0.1:8000/api";
+  static const String baseUrl = "https://ige.myketnology.com/api";
 
   static const String login = "$baseUrl/admin/login";
   static const String logout = "$baseUrl/admin/logout";
