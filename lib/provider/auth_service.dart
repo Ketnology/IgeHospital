@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/routes.dart';
-import 'package:ige_hospital/utils/snackbar_utils.dart';
+import 'package:ige_hospital/utils/snack_bar_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserModel {

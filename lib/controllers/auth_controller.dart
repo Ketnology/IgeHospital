@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
-import 'package:ige_hospital/utils/snackbar_utils.dart';
+import 'package:ige_hospital/utils/snack_bar_utils.dart';
 
 class AuthController extends GetxController {
   final AuthService authService = Get.find<AuthService>();

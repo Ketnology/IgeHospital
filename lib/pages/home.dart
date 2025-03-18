@@ -21,6 +21,14 @@ class _DefaultPage extends State<DefaultPage> {
   final DashboardService dashboardService = Get.put(DashboardService());
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      dashboardService.refreshDashboardData();
+    });
+  }
+
+  @override
   void dispose() {
     super.dispose();
   }
@@ -77,44 +85,6 @@ class _DefaultPage extends State<DefaultPage> {
         // },
       ];
 
-  final List<Map<String, String>> recentAppointments = [
-    {
-      "doctor": "Dr. James Smith",
-      "patient": "Emily Johnson",
-      "date": "29/1/2023",
-      "time": "10:30 AM",
-      "doctorImage": "assets/icons8-figma.svg",
-    },
-    {
-      "doctor": "Dr. Sarah Williams",
-      "patient": "Michael Brown",
-      "date": "19/6/2023",
-      "time": "2:15 PM",
-      "doctorImage": "assets/icons8-adobe-creative-cloud.svg",
-    },
-    {
-      "doctor": "Dr. David Martinez",
-      "patient": "Sophia Davis",
-      "date": "1/2/2023",
-      "time": "9:00 AM",
-      "doctorImage": "assets/icons8-starbucks.svg",
-    },
-    {
-      "doctor": "Dr. Olivia Taylor",
-      "patient": "James Wilson",
-      "date": "9/4/2023",
-      "time": "11:45 AM",
-      "doctorImage": "assets/icons8-apple-logo.svg",
-    },
-    {
-      "doctor": "Dr. William Anderson",
-      "patient": "Isabella Thomas",
-      "date": "12/6/2023",
-      "time": "4:30 PM",
-      "doctorImage": "assets/icons8-facebook29.svg",
-    },
-  ];
-
   ColourNotifier notifier = ColourNotifier();
 
   @override
@@ -139,7 +109,7 @@ class _DefaultPage extends State<DefaultPage> {
                     _buildDashboardStatus(),
                     _buildComp1Grid(count: 1),
                     _buildComp3(width: constraints.maxWidth),
-                    _buildComp4(),
+                    _recentAppointments(),
                     const MySizeBox(),
                     const BottomBar(),
                   ],
@@ -159,7 +129,7 @@ class _DefaultPage extends State<DefaultPage> {
                       ],
                     ),
                     _buildComp3(width: constraints.maxWidth),
-                    _buildComp4(),
+                    _recentAppointments(),
                     const MySizeBox(),
                     const BottomBar(),
                   ],
@@ -223,7 +193,7 @@ class _DefaultPage extends State<DefaultPage> {
                         ),
                         Expanded(
                           flex: 2,
-                          child: _buildComp4(),
+                          child: _recentAppointments(),
                         ),
                       ],
                     ),
@@ -419,7 +389,7 @@ class _DefaultPage extends State<DefaultPage> {
     );
   }
 
-  Widget _buildComp4() {
+  Widget _recentAppointments() {
     return Padding(
       padding: const EdgeInsets.all(padding),
       child: Container(
@@ -486,18 +456,6 @@ class _DefaultPage extends State<DefaultPage> {
                     final appointment =
                         dashboardService.recentAppointments[index];
 
-                    // Default icon or parse SVG path
-                    String icon = "assets/icons8-figma.svg";
-                    if (index % 5 == 0) icon = "assets/icons8-figma.svg";
-                    if (index % 5 == 1)
-                      icon = "assets/icons8-adobe-creative-cloud.svg";
-                    if (index % 5 == 2) icon = "assets/icons8-starbucks.svg";
-                    if (index % 5 == 3) icon = "assets/icons8-apple-logo.svg";
-                    if (index % 5 == 4) icon = "assets/icons8-facebook29.svg";
-
-                    // Format date and time
-                    String formattedDate =
-                        appointment.dateTime['formatted'] ?? 'N/A';
                     String time = '';
                     String date = '';
 
@@ -526,7 +484,21 @@ class _DefaultPage extends State<DefaultPage> {
                             children: [
                               CircleAvatar(
                                 backgroundColor: Colors.transparent,
-                                child: SvgPicture.asset(icon),
+                                child: appointment.doctor['image'] != null
+                                    ? (appointment.doctor['image'].toString().contains('http')
+                                    ? Image.network(
+                                  appointment.doctor['image'],
+                                  width: 40,
+                                  height: 40,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.person, size: 40),
+                                )
+                                    : SvgPicture.asset(
+                                  "assets/icons8-figma.svg",
+                                  width: 40,
+                                  height: 40,
+                                ))
+                                    : const Icon(Icons.person, size: 40),
                               ),
                               Container(
                                 height: 12,

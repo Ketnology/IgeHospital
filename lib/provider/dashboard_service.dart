@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/constants/api_endpoints.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AppointmentData {
   final String id;
@@ -45,76 +44,15 @@ class DashboardService extends GetxService {
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
 
-  static const String _keyDoctorCount = 'dashboard_doctor_count';
-  static const String _keyPatientCount = 'dashboard_patient_count';
-  static const String _keyReceptionistCount = 'dashboard_receptionist_count';
-  static const String _keyAdminCount = 'dashboard_admin_count';
-  static const String _keyAppointments = 'dashboard_appointments';
-  static const String _keyLastUpdated = 'dashboard_last_updated';
-
   @override
   void onInit() {
     super.onInit();
-    _loadSavedData().then((_) => fetchDashboardData());
+    fetchDashboardData();
   }
 
-  Future<void> _loadSavedData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      doctorCount.value = prefs.getInt(_keyDoctorCount) ?? 0;
-      patientCount.value = prefs.getInt(_keyPatientCount) ?? 0;
-      receptionistCount.value = prefs.getInt(_keyReceptionistCount) ?? 0;
-      adminCount.value = prefs.getInt(_keyAdminCount) ?? 0;
-
-      final appointmentsJson = prefs.getString(_keyAppointments);
-      if (appointmentsJson != null) {
-        try {
-          final List<dynamic> appointmentsList = jsonDecode(appointmentsJson);
-          recentAppointments.value = appointmentsList
-              .map((json) => AppointmentData.fromJson(json))
-              .toList();
-        } catch (e) {
-          Get.log("Error parsing saved appointments: $e");
-        }
-      }
-
-      final lastUpdated = prefs.getString(_keyLastUpdated);
-      if (lastUpdated != null) {
-        Get.log("Dashboard data last updated: $lastUpdated");
-      }
-    } catch (e) {
-      Get.log("Error loading saved dashboard data: $e");
-    }
-  }
-
-  Future<void> _saveData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      await prefs.setInt(_keyDoctorCount, doctorCount.value);
-      await prefs.setInt(_keyPatientCount, patientCount.value);
-      await prefs.setInt(_keyReceptionistCount, receptionistCount.value);
-      await prefs.setInt(_keyAdminCount, adminCount.value);
-
-      final List<Map<String, dynamic>> appointmentsJson = recentAppointments
-          .map((appointment) => {
-        'id': appointment.id,
-        'doctor': appointment.doctor,
-        'patient': appointment.patient,
-        'date_time': appointment.dateTime,
-        'status': appointment.status,
-      })
-          .toList();
-      await prefs.setString(_keyAppointments, jsonEncode(appointmentsJson));
-
-      final now = DateTime.now().toIso8601String();
-      await prefs.setString(_keyLastUpdated, now);
-
-      Get.log("Dashboard data saved at: $now");
-    } catch (e) {
-      Get.log("Error saving dashboard data: $e");
-    }
+  Future<DashboardService> init() async {
+    await fetchDashboardData();
+    return this;
   }
 
   Future<void> fetchDashboardData() async {
@@ -139,10 +77,10 @@ class DashboardService extends GetxService {
         if (data["status"] == 200) {
           Get.log("Dashboard response data data: ${data["data"]["doctors_count"]}");
 
-          doctorCount.value = data["data"]["doctors_count"] ?? doctorCount.value;
-          patientCount.value = data["data"]["patients_count"] ?? patientCount.value;
-          receptionistCount.value = data["data"]["receptionists_count"] ?? receptionistCount.value;
-          adminCount.value = data["data"]["admins_count"] ?? adminCount.value;
+          doctorCount.value = data["data"]["doctors_count"];
+          patientCount.value = data["data"]["patients_count"];
+          receptionistCount.value = data["data"]["receptionists_count"];
+          adminCount.value = data["data"]["admins_count"];
 
           if (data["data"]["recent_appointments"] != null) {
             final appointmentsList = data["data"]["recent_appointments"] as List;
@@ -150,8 +88,6 @@ class DashboardService extends GetxService {
                 .map((json) => AppointmentData.fromJson(json))
                 .toList();
           }
-
-          _saveData();
         } else {
           hasError.value = true;
           errorMessage.value = data["message"] ?? "Failed to fetch dashboard data";
@@ -171,21 +107,5 @@ class DashboardService extends GetxService {
 
   void refreshDashboardData() {
     fetchDashboardData();
-  }
-
-  Future<void> clearSavedData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_keyDoctorCount);
-      await prefs.remove(_keyPatientCount);
-      await prefs.remove(_keyReceptionistCount);
-      await prefs.remove(_keyAdminCount);
-      await prefs.remove(_keyAppointments);
-      await prefs.remove(_keyLastUpdated);
-
-      Get.log("Dashboard saved data cleared");
-    } catch (e) {
-      Get.log("Error clearing dashboard data: $e");
-    }
   }
 }
