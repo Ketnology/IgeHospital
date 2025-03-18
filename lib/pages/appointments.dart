@@ -32,7 +32,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   late List<ExpandableRow> rows;
 
   int currentPage = 0;
-  final int pageSize = 3;
+  final int pageSize = 10;
 
   final TextEditingController searchController = TextEditingController();
   final DateTimeRange dateRange = DateTimeRange(
@@ -320,7 +320,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           multipleExpansion: true,
                           isEditable: false,
                           visibleColumnCount: visibleCount,
-                          pageSize: appointmentsService.perPage.value,
+                          pageSize: pageSize,
                           onPageChanged: (page) {
                             setState(() {
                               currentPage = page;
@@ -349,7 +349,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   Widget _buildFilterSection() {
     return Obx(
-      () => Padding(
+          () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Card(
           color: notifier.getContainer,
@@ -388,87 +388,86 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: GestureDetector(
-                        onTap: () async {
-                          final DateTimeRange? picked =
-                              await showDateRangePicker(
-                            context: context,
-                            initialDateRange: DateTimeRange(
-                              start: DateTime.now()
-                                  .subtract(const Duration(days: 30)),
-                              end: DateTime.now(),
-                            ),
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime(2030),
-                            builder: (context, child) {
-                              return Theme(
-                                data: Theme.of(context).copyWith(
-                                  colorScheme: ColorScheme.light(
-                                    primary: notifier.getIconColor,
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
-                          );
 
-                          if (picked != null) {
-                            appointmentsService.dateFrom.value =
-                                DateFormat('yyyy-MM-dd').format(picked.start);
-                            appointmentsService.dateTo.value =
-                                DateFormat('yyyy-MM-dd').format(picked.end);
-                            appointmentsService.fetchAppointments();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: notifier.getBorderColor),
-                            borderRadius: BorderRadius.circular(8),
+                GestureDetector(
+                  onTap: () async {
+                    final DateTimeRange? picked = await showDateRangePicker(
+                      context: context,
+                      initialDateRange: DateTimeRange(
+                        start: DateTime.now().subtract(const Duration(days: 30)),
+                        end: DateTime.now(),
+                      ),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2030),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: notifier.getIconColor,
+                            ),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.calendar_today,
-                                  size: 16, color: notifier.getIconColor),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  appointmentsService
-                                              .dateFrom.value.isNotEmpty &&
-                                          appointmentsService
-                                              .dateTo.value.isNotEmpty
-                                      ? "${appointmentsService.dateFrom.value} to ${appointmentsService.dateTo.value}"
-                                      : "Select Date Range",
-                                  style: TextStyle(color: notifier.getMainText),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                          child: child!,
+                        );
+                      },
+                    );
+
+                    if (picked != null) {
+                      appointmentsService.dateFrom.value =
+                          DateFormat('yyyy-MM-dd').format(picked.start);
+                      appointmentsService.dateTo.value =
+                          DateFormat('yyyy-MM-dd').format(picked.end);
+                      appointmentsService.fetchAppointments();
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: notifier.getBorderColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today,
+                            size: 16, color: notifier.getIconColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            appointmentsService.dateFrom.value.isNotEmpty &&
+                                appointmentsService.dateTo.value.isNotEmpty
+                                ? "${appointmentsService.dateFrom.value} to ${appointmentsService.dateTo.value}"
+                                : "Select Date Range",
+                            style: TextStyle(color: notifier.getMainText),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Dropdowns in a separate row
+                Row(
+                  children: [
+                    // Sort Direction Dropdown
                     Expanded(
                       child: DropdownButtonFormField<String>(
+                        isExpanded: true,
                         decoration: InputDecoration(
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                              horizontal: 10,
+                              vertical: 8
+                          ),
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: notifier.getBorderColor),
+                            borderSide: BorderSide(color: notifier.getBorderColor),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: notifier.getBorderColor),
+                            borderSide: BorderSide(color: notifier.getBorderColor),
                           ),
                         ),
                         value: appointmentsService.sortDirection.value,
@@ -495,21 +494,24 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                       ),
                     ),
                     const SizedBox(width: 10),
+
+                    // Status Dropdown
                     Expanded(
                       child: DropdownButtonFormField<bool>(
+                        isExpanded: true,
                         decoration: InputDecoration(
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                              horizontal: 10,
+                              vertical: 8
+                          ),
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: notifier.getBorderColor),
+                            borderSide: BorderSide(color: notifier.getBorderColor),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: notifier.getBorderColor),
+                            borderSide: BorderSide(color: notifier.getBorderColor),
                           ),
                         ),
                         value: appointmentsService.filterCompleted.value,
@@ -518,7 +520,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         items: [
                           DropdownMenuItem(
                             value: false,
-                            child: Text('All Status',
+                            child: Text('Pending',
                                 style: TextStyle(color: notifier.getMainText)),
                           ),
                           DropdownMenuItem(
@@ -1419,25 +1421,67 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   Widget _buildCustomPagination(
       int totalPages, int currentPage, void Function(int) onPageChanged) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: Icon(Icons.chevron_left, color: notifier.getMainText),
-          onPressed:
-              currentPage > 0 ? () => onPageChanged(currentPage - 1) : null,
-        ),
-        Text(
-          "Page ${currentPage + 1} of $totalPages",
-          style: TextStyle(fontSize: 14, color: notifier.getMainText),
-        ),
-        IconButton(
-          icon: Icon(Icons.chevron_right, color: notifier.getMainText),
-          onPressed: currentPage < totalPages - 1
-              ? () => onPageChanged(currentPage + 1)
-              : null,
-        ),
-      ],
+    return Obx(
+      () {
+        final calculatedTotalPages =
+            (appointmentsService.totalAppointments.value /
+                    appointmentsService.perPage.value)
+                .ceil();
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // First page button
+              IconButton(
+                icon: Icon(Icons.first_page,
+                    color:
+                        currentPage == 0 ? Colors.grey : notifier.getMainText),
+                onPressed: currentPage > 0 ? () => onPageChanged(0) : null,
+              ),
+
+              // Previous page button
+              IconButton(
+                icon: Icon(Icons.chevron_left,
+                    color:
+                        currentPage > 0 ? notifier.getMainText : Colors.grey),
+                onPressed: currentPage > 0
+                    ? () => onPageChanged(currentPage - 1)
+                    : null,
+              ),
+
+              // Page counter
+              Text(
+                "Page ${currentPage + 1} of $totalPages",
+                style: TextStyle(fontSize: 14, color: notifier.getMainText),
+              ),
+
+              // Next page button
+              IconButton(
+                icon: Icon(Icons.chevron_right,
+                    color: currentPage < calculatedTotalPages - 1
+                        ? notifier.getMainText
+                        : Colors.grey),
+                onPressed: currentPage < totalPages - 1
+                    ? () => onPageChanged(currentPage + 1)
+                    : null,
+              ),
+
+              // Last page button
+              IconButton(
+                icon: Icon(Icons.last_page,
+                    color: currentPage < calculatedTotalPages - 1
+                        ? notifier.getMainText
+                        : Colors.grey),
+                onPressed: currentPage < calculatedTotalPages - 1
+                    ? () => onPageChanged(calculatedTotalPages - 1)
+                    : null,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

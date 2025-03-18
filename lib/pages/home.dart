@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/provider/dashboard_service.dart';
+import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/widgets/bottom_bar.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/size_box.dart';
@@ -18,6 +19,7 @@ class DefaultPage extends StatefulWidget {
 }
 
 class _DefaultPage extends State<DefaultPage> {
+  final AppConst controller = Get.find<AppConst>();
   final DashboardService dashboardService = Get.put(DashboardService());
 
   @override
@@ -556,7 +558,7 @@ class _DefaultPage extends State<DefaultPage> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  // controller.changePage('appointments');
+                  controller.changePage('appointments');
                   Get.back();
                 },
                 style: ElevatedButton.styleFrom(

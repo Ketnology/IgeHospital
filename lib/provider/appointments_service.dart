@@ -175,8 +175,8 @@ class AppointmentsService extends GetxService {
         'search': searchQuery.value,
         'sort_by': sortBy.value,
         'sort_direction': sortDirection.value,
-        'per_page': perPage.value,
-        'page': currentPage.value,
+        'per_page': 1000,
+        'page': 1,
       };
 
       final response = await http.post(
@@ -239,27 +239,6 @@ class AppointmentsService extends GetxService {
     fetchAppointments();
   }
 
-  void setPage(int page) {
-    if (page < 1) page = 1;
-    currentPage.value = page;
-    fetchAppointments();
-  }
-
-  void nextPage() {
-    int maxPages = (totalAppointments.value / perPage.value).ceil();
-    if (currentPage.value < maxPages) {
-      currentPage.value++;
-      fetchAppointments();
-    }
-  }
-
-  void previousPage() {
-    if (currentPage.value > 1) {
-      currentPage.value--;
-      fetchAppointments();
-    }
-  }
-
   Future<void> createAppointment(Map<String, dynamic> appointmentData) async {
     isLoading.value = true;
     hasError.value = false;
@@ -293,7 +272,8 @@ class AppointmentsService extends GetxService {
     }
   }
 
-  Future<void> updateAppointment(String id, Map<String, dynamic> appointmentData) async {
+  Future<void> updateAppointment(
+      String id, Map<String, dynamic> appointmentData) async {
     isLoading.value = true;
     hasError.value = false;
 
