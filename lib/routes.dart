@@ -40,6 +40,6 @@ final getPage = [
   GetPage(
     name: Routes.homepage,
     page: () => MyHomepage(),
-    // middlewares: [AuthMiddleware()],
+    middlewares: [AuthMiddleware()],
   ),
 ];

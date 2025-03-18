@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/static_data/static_data.dart';
+import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -161,7 +161,7 @@ class _SingUpPageState extends State<LoginPage> {
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
         child: Container(
-          height: 734,
+          height: 494,
           decoration: BoxDecoration(
             color: notifier!.getPrimaryColor,
             borderRadius: const BorderRadius.all(Radius.circular(37)),
@@ -192,36 +192,7 @@ class _SingUpPageState extends State<LoginPage> {
                       ],
                     )),
                 const SizedBox(
-                  height: 21,
-                ),
-                Container(
-                    height: 50,
-                    width: 180,
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                        color: appMainColor,
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Container(
-                      height: 50,
-                      width: 180,
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: appMainColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                            color: notifier!.getPrimaryColor,
-                          ),
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: 26.8,
+                  height: 25,
                 ),
                 Flexible(
                   child: Column(

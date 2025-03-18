@@ -5,7 +5,7 @@ import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/screen/auth/splash_screen.dart';
-import 'package:ige_hospital/static_data/routes.dart';
+import 'package:ige_hospital/routes.dart';
 import 'package:provider/provider.dart';
 
 void main() async {

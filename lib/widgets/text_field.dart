@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/static_data/static_data.dart';
+import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
 
 class MyTextField extends StatefulWidget {
@@ -8,6 +8,13 @@ class MyTextField extends StatefulWidget {
   final String hinttext;
   final TextEditingController controller;
   final String? img;
+  final bool enabled;
+  final TextInputType keyboardType;
+  final String? Function(String?)? validator;
+  final int? maxLines;
+  final int? maxLength;
+  final bool obscureText;
+  final Widget? suffixIcon;
   final Widget? prefix;
 
   const MyTextField(
@@ -16,6 +23,13 @@ class MyTextField extends StatefulWidget {
       required this.hinttext,
       required this.controller,
       this.img,
+      this.enabled = true,
+      this.keyboardType = TextInputType.text,
+      this.validator,
+      this.maxLines = 1,
+      this.maxLength,
+      this.obscureText = false,
+      this.suffixIcon,
       this.prefix});
 
   @override
