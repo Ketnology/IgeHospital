@@ -293,7 +293,7 @@ Widget buildQrCode() {
             SizedBox(
               height: 191,
               width: 191,
-              child: SvgPicture.asset('assets/Group 1000000834.svg'),
+              child: Image.asset('assets/ige_2018.jpeg'),
             ),
             const SizedBox(
               height: 30,
@@ -301,7 +301,7 @@ Widget buildQrCode() {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
               child: Text(
-                "IGE Legacy Specialist Hospital staff portal",
+                "IGE Legacy Specialist Hospital portal",
                 style: mediumGreyTextStyle.copyWith(
                   fontWeight: FontWeight.w400,
                   fontSize: 15,

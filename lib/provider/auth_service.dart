@@ -69,6 +69,7 @@ class AuthService extends GetxService {
     await loadToken();
     await loadUser();
 
+    // Check token validity on startup
     if (isAuthenticated.value) {
       checkTokenExpiration();
     }
@@ -172,7 +173,9 @@ class AuthService extends GetxService {
     }
 
     try {
-      final expirationDate = DateTime.parse(tokenExpiration.value);
+      // Convert Unix timestamp (seconds since epoch) to DateTime
+      final int timestamp = int.parse(tokenExpiration.value);
+      final expirationDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
       if (now.isAfter(expirationDate)) {
@@ -197,7 +200,9 @@ class AuthService extends GetxService {
     if (token.value.isEmpty) return Future.value(false);
 
     try {
-      final expirationDate = DateTime.parse(tokenExpiration.value);
+      // Convert Unix timestamp (seconds since epoch) to DateTime
+      final int timestamp = int.parse(tokenExpiration.value);
+      final expirationDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
       // Token is valid if it has not expired
@@ -209,8 +214,22 @@ class AuthService extends GetxService {
   }
 
   Future<void> logout() async {
-    await _clearSession();
+    // Attempt to call logout endpoint if we have a token
+    if (token.value.isNotEmpty) {
+      try {
+        await http.post(
+          Uri.parse(ApiEndpoints.logout),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer ${token.value}"
+          },
+        );
+      } catch (e) {
+        Get.log("Logout API error: $e");
+      }
+    }
 
+    await _clearSession();
     Get.offAllNamed(Routes.login);
   }
 
@@ -237,6 +256,7 @@ class AuthService extends GetxService {
 
   Future<void> _saveSession(String accessToken, String tokenExpiration, UserModel? user) async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("token", accessToken);
     await prefs.setString("access_token", accessToken);
     await prefs.setString("token_expiration", tokenExpiration);
 
@@ -246,6 +266,7 @@ class AuthService extends GetxService {
     }
 
     token.value = accessToken;
+    this.tokenExpiration.value = tokenExpiration;
     isAuthenticated.value = true;
   }
 

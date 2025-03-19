@@ -19,10 +19,10 @@ class HttpClient {
     if (_authService.tokenExpiration.value.isEmpty) return true;
 
     try {
-      final expiration = DateTime.parse(_authService.tokenExpiration.value);
+      final int timestamp = int.parse(_authService.tokenExpiration.value);
+      final expiration = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
-      // Consider token expired if it will expire in less than 5 minutes
       return now.isAfter(expiration.subtract(const Duration(minutes: 5)));
     } catch (e) {
       Get.log("Error parsing token expiration: $e");
