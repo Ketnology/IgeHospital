@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:ige_hospital/constants/api_endpoints.dart';
 import 'package:ige_hospital/routes.dart';
 import 'package:ige_hospital/utils/snack_bar_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,7 +74,7 @@ class AuthService extends GetxService {
 
     try {
       final response = await http.post(
-        Uri.parse("http://127.0.0.1:8000/api/auth/login"),
+        Uri.parse(ApiEndpoints.login),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "password": password}),
       );

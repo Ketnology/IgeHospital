@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ige_hospital/pages/patients_page.dart';
 import 'package:ige_hospital/pages/profile_page.dart';
 import 'package:ige_hospital/pages/appointment.dart';
 import 'package:ige_hospital/pages/appointments.dart';
@@ -12,4 +13,5 @@ final Map<String, Widget> pages = {
   'in-patient': const InPatientPage(),
   'appointments': const AppointmentsPage(),
   'profile': const ProfilePage(),
+  'patients': const PatientsPage(),
 };
