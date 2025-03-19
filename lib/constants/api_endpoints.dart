@@ -2,7 +2,8 @@ class ApiEndpoints {
   static const String baseUrl = "https://api.healthcentre.ng/api";
 
   static const String login = "$baseUrl/auth/login";
-  static const String logout = "$baseUrl/admin/logout";
+  static const String validateToken = "$baseUrl/auth/validate-token";
+  static const String logout = "$baseUrl/auth/logout";
 
   static const String dashboard = "$baseUrl/admin/dashboard";
 

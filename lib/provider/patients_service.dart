@@ -4,8 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:ige_hospital/constants/api_endpoints.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/models/patient_model.dart';
+import 'package:ige_hospital/utils/http_client.dart';
 
 class PatientsService extends GetxService {
+  final HttpClient _httpClient = HttpClient();
   final AuthService authService = Get.find<AuthService>();
 
   final RxList<PatientModel> patients = <PatientModel>[].obs;
@@ -45,8 +47,8 @@ class PatientsService extends GetxService {
         'page': currentPage.value,
       };
 
-      final response = await http.post(
-        Uri.parse(ApiEndpoints.patients),
+      final response = await _httpClient.post(
+        ApiEndpoints.patients,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${authService.token.value}',

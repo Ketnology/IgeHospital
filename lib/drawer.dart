@@ -108,7 +108,7 @@ class _DrawerCodeState extends State<DrawerCode> {
                                 iconPath: "assets/home.svg",
                                 index: 'in-patient',
                                 onTap: () {
-                                  controller.changePage('in-patient');
+                                  // controller.changePage('in-patient');
                                   Get.back();
                                 }),
                             _buildDivider(title: 'Clinical Documentation'),
