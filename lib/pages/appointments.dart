@@ -623,7 +623,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     flex: isDesktop ? 1 : (isTablet ? 2 : 3),
                     child: ElevatedButton(
                       onPressed: () {
-                        _showCreateDialog();
+                        // _showCreateDialog();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: appMainColor,

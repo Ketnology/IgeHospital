@@ -238,7 +238,7 @@ class _PatientsPageState extends State<PatientsPage> {
                     flex: isDesktop ? 1 : (isTablet ? 2 : 3),
                     child: ElevatedButton(
                       onPressed: () {
-                        _showAddPatientDialog();
+                        // _showAddPatientDialog();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: appMainColor,
@@ -774,14 +774,6 @@ class _PatientsPageState extends State<PatientsPage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Text(
-                              "ID: ${patient.patientUniqueId}",
-                              style: TextStyle(
-                                color: notifier.getMainText,
-                                fontSize: 14,
-                              ),
-                            ),
                           ],
                         ),
                       ],
@@ -818,7 +810,6 @@ class _PatientsPageState extends State<PatientsPage> {
                       _sectionTitle("Medical Information"),
                       _detailRow("Appointments", "${patient.stats['appointments_count'] ?? '0'} total"),
                       _detailRow("Documents", "${patient.stats['documents_count'] ?? '0'} total"),
-                      _detailRow("Custom Field", patient.customField),
 
                       const SizedBox(height: 20),
 

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/constants/api_endpoints.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
+import 'package:ige_hospital/utils/http_client.dart';
 import 'package:ige_hospital/utils/snack_bar_utils.dart';
 
 class AppointmentModel {
@@ -130,6 +131,7 @@ class AppointmentResponse {
 }
 
 class AppointmentsService extends GetxService {
+  final HttpClient _httpClient = HttpClient();
   final AuthService authService = Get.find<AuthService>();
 
   final RxList<AppointmentModel> appointments = <AppointmentModel>[].obs;
@@ -179,8 +181,8 @@ class AppointmentsService extends GetxService {
         'page': 1,
       };
 
-      final response = await http.post(
-        Uri.parse(ApiEndpoints.appointments),
+      final response = await _httpClient.post(
+        ApiEndpoints.appointments,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${authService.token.value}',
