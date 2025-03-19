@@ -25,6 +25,8 @@ class _DefaultPage extends State<DefaultPage> {
   @override
   void initState() {
     super.initState();
+    dashboardService.fetchDashboardData();
+
     Future.microtask(() => dashboardService.refreshDashboardData());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       dashboardService.refreshDashboardData();

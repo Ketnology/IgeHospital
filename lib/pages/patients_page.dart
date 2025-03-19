@@ -774,6 +774,14 @@ class _PatientsPageState extends State<PatientsPage> {
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "ID: ${patient.patientUniqueId}",
+                              style: TextStyle(
+                                color: notifier.getMainText,
+                                fontSize: 14,
+                              ),
+                            ),
                           ],
                         ),
                       ],
