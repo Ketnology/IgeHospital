@@ -86,7 +86,8 @@ class _PatientsPageState extends State<PatientsPage> {
     rows = patientsService.patients.map<ExpandableRow>((patient) {
       return ExpandableRow(cells: [
         ExpandableCell<String>(
-            columnTitle: "Patient Name", value: patient.user['full_name'] ?? 'N/A'),
+            columnTitle: "Patient Name",
+            value: patient.user['full_name'] ?? 'N/A'),
         ExpandableCell<String>(
             columnTitle: "Email", value: patient.user['email'] ?? 'N/A'),
         ExpandableCell<String>(
@@ -94,31 +95,33 @@ class _PatientsPageState extends State<PatientsPage> {
         ExpandableCell<String>(
             columnTitle: "Gender", value: patient.user['gender'] ?? 'N/A'),
         ExpandableCell<String>(
-            columnTitle: "Blood Group", value: patient.user['blood_group'] ?? 'N/A'),
+            columnTitle: "Blood Group",
+            value: patient.user['blood_group'] ?? 'N/A'),
         ExpandableCell<String>(
             columnTitle: "Date of Birth", value: patient.user['dob'] ?? 'N/A'),
         ExpandableCell<String>(
             columnTitle: "Status", value: patient.user['status'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "ID", value: patient.id),
+        ExpandableCell<String>(columnTitle: "ID", value: patient.id),
         ExpandableCell<String>(
             columnTitle: "Unique ID", value: patient.patientUniqueId),
         ExpandableCell<String>(
-            columnTitle: "Appointments", value: patient.stats['appointments_count']?.toString() ?? '0'),
+            columnTitle: "Appointments",
+            value: patient.stats['appointments_count']?.toString() ?? '0'),
         ExpandableCell<String>(
-            columnTitle: "Documents", value: patient.stats['documents_count']?.toString() ?? '0'),
+            columnTitle: "Documents",
+            value: patient.stats['documents_count']?.toString() ?? '0'),
         ExpandableCell<Widget>(
           columnTitle: "Profile Image",
           value: patient.user['profile_image'] != null
               ? Image.network(
-            patient.user['profile_image'].toString(),
-            width: 40,
-            height: 40,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-              Icons.person,
-              size: 40,
-            ),
-          )
+                  patient.user['profile_image'].toString(),
+                  width: 40,
+                  height: 40,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.person,
+                    size: 40,
+                  ),
+                )
               : const Icon(Icons.person, size: 40),
         ),
         ExpandableCell<Widget>(
@@ -279,9 +282,11 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
+  bool _isFilterExpanded = false;
+
   Widget _buildFilterSection() {
     return Obx(
-          () => Padding(
+      () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Card(
           color: notifier.getContainer,
@@ -290,341 +295,400 @@ class _PatientsPageState extends State<PatientsPage> {
             side: BorderSide(color: notifier.getBorderColor),
           ),
           elevation: 0,
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Filters",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: notifier.getMainText,
+          child: Column(
+            children: [
+              // Header with toggle button
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isFilterExpanded = !_isFilterExpanded;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Filters",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: notifier.getMainText,
+                        ),
                       ),
-                    ),
-                    TextButton.icon(
-                      onPressed: () {
-                        patientsService.resetFilters();
-                      },
-                      icon: Icon(Icons.refresh,
-                          size: 16, color: notifier.getIconColor),
-                      label: Text(
-                        "Reset Filters",
-                        style: TextStyle(color: notifier.getIconColor),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                GestureDetector(
-                  onTap: () async {
-                    final DateTimeRange? picked = await showDateRangePicker(
-                      context: context,
-                      initialDateRange: DateTimeRange(
-                        start: DateTime.now().subtract(const Duration(days: 30)),
-                        end: DateTime.now(),
-                      ),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2030),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
-                              primary: notifier.getIconColor,
+                      Row(
+                        children: [
+                          TextButton.icon(
+                            onPressed: () {
+                              patientsService.resetFilters();
+                            },
+                            icon: Icon(Icons.refresh,
+                                size: 16, color: notifier.getIconColor),
+                            label: Text(
+                              "Reset Filters",
+                              style: TextStyle(color: notifier.getIconColor),
                             ),
                           ),
-                          child: child!,
-                        );
-                      },
-                    );
-
-                    if (picked != null) {
-                      patientsService.dateFrom.value =
-                          DateFormat('yyyy-MM-dd').format(picked.start);
-                      patientsService.dateTo.value =
-                          DateFormat('yyyy-MM-dd').format(picked.end);
-                      patientsService.fetchPatients();
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: notifier.getBorderColor),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.calendar_today,
-                            size: 16, color: notifier.getIconColor),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            patientsService.dateFrom.value.isNotEmpty &&
-                                patientsService.dateTo.value.isNotEmpty
-                                ? "${patientsService.dateFrom.value} to ${patientsService.dateTo.value}"
-                                : "Select Date Range",
-                            style: TextStyle(color: notifier.getMainText),
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.filter_list,
+                            color: notifier.getIconColor,
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 10),
+              AnimatedCrossFade(
+                firstChild: const SizedBox(height: 0),
+                secondChild: Padding(
+                  padding: const EdgeInsets.fromLTRB(15.0, 0, 15.0, 15.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () async {
+                          final DateTimeRange? picked =
+                              await showDateRangePicker(
+                            context: context,
+                            initialDateRange: DateTimeRange(
+                              start: DateTime.now()
+                                  .subtract(const Duration(days: 30)),
+                              end: DateTime.now(),
+                            ),
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2030),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: ColorScheme.light(
+                                    primary: notifier.getIconColor,
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8
-                          ),
-                          isDense: true,
-                          labelText: "Gender",
-                          labelStyle: TextStyle(color: notifier.getMainText),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
-                          ),
-                        ),
-                        value: patientsService.selectedGender.value.isEmpty ? null : patientsService.selectedGender.value,
-                        dropdownColor: notifier.getContainer,
-                        style: TextStyle(color: notifier.getMainText),
-                        items: [
-                          DropdownMenuItem(
-                            value: '',
-                            child: Text('All Genders',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'male',
-                            child: Text('Male',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'female',
-                            child: Text('Female',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            patientsService.selectedGender.value = value;
+                          if (picked != null) {
+                            patientsService.dateFrom.value =
+                                DateFormat('yyyy-MM-dd').format(picked.start);
+                            patientsService.dateTo.value =
+                                DateFormat('yyyy-MM-dd').format(picked.end);
                             patientsService.fetchPatients();
                           }
                         },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8
-                          ),
-                          isDense: true,
-                          labelText: "Blood Group",
-                          labelStyle: TextStyle(color: notifier.getMainText),
-                          border: OutlineInputBorder(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: notifier.getBorderColor),
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today,
+                                  size: 16, color: notifier.getIconColor),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  patientsService.dateFrom.value.isNotEmpty &&
+                                          patientsService
+                                              .dateTo.value.isNotEmpty
+                                      ? "${patientsService.dateFrom.value} to ${patientsService.dateTo.value}"
+                                      : "Select Date Range",
+                                  style: TextStyle(color: notifier.getMainText),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        value: patientsService.selectedBloodGroup.value.isEmpty ? null : patientsService.selectedBloodGroup.value,
-                        dropdownColor: notifier.getContainer,
-                        style: TextStyle(color: notifier.getMainText),
-                        items: [
-                          DropdownMenuItem(
-                            value: '',
-                            child: Text('All Blood Groups',
-                                style: TextStyle(color: notifier.getMainText)),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                isDense: true,
+                                labelText: "Gender",
+                                labelStyle:
+                                    TextStyle(color: notifier.getMainText),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                              ),
+                              value:
+                                  patientsService.selectedGender.value.isEmpty
+                                      ? null
+                                      : patientsService.selectedGender.value,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
+                              items: [
+                                DropdownMenuItem(
+                                  value: '',
+                                  child: Text('All Genders',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'male',
+                                  child: Text('Male',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'female',
+                                  child: Text('Female',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  patientsService.selectedGender.value = value;
+                                  patientsService.fetchPatients();
+                                }
+                              },
+                            ),
                           ),
-                          DropdownMenuItem(
-                            value: 'A+',
-                            child: Text('A+',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'A-',
-                            child: Text('A-',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'B+',
-                            child: Text('B+',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'B-',
-                            child: Text('B-',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'AB+',
-                            child: Text('AB+',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'AB-',
-                            child: Text('AB-',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'O+',
-                            child: Text('O+',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'O-',
-                            child: Text('O-',
-                                style: TextStyle(color: notifier.getMainText)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                isDense: true,
+                                labelText: "Blood Group",
+                                labelStyle:
+                                    TextStyle(color: notifier.getMainText),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                              ),
+                              value: patientsService
+                                      .selectedBloodGroup.value.isEmpty
+                                  ? null
+                                  : patientsService.selectedBloodGroup.value,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
+                              items: [
+                                DropdownMenuItem(
+                                  value: '',
+                                  child: Text('All Blood Groups',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'A+',
+                                  child: Text('A+',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'A-',
+                                  child: Text('A-',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'B+',
+                                  child: Text('B+',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'B-',
+                                  child: Text('B-',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'AB+',
+                                  child: Text('AB+',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'AB-',
+                                  child: Text('AB-',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'O+',
+                                  child: Text('O+',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'O-',
+                                  child: Text('O-',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  patientsService.selectedBloodGroup.value =
+                                      value;
+                                  patientsService.fetchPatients();
+                                }
+                              },
+                            ),
                           ),
                         ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            patientsService.selectedBloodGroup.value = value;
-                            patientsService.fetchPatients();
-                          }
-                        },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                isDense: true,
+                                labelText: "Sort By",
+                                labelStyle:
+                                    TextStyle(color: notifier.getMainText),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                              ),
+                              value: patientsService.sortBy.value,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'created_at',
+                                  child: Text('Registration Date',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'first_name',
+                                  child: Text('First Name',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'last_name',
+                                  child: Text('Last Name',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'email',
+                                  child: Text('Email',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'patient_unique_id',
+                                  child: Text('Patient ID',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  patientsService.sortBy.value = value;
+                                  patientsService.fetchPatients();
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+
+                          // Sort Direction Dropdown
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                isDense: true,
+                                labelText: "Sort Direction",
+                                labelStyle:
+                                    TextStyle(color: notifier.getMainText),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: notifier.getBorderColor),
+                                ),
+                              ),
+                              value: patientsService.sortDirection.value,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'asc',
+                                  child: Text('Ascending',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'desc',
+                                  child: Text('Descending',
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  patientsService.sortDirection.value = value;
+                                  patientsService.fetchPatients();
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-
-                const SizedBox(height: 10),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8
-                          ),
-                          isDense: true,
-                          labelText: "Sort By",
-                          labelStyle: TextStyle(color: notifier.getMainText),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
-                          ),
-                        ),
-                        value: patientsService.sortBy.value,
-                        dropdownColor: notifier.getContainer,
-                        style: TextStyle(color: notifier.getMainText),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'created_at',
-                            child: Text('Registration Date',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'first_name',
-                            child: Text('First Name',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'last_name',
-                            child: Text('Last Name',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'email',
-                            child: Text('Email',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'patient_unique_id',
-                            child: Text('Patient ID',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            patientsService.sortBy.value = value;
-                            patientsService.fetchPatients();
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-
-                    // Sort Direction Dropdown
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8
-                          ),
-                          isDense: true,
-                          labelText: "Sort Direction",
-                          labelStyle: TextStyle(color: notifier.getMainText),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: notifier.getBorderColor),
-                          ),
-                        ),
-                        value: patientsService.sortDirection.value,
-                        dropdownColor: notifier.getContainer,
-                        style: TextStyle(color: notifier.getMainText),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'asc',
-                            child: Text('Ascending',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                          DropdownMenuItem(
-                            value: 'desc',
-                            child: Text('Descending',
-                                style: TextStyle(color: notifier.getMainText)),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            patientsService.sortDirection.value = value;
-                            patientsService.fetchPatients();
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                duration: const Duration(milliseconds: 300),
+                crossFadeState: _isFilterExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+              ),
+            ],
           ),
         ),
       ),
@@ -634,10 +698,9 @@ class _PatientsPageState extends State<PatientsPage> {
   Widget _buildCustomPagination(
       int totalPages, int currentPage, void Function(int) onPageChanged) {
     return Obx(
-          () {
-        final calculatedTotalPages =
-        (patientsService.totalPatients.value /
-            patientsService.perPage.value)
+      () {
+        final calculatedTotalPages = (patientsService.totalPatients.value /
+                patientsService.perPage.value)
             .ceil();
 
         return Padding(
@@ -649,7 +712,7 @@ class _PatientsPageState extends State<PatientsPage> {
               IconButton(
                 icon: Icon(Icons.first_page,
                     color:
-                    currentPage == 0 ? Colors.grey : notifier.getMainText),
+                        currentPage == 0 ? Colors.grey : notifier.getMainText),
                 onPressed: currentPage > 0 ? () => onPageChanged(0) : null,
               ),
 
@@ -657,7 +720,7 @@ class _PatientsPageState extends State<PatientsPage> {
               IconButton(
                 icon: Icon(Icons.chevron_left,
                     color:
-                    currentPage > 0 ? notifier.getMainText : Colors.grey),
+                        currentPage > 0 ? notifier.getMainText : Colors.grey),
                 onPressed: currentPage > 0
                     ? () => onPageChanged(currentPage - 1)
                     : null,
@@ -719,24 +782,25 @@ class _PatientsPageState extends State<PatientsPage> {
                     backgroundColor: Colors.grey.shade200,
                     child: patient.user['profile_image'] != null
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.network(
-                        patient.user['profile_image'],
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.person,
-                          size: 40,
-                          color: notifier.getIconColor,
-                        ),
-                      ),
-                    )
+                            borderRadius: BorderRadius.circular(40),
+                            child: Image.network(
+                              patient.user['profile_image'],
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                Icons.person,
+                                size: 40,
+                                color: notifier.getIconColor,
+                              ),
+                            ),
+                          )
                         : Icon(
-                      Icons.person,
-                      size: 40,
-                      color: notifier.getIconColor,
-                    ),
+                            Icons.person,
+                            size: 40,
+                            color: notifier.getIconColor,
+                          ),
                   ),
                   const SizedBox(width: 20),
 
@@ -762,7 +826,8 @@ class _PatientsPageState extends State<PatientsPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(patient.user['status'] ?? 'active'),
+                                color: _getStatusColor(
+                                    patient.user['status'] ?? 'active'),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -809,33 +874,42 @@ class _PatientsPageState extends State<PatientsPage> {
                       _detailRow("Phone", patient.user['phone'] ?? 'N/A'),
                       _detailRow("Gender", patient.user['gender'] ?? 'N/A'),
                       _detailRow("Date of Birth", patient.user['dob'] ?? 'N/A'),
-                      _detailRow("Blood Group", patient.user['blood_group'] ?? 'N/A'),
-                      _detailRow("Qualification", patient.user['qualification'] ?? 'N/A'),
+                      _detailRow(
+                          "Blood Group", patient.user['blood_group'] ?? 'N/A'),
+                      _detailRow("Qualification",
+                          patient.user['qualification'] ?? 'N/A'),
 
                       const SizedBox(height: 20),
 
                       // Medical Information
                       _sectionTitle("Medical Information"),
-                      _detailRow("Appointments", "${patient.stats['appointments_count'] ?? '0'} total"),
-                      _detailRow("Documents", "${patient.stats['documents_count'] ?? '0'} total"),
+                      _detailRow("Appointments",
+                          "${patient.stats['appointments_count'] ?? '0'} total"),
+                      _detailRow("Documents",
+                          "${patient.stats['documents_count'] ?? '0'} total"),
 
                       const SizedBox(height: 20),
 
                       // Address (if available)
                       if (patient.address != null) ...[
                         _sectionTitle("Address"),
-                        _detailRow("Street", patient.address!['street'] ?? 'N/A'),
+                        _detailRow(
+                            "Street", patient.address!['street'] ?? 'N/A'),
                         _detailRow("City", patient.address!['city'] ?? 'N/A'),
                         _detailRow("State", patient.address!['state'] ?? 'N/A'),
-                        _detailRow("Zip Code", patient.address!['zip'] ?? 'N/A'),
-                        _detailRow("Country", patient.address!['country'] ?? 'N/A'),
+                        _detailRow(
+                            "Zip Code", patient.address!['zip'] ?? 'N/A'),
+                        _detailRow(
+                            "Country", patient.address!['country'] ?? 'N/A'),
                         const SizedBox(height: 20),
                       ],
 
                       // Documents
                       if (patient.documents.isNotEmpty) ...[
                         _sectionTitle("Recent Documents"),
-                        ...patient.documents.take(3).map((doc) => _documentItem(doc)),
+                        ...patient.documents
+                            .take(3)
+                            .map((doc) => _documentItem(doc)),
                         if (patient.documents.length > 3)
                           TextButton(
                             onPressed: () {
@@ -852,7 +926,8 @@ class _PatientsPageState extends State<PatientsPage> {
                       // Appointments
                       if (patient.appointments.isNotEmpty) ...[
                         _sectionTitle("Recent Appointments"),
-                        ...patient.appointments.take(3).map((appointment) => _appointmentItem(appointment)),
+                        ...patient.appointments.take(3).map(
+                            (appointment) => _appointmentItem(appointment)),
                         if (patient.appointments.length > 3)
                           TextButton(
                             onPressed: () {
@@ -955,20 +1030,22 @@ class _PatientsPageState extends State<PatientsPage> {
           ),
         ),
         subtitle: Text(
-          document['notes'] != null ?
-          document['notes'].toString().substring(0, min(50, document['notes'].toString().length)) + '...' :
-          'No notes',
+          document['notes'] != null
+              ? document['notes'].toString().substring(
+                      0, min(50, document['notes'].toString().length)) +
+                  '...'
+              : 'No notes',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(color: notifier.getMaingey),
         ),
         trailing: document['file_info']?['file_url'] != null
             ? IconButton(
-          icon: Icon(Icons.download, color: notifier.getIconColor),
-          onPressed: () {
-            // Download document
-          },
-        )
+                icon: Icon(Icons.download, color: notifier.getIconColor),
+                onPressed: () {
+                  // Download document
+                },
+              )
             : null,
       ),
     );
@@ -1025,7 +1102,8 @@ class _PatientsPageState extends State<PatientsPage> {
     String selectedGender = 'male';
     String selectedBloodGroup = 'O+';
 
-    DateTime selectedDate = DateTime.now().subtract(const Duration(days: 365 * 20)); // Default 20 years ago
+    DateTime selectedDate = DateTime.now()
+        .subtract(const Duration(days: 365 * 20)); // Default 20 years ago
 
     showDialog(
       context: context,
@@ -1083,7 +1161,8 @@ class _PatientsPageState extends State<PatientsPage> {
                     if (pickedDate != null) {
                       setState(() {
                         selectedDate = pickedDate;
-                        dobController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+                        dobController.text =
+                            DateFormat('yyyy-MM-dd').format(selectedDate);
                       });
                     }
                   },
@@ -1115,10 +1194,10 @@ class _PatientsPageState extends State<PatientsPage> {
                               filled: true,
                               fillColor: notifier.getContainer,
                               enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                BorderSide(color: Colors.grey.withOpacity(0.3)),
+                                borderSide: BorderSide(
+                                    color: Colors.grey.withOpacity(0.3)),
                                 borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
+                                    const BorderRadius.all(Radius.circular(10)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -1127,8 +1206,8 @@ class _PatientsPageState extends State<PatientsPage> {
                                   width: 1.5,
                                 ),
                               ),
-                              contentPadding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 12),
                             ),
                             dropdownColor: notifier.getContainer,
                             style: TextStyle(color: notifier.getMainText),
@@ -1136,17 +1215,20 @@ class _PatientsPageState extends State<PatientsPage> {
                               DropdownMenuItem(
                                 value: "male",
                                 child: Text("Male",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "female",
                                 child: Text("Female",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "other",
                                 child: Text("Other",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                             ],
                             onChanged: (value) {
@@ -1178,10 +1260,10 @@ class _PatientsPageState extends State<PatientsPage> {
                               filled: true,
                               fillColor: notifier.getContainer,
                               enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                BorderSide(color: Colors.grey.withOpacity(0.3)),
+                                borderSide: BorderSide(
+                                    color: Colors.grey.withOpacity(0.3)),
                                 borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
+                                    const BorderRadius.all(Radius.circular(10)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -1190,8 +1272,8 @@ class _PatientsPageState extends State<PatientsPage> {
                                   width: 1.5,
                                 ),
                               ),
-                              contentPadding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 12),
                             ),
                             dropdownColor: notifier.getContainer,
                             style: TextStyle(color: notifier.getMainText),
@@ -1199,42 +1281,50 @@ class _PatientsPageState extends State<PatientsPage> {
                               DropdownMenuItem(
                                 value: "A+",
                                 child: Text("A+",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "A-",
                                 child: Text("A-",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "B+",
                                 child: Text("B+",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "B-",
                                 child: Text("B-",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "AB+",
                                 child: Text("AB+",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "AB-",
                                 child: Text("AB-",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "O+",
                                 child: Text("O+",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                               DropdownMenuItem(
                                 value: "O-",
                                 child: Text("O-",
-                                    style: TextStyle(color: notifier.getMainText)),
+                                    style:
+                                        TextStyle(color: notifier.getMainText)),
                               ),
                             ],
                             onChanged: (value) {
@@ -1495,7 +1585,8 @@ class _PatientsPageState extends State<PatientsPage> {
                           renderExpansionContent: (row) {
                             // Find the corresponding patient
                             int index = rows.indexOf(row);
-                            if (index == -1 || index >= patientsService.patients.length) {
+                            if (index == -1 ||
+                                index >= patientsService.patients.length) {
                               return const SizedBox(); // Fallback
                             }
 
@@ -1514,26 +1605,31 @@ class _PatientsPageState extends State<PatientsPage> {
                                       CircleAvatar(
                                         radius: 30,
                                         backgroundColor: Colors.grey.shade200,
-                                        child: patient.user['profile_image'] != null
+                                        child: patient.user['profile_image'] !=
+                                                null
                                             ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(30),
-                                          child: Image.network(
-                                            patient.user['profile_image'],
-                                            width: 60,
-                                            height: 60,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) => Icon(
-                                              Icons.person,
-                                              size: 30,
-                                              color: notifier.getIconColor,
-                                            ),
-                                          ),
-                                        )
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                                child: Image.network(
+                                                  patient.user['profile_image'],
+                                                  width: 60,
+                                                  height: 60,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
+                                                      Icon(
+                                                    Icons.person,
+                                                    size: 30,
+                                                    color:
+                                                        notifier.getIconColor,
+                                                  ),
+                                                ),
+                                              )
                                             : Icon(
-                                          Icons.person,
-                                          size: 30,
-                                          color: notifier.getIconColor,
-                                        ),
+                                                Icons.person,
+                                                size: 30,
+                                                color: notifier.getIconColor,
+                                              ),
                                       ),
 
                                       const SizedBox(width: 15),
@@ -1541,10 +1637,12 @@ class _PatientsPageState extends State<PatientsPage> {
                                       // Patient name and ID
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              patient.user['full_name'] ?? 'N/A',
+                                              patient.user['full_name'] ??
+                                                  'N/A',
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
@@ -1565,13 +1663,18 @@ class _PatientsPageState extends State<PatientsPage> {
 
                                       // Status badge
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 6),
                                         decoration: BoxDecoration(
-                                          color: _getStatusColor(patient.user['status'] ?? 'active'),
-                                          borderRadius: BorderRadius.circular(20),
+                                          color: _getStatusColor(
+                                              patient.user['status'] ??
+                                                  'active'),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                         ),
                                         child: Text(
-                                          (patient.user['status'] ?? 'active').toUpperCase(),
+                                          (patient.user['status'] ?? 'active')
+                                              .toUpperCase(),
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -1589,14 +1692,39 @@ class _PatientsPageState extends State<PatientsPage> {
                                     spacing: 30,
                                     runSpacing: 15,
                                     children: [
-                                      _detailItem("Email", patient.user['email'] ?? 'N/A', Icons.email),
-                                      _detailItem("Phone", patient.user['phone'] ?? 'N/A', Icons.phone),
-                                      _detailItem("Gender", patient.user['gender'] ?? 'N/A', Icons.person),
-                                      _detailItem("Date of Birth", patient.user['dob'] ?? 'N/A', Icons.calendar_today),
-                                      _detailItem("Blood Group", patient.user['blood_group'] ?? 'N/A', Icons.bloodtype),
-                                      _detailItem("Qualification", patient.user['qualification'] ?? 'N/A', Icons.school),
-                                      _detailItem("Appointments", "${patient.stats['appointments_count'] ?? '0'}", Icons.calendar_month),
-                                      _detailItem("Documents", "${patient.stats['documents_count'] ?? '0'}", Icons.file_copy),
+                                      _detailItem(
+                                          "Email",
+                                          patient.user['email'] ?? 'N/A',
+                                          Icons.email),
+                                      _detailItem(
+                                          "Phone",
+                                          patient.user['phone'] ?? 'N/A',
+                                          Icons.phone),
+                                      _detailItem(
+                                          "Gender",
+                                          patient.user['gender'] ?? 'N/A',
+                                          Icons.person),
+                                      _detailItem(
+                                          "Date of Birth",
+                                          patient.user['dob'] ?? 'N/A',
+                                          Icons.calendar_today),
+                                      _detailItem(
+                                          "Blood Group",
+                                          patient.user['blood_group'] ?? 'N/A',
+                                          Icons.bloodtype),
+                                      _detailItem(
+                                          "Qualification",
+                                          patient.user['qualification'] ??
+                                              'N/A',
+                                          Icons.school),
+                                      _detailItem(
+                                          "Appointments",
+                                          "${patient.stats['appointments_count'] ?? '0'}",
+                                          Icons.calendar_month),
+                                      _detailItem(
+                                          "Documents",
+                                          "${patient.stats['documents_count'] ?? '0'}",
+                                          Icons.file_copy),
                                     ],
                                   ),
 
@@ -1611,11 +1739,14 @@ class _PatientsPageState extends State<PatientsPage> {
                                           // Navigate to detailed patient view or open in a new tab
                                           _showPatientDetail(patient);
                                         },
-                                        icon: const Icon(Icons.visibility, size: 16),
+                                        icon: const Icon(Icons.visibility,
+                                            size: 16),
                                         label: const Text("View Details"),
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: notifier.getIconColor,
-                                          side: BorderSide(color: notifier.getIconColor),
+                                          foregroundColor:
+                                              notifier.getIconColor,
+                                          side: BorderSide(
+                                              color: notifier.getIconColor),
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -1628,7 +1759,8 @@ class _PatientsPageState extends State<PatientsPage> {
                                         label: const Text("Edit"),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: Colors.blue,
-                                          side: const BorderSide(color: Colors.blue),
+                                          side: const BorderSide(
+                                              color: Colors.blue),
                                         ),
                                       ),
                                     ],
@@ -1639,8 +1771,8 @@ class _PatientsPageState extends State<PatientsPage> {
                           },
                           renderCustomPagination:
                               (totalPages, currentPage, onPageChanged) =>
-                              _buildCustomPagination(
-                                  totalPages, currentPage, onPageChanged),
+                                  _buildCustomPagination(
+                                      totalPages, currentPage, onPageChanged),
                         ),
                       );
                     }),
