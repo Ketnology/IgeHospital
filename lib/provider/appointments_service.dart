@@ -181,20 +181,17 @@ class AppointmentsService extends GetxService {
         'page': 1,
       };
 
-      final response = await _httpClient.post(
+      final dynamic result = await _httpClient.post(
         ApiEndpoints.appointments,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${authService.token.value}',
         },
         body: jsonEncode(payload),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data['status'] == 200) {
-          final responseData = AppointmentResponse.fromJson(data['data']);
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 200) {
+          final responseData = AppointmentResponse.fromJson(result['data']);
           appointments.value = responseData.appointments;
           totalAppointments.value = responseData.total;
           perPage.value = responseData.perPage;
@@ -209,15 +206,8 @@ class AppointmentsService extends GetxService {
         } else {
           hasError.value = true;
           errorMessage.value =
-              data['message'] ?? 'Failed to fetch appointments';
+              result['message'] ?? 'Failed to fetch appointments';
         }
-      } else if (response.statusCode == 401) {
-        hasError.value = true;
-        errorMessage.value = 'Session expired. Please login again.';
-        authService.logout();
-      } else {
-        hasError.value = true;
-        errorMessage.value = 'Server error: ${response.statusCode}';
       }
     } catch (e) {
       hasError.value = true;
@@ -246,24 +236,24 @@ class AppointmentsService extends GetxService {
     hasError.value = false;
 
     try {
-      final response = await http.post(
-        Uri.parse(ApiEndpoints.appointments),
+      final dynamic result = await _httpClient.post(
+        ApiEndpoints.appointments,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${authService.token.value}',
         },
         body: jsonEncode(appointmentData),
       );
 
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        SnackBarUtils.showSuccessSnackBar('Appointment created successfully');
-        fetchAppointments();
-      } else {
-        hasError.value = true;
-        errorMessage.value = data['message'] ?? 'Failed to create appointment';
-        SnackBarUtils.showErrorSnackBar(errorMessage.value);
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 201 || result['status'] == 200) {
+          SnackBarUtils.showSuccessSnackBar('Appointment created successfully');
+          fetchAppointments();
+        } else {
+          hasError.value = true;
+          errorMessage.value =
+              result['message'] ?? 'Failed to create appointment';
+          SnackBarUtils.showErrorSnackBar(errorMessage.value);
+        }
       }
     } catch (e) {
       hasError.value = true;
@@ -280,24 +270,24 @@ class AppointmentsService extends GetxService {
     hasError.value = false;
 
     try {
-      final response = await http.put(
-        Uri.parse('${ApiEndpoints.appointmentDetails}$id'),
+      final dynamic result = await _httpClient.put(
+        '${ApiEndpoints.appointmentDetails}$id',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${authService.token.value}',
         },
         body: jsonEncode(appointmentData),
       );
 
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        SnackBarUtils.showSuccessSnackBar('Appointment updated successfully');
-        fetchAppointments();
-      } else {
-        hasError.value = true;
-        errorMessage.value = data['message'] ?? 'Failed to update appointment';
-        SnackBarUtils.showErrorSnackBar(errorMessage.value);
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 200) {
+          SnackBarUtils.showSuccessSnackBar('Appointment updated successfully');
+          fetchAppointments();
+        } else {
+          hasError.value = true;
+          errorMessage.value =
+              result['message'] ?? 'Failed to update appointment';
+          SnackBarUtils.showErrorSnackBar(errorMessage.value);
+        }
       }
     } catch (e) {
       hasError.value = true;
@@ -313,23 +303,23 @@ class AppointmentsService extends GetxService {
     hasError.value = false;
 
     try {
-      final response = await http.delete(
-        Uri.parse('${ApiEndpoints.appointmentDetails}$id'),
+      final dynamic result = await _httpClient.delete(
+        '${ApiEndpoints.appointmentDetails}$id',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${authService.token.value}',
         },
       );
 
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        SnackBarUtils.showSuccessSnackBar('Appointment deleted successfully');
-        fetchAppointments();
-      } else {
-        hasError.value = true;
-        errorMessage.value = data['message'] ?? 'Failed to delete appointment';
-        SnackBarUtils.showErrorSnackBar(errorMessage.value);
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 200) {
+          SnackBarUtils.showSuccessSnackBar('Appointment deleted successfully');
+          fetchAppointments();
+        } else {
+          hasError.value = true;
+          errorMessage.value =
+              result['message'] ?? 'Failed to delete appointment';
+          SnackBarUtils.showErrorSnackBar(errorMessage.value);
+        }
       }
     } catch (e) {
       hasError.value = true;
