@@ -96,7 +96,8 @@ class AuthService extends GetxService {
       if (response.statusCode == 200) {
         if (status == 200) {
           final String accessToken = data["data"]["access_token"] ?? "";
-          final String tokenExpiration = data["data"]["token_expiration"]?.toString() ?? "";
+          final String tokenExpiration =
+              data["data"]["token_expiration"]?.toString() ?? "";
 
           UserModel? user;
           if (data["data"]["user"] != null) {
@@ -139,7 +140,8 @@ class AuthService extends GetxService {
         final data = jsonDecode(response.body);
 
         if (data["status"] == 200) {
-          final String newTokenExpiration = data["data"]["token_expiration"] ?? "";
+          final String newTokenExpiration =
+              data["data"]["token_expiration"] ?? "";
 
           if (newTokenExpiration.isNotEmpty) {
             await updateTokenExpiration(newTokenExpiration);
@@ -175,16 +177,19 @@ class AuthService extends GetxService {
     try {
       // Convert Unix timestamp (seconds since epoch) to DateTime
       final int timestamp = int.parse(tokenExpiration.value);
-      final expirationDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      final expirationDate =
+          DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
       if (now.isAfter(expirationDate)) {
         Get.log("Token expired at: $expirationDate, current time: $now");
         logout();
-        SnackBarUtils.showWarningSnackBar("Your session has expired. Please login again.");
+        SnackBarUtils.showWarningSnackBar(
+            "Your session has expired. Please login again.");
       } else {
         // If token expires in less than 10 minutes, try to refresh it
-        final tenMinutesBeforeExpiry = expirationDate.subtract(const Duration(minutes: 10));
+        final tenMinutesBeforeExpiry =
+            expirationDate.subtract(const Duration(minutes: 10));
         if (now.isAfter(tenMinutesBeforeExpiry)) {
           Get.log("Token expiring soon. Refreshing...");
           validateToken();
@@ -202,7 +207,8 @@ class AuthService extends GetxService {
     try {
       // Convert Unix timestamp (seconds since epoch) to DateTime
       final int timestamp = int.parse(tokenExpiration.value);
-      final expirationDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      final expirationDate =
+          DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
       // Token is valid if it has not expired
@@ -235,7 +241,7 @@ class AuthService extends GetxService {
 
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
-    token.value = prefs.getString("token") ?? "";
+    token.value = prefs.getString("access_token") ?? "";
     tokenExpiration.value = prefs.getString("token_expiration") ?? "";
     isAuthenticated.value = token.isNotEmpty;
   }
@@ -254,9 +260,9 @@ class AuthService extends GetxService {
     }
   }
 
-  Future<void> _saveSession(String accessToken, String tokenExpiration, UserModel? user) async {
+  Future<void> _saveSession(
+      String accessToken, String tokenExpiration, UserModel? user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("token", accessToken);
     await prefs.setString("access_token", accessToken);
     await prefs.setString("token_expiration", tokenExpiration);
 
@@ -273,7 +279,6 @@ class AuthService extends GetxService {
   Future<void> _clearSession() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("user");
-    await prefs.remove("token");
     await prefs.remove("access_token");
     await prefs.remove("token_expiration");
 
