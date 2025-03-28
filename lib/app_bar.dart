@@ -129,9 +129,7 @@ class _AppBarCodeState extends State<AppBarCode> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                constraints.maxWidth < 600
-                    ? SizedBox()
-                    : SizedBox(),
+                constraints.maxWidth < 600 ? SizedBox() : SizedBox(),
                 constraints.maxWidth < 600
                     ? const SizedBox()
                     : const SizedBox(
@@ -226,8 +224,7 @@ class _AppBarCodeState extends State<AppBarCode> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Obx(() => Text(
-                                          authService.getUserName(),
+                                      Obx(() => Text(authService.getUserName(),
                                           style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -244,7 +241,7 @@ class _AppBarCodeState extends State<AppBarCode> {
                                               style: TextStyle(
                                                   fontSize: 12,
                                                   overflow:
-                                                  TextOverflow.ellipsis,
+                                                      TextOverflow.ellipsis,
                                                   color: notifier.getMaingey))),
                                           Icon(
                                             Icons.arrow_drop_down_outlined,
@@ -276,8 +273,6 @@ class _AppBarCodeState extends State<AppBarCode> {
   }
 
   PopupMenuItem _buildPopupAdminMenuItem() {
-    final AuthController authController = Get.find<AuthController>();
-
     return PopupMenuItem(
       enabled: false,
       padding: const EdgeInsets.all(0),
@@ -293,19 +288,26 @@ class _AppBarCodeState extends State<AppBarCode> {
                   0: FixedColumnWidth(20),
                 },
                 children: [
-                  row(title: 'Profile', icon: 'assets/user.svg', index: 'profile'),
-                  row(title: 'Setting', icon: 'assets/settings.svg', index: 'settings'),
+                  row(
+                      title: 'Profile',
+                      icon: 'assets/user.svg',
+                      index: 'profile'),
+                  row(
+                      title: 'Setting',
+                      icon: 'assets/settings.svg',
+                      index: 'settings'),
                   row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
                   TableRow(children: [
                     TableRowInkWell(
                       onTap: () {
-                        authController.logout(); // 🔥 Logout user
-                        Get.back(); // Close menu
+                        authController.logout();
                       },
                       child: Padding(
                         padding: const EdgeInsets.only(top: 10),
                         child: SvgPicture.asset('assets/log-out.svg',
-                            width: 18, height: 18, color: notifier!.getIconColor),
+                            width: 18,
+                            height: 18,
+                            color: notifier!.getIconColor),
                       ),
                     ),
                     TableRowInkWell(
@@ -314,9 +316,11 @@ class _AppBarCodeState extends State<AppBarCode> {
                         Get.back(); // Close menu
                       },
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 5, left: 20, top: 12, right: 20),
+                        padding: const EdgeInsets.only(
+                            bottom: 5, left: 20, top: 12, right: 20),
                         child: Text('Logout',
-                            style: mediumBlackTextStyle.copyWith(color: notifier!.getMainText)),
+                            style: mediumBlackTextStyle.copyWith(
+                                color: notifier!.getMainText)),
                       ),
                     ),
                   ]),

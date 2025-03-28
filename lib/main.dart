@@ -9,9 +9,6 @@ import 'package:ige_hospital/screen/auth/splash_screen.dart';
 import 'package:ige_hospital/routes.dart';
 import 'package:provider/provider.dart';
 
-
-// Icons.filter_list,
-// color: notifier.getIconColor,
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Get.putAsync(() => AuthService().init());
