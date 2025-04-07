@@ -42,24 +42,25 @@ class PatientsService extends GetxService {
     errorMessage.value = '';
 
     try {
-      final Map<String, dynamic> payload = {
-        'gender': selectedGender.value,
-        'blood_group': selectedBloodGroup.value,
-        'date_from': dateFrom.value,
-        'date_to': dateTo.value,
-        'search': searchQuery.value,
+      final Map<String, String> queryParams = {
+        if (selectedGender.value.isNotEmpty) 'gender': selectedGender.value,
+        if (selectedBloodGroup.value.isNotEmpty) 'blood_group': selectedBloodGroup.value,
+        if (dateFrom.value.isNotEmpty) 'date_from': dateFrom.value,
+        if (dateTo.value.isNotEmpty) 'date_to': dateTo.value,
+        if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
         'sort_by': sortBy.value,
         'sort_direction': sortDirection.value,
-        'per_page': perPage.value,
-        'page': currentPage.value,
+        'per_page': perPage.value.toString(),
+        'page': currentPage.value.toString(),
       };
 
-      final dynamic result = await _httpClient.post(
-        ApiEndpoints.patients,
+      final Uri uri = Uri.parse(ApiEndpoints.patientEndpoint).replace(queryParameters: queryParams);
+
+      final dynamic result = await _httpClient.get(
+        uri.toString(),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: jsonEncode(payload),
       );
 
       // HttpClient now handles 401 errors automatically
@@ -68,8 +69,10 @@ class PatientsService extends GetxService {
           final List<dynamic> patientsList = result['data']['patients'] ?? [];
           patients.value =
               patientsList.map((json) => PatientModel.fromJson(json)).toList();
-          totalPatients.value = result['data']['total'] ?? 0;
-          perPage.value = result['data']['per_page'] ?? 10;
+          final totalValue = result['data']['total'];
+          totalPatients.value = totalValue is int ? totalValue : int.tryParse(totalValue.toString()) ?? 0;
+          final perPageValue = result['data']['per_page'];
+          perPage.value = perPageValue is int ? perPageValue : int.tryParse(perPageValue.toString()) ?? 10;
 
           // If we're on a page that doesn't exist anymore, go back to page 1
           if (patients.isEmpty &&
@@ -130,7 +133,7 @@ class PatientsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.post(
-        ApiEndpoints.patients,
+        ApiEndpoints.patientEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -163,7 +166,7 @@ class PatientsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.patientDetails}$id',
+        '${ApiEndpoints.patientEndpoint}$id',
         headers: {
           'Content-Type': 'application/json',
         },
