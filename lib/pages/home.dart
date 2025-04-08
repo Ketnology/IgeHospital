@@ -58,7 +58,7 @@ class _DefaultPage extends State<DefaultPage> {
           "mainColour": const Color(0xffF7931A),
         },
         {
-          "title": "Receptionists",
+          "title": "Nurses",
           "iconPath": "assets/chat-info.svg",
           "price": dashboardService.receptionistCount.toString(),
           "mainColour": const Color(0xffF7931A),
@@ -276,26 +276,49 @@ class _DefaultPage extends State<DefaultPage> {
       ),
       itemBuilder: (context, index) {
         final data = dashboardData[index];
-        return _buildComp1(
-          title: data["title"],
-          iconPath: data["iconPath"],
-          price: data["price"],
-          mainColour: data["mainColour"],
+        return InkWell(
+          onTap: () => _navigateToPage(data["title"]),
+          borderRadius: BorderRadius.circular(12),
+          child: _buildComp1(
+            title: data["title"],
+            iconPath: data["iconPath"],
+            price: data["price"],
+            mainColour: data["mainColour"],
+          ),
         );
       },
     );
   }
 
-  Widget _buildComp1(
-      {required String title,
-      required String iconPath,
-      required String price,
-      required Color mainColour}) {
+  void _navigateToPage(String title) {
+    switch (title.toLowerCase()) {
+      case 'admins':
+        controller.changePage('admins');
+        break;
+      case 'doctors':
+        controller.changePage('doctors');
+        break;
+      case 'patients':
+        controller.changePage('patients');
+        break;
+      case 'nurses':
+        controller.changePage('nurses');
+        break;
+      default:
+        break;
+    }
+  }
+
+  Widget _buildComp1({
+    required String title,
+    required String iconPath,
+    required String price,
+    required Color mainColour,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Container(
         height: 100,
-        // width: 200,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           color: notifier.getContainer,
@@ -315,11 +338,12 @@ class _DefaultPage extends State<DefaultPage> {
                   color: mainColour.withOpacity(0.2),
                 ),
                 child: Center(
-                    child: SvgPicture.asset(
-                  iconPath,
-                  height: 25,
-                  width: 25,
-                )),
+                  child: SvgPicture.asset(
+                    iconPath,
+                    height: 25,
+                    width: 25,
+                  ),
+                ),
               ),
               title: Text(
                 title,
@@ -332,15 +356,10 @@ class _DefaultPage extends State<DefaultPage> {
                   children: [
                     Text(
                       price,
-                      style:
-                          mainTextStyle.copyWith(color: notifier.getMainText),
+                      style: mainTextStyle.copyWith(color: notifier.getMainText),
                     ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    const SizedBox(
-                      width: 5,
-                    ),
+                    const SizedBox(width: 10),
+                    const SizedBox(width: 5),
                   ],
                 ),
               ),
@@ -490,19 +509,23 @@ class _DefaultPage extends State<DefaultPage> {
                               CircleAvatar(
                                 backgroundColor: Colors.transparent,
                                 child: appointment.doctor['image'] != null
-                                    ? (appointment.doctor['image'].toString().contains('http')
-                                    ? Image.network(
-                                  appointment.doctor['image'],
-                                  width: 40,
-                                  height: 40,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.person, size: 40),
-                                )
-                                    : SvgPicture.asset(
-                                  "assets/icons8-figma.svg",
-                                  width: 40,
-                                  height: 40,
-                                ))
+                                    ? (appointment.doctor['image']
+                                            .toString()
+                                            .contains('http')
+                                        ? Image.network(
+                                            appointment.doctor['image'],
+                                            width: 40,
+                                            height: 40,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Icon(Icons.person,
+                                                        size: 40),
+                                          )
+                                        : SvgPicture.asset(
+                                            "assets/icons8-figma.svg",
+                                            width: 40,
+                                            height: 40,
+                                          ))
                                     : const Icon(Icons.person, size: 40),
                               ),
                               Container(

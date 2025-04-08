@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/constants/static_data.dart';
-import 'package:ige_hospital/provider/appointments_service.dart';
+import 'package:ige_hospital/provider/appointment_service.dart';
 import 'package:ige_hospital/widgets/common_button.dart';
 import 'package:ige_hospital/widgets/text_field.dart';
 import 'package:intl/intl.dart';
