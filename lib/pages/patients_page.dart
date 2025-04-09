@@ -46,12 +46,12 @@ class _PatientsPageState extends State<PatientsPage> {
   @override
   void initState() {
     super.initState();
-    createDataSource();
     patientsService.fetchPatients();
 
-    // Add listener to update data source when patients change
     ever(patientsService.patients, (_) {
-      createDataSource();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -59,112 +59,6 @@ class _PatientsPageState extends State<PatientsPage> {
   void dispose() {
     searchController.dispose();
     super.dispose();
-  }
-
-  void createDataSource() {
-    headers = [
-      ExpandableColumn<String>(columnTitle: "Patient Name", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Email", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Phone", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Gender", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Blood Group", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Date of Birth", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "ID", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Unique ID", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Appointments", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Documents", columnFlex: 1),
-      ExpandableColumn<Widget>(columnTitle: "Profile Image", columnFlex: 2),
-      ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
-    ];
-
-    // Check if we have patients to display
-    if (patientsService.patients.isEmpty) {
-      rows = [];
-      return;
-    }
-
-    // Map the patients to expandable rows
-    rows = patientsService.patients.map<ExpandableRow>((patient) {
-      return ExpandableRow(cells: [
-        ExpandableCell<String>(
-            columnTitle: "Patient Name",
-            value: patient.user['full_name'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "Email", value: patient.user['email'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "Phone", value: patient.user['phone'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "Gender", value: patient.user['gender'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "Blood Group",
-            value: patient.user['blood_group'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "Date of Birth", value: patient.user['dob'] ?? 'N/A'),
-        ExpandableCell<String>(
-            columnTitle: "Status", value: patient.user['status'] ?? 'N/A'),
-        ExpandableCell<String>(columnTitle: "ID", value: patient.id),
-        ExpandableCell<String>(
-            columnTitle: "Unique ID", value: patient.patientUniqueId),
-        ExpandableCell<String>(
-            columnTitle: "Appointments",
-            value: patient.stats['appointments_count']?.toString() ?? '0'),
-        ExpandableCell<String>(
-            columnTitle: "Documents",
-            value: patient.stats['documents_count']?.toString() ?? '0'),
-        ExpandableCell<Widget>(
-          columnTitle: "Profile Image",
-          value: patient.user['profile_image'] != null
-              ? Image.network(
-                  patient.user['profile_image'].toString(),
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.person,
-                    size: 40,
-                  ),
-                )
-              : const Icon(Icons.person, size: 40),
-        ),
-        ExpandableCell<Widget>(
-          columnTitle: "Actions",
-          value: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit, color: notifier.getIconColor),
-                onPressed: () {
-                  // Open edit dialog
-                  _showEditDialog(patient);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.visibility, color: Colors.blue),
-                onPressed: () {
-                  // Show view patient detail
-                  _showPatientDetail(patient);
-                },
-              ),
-            ],
-          ),
-        ),
-      ]);
-    }).toList();
-
-    // Force UI update
-    if (mounted) setState(() {});
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'blocked':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.blue;
-    }
   }
 
   Widget _buildPageTopBar() {
@@ -284,20 +178,6 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  void _showPatientDetail(PatientModel patient) {
-    showDialog(
-      context: context,
-      builder: (context) => PatientDetailDialog(
-        patient: patient,
-        notifier: notifier,
-      ),
-    ).then((result) {
-      if (result == 'edit') {
-        _showEditDialog(patient);
-      }
-    });
-  }
-
   void _showAddPatientDialog() {
     showDialog(
       context: context,
@@ -305,54 +185,10 @@ class _PatientsPageState extends State<PatientsPage> {
         notifier: notifier,
         patientsService: patientsService,
       ),
-    );
-  }
-
-  Widget _detailItem(String label, String value, IconData icon) {
-    return SizedBox(
-      width: 200,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: notifier.getIconColor,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: notifier.getMaingey,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(color: notifier.getMainText),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditDialog(PatientModel patient) {
-    showDialog(
-      context: context,
-      builder: (context) => EditPatientDialog(
-        patient: patient,
-        notifier: notifier,
-        patientsService: patientsService,
-      ),
-    );
+    ).then((_) {
+      // Refresh data after dialog is closed
+      patientsService.fetchPatients();
+    });
   }
 
   @override
@@ -460,6 +296,7 @@ class _PatientsPageState extends State<PatientsPage> {
                       }
 
                       return PatientDataTable(
+                        key: ValueKey('patient-table-${patientsService.patients.length}'),
                         patients: patientsService.patients,
                         notifier: notifier,
                         patientsService: patientsService,

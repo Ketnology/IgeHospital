@@ -224,7 +224,11 @@ class _PatientDataTableState extends State<PatientDataTable> {
         notifier: widget.notifier,
         patientsService: widget.patientsService,
       ),
-    );
+    ).then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Widget _buildExpandedContent(PatientModel patient) {

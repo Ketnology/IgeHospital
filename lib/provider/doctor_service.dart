@@ -98,7 +98,7 @@ class DoctorsService extends GetxService {
         'per_page': perPage.value.toString(),
       };
 
-      final Uri uri = Uri.parse(ApiEndpoints.doctors).replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.doctorEndpoint).replace(queryParameters: queryParams);
 
       final dynamic result = await _httpClient.get(uri.toString());
 
@@ -140,7 +140,7 @@ class DoctorsService extends GetxService {
     errorMessage.value = '';
 
     try {
-      final dynamic result = await _httpClient.get('${ApiEndpoints.doctorDetails}$id');
+      final dynamic result = await _httpClient.get('${ApiEndpoints.doctorEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -166,7 +166,7 @@ class DoctorsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.post(
-        ApiEndpoints.doctors,
+        ApiEndpoints.doctorEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -198,7 +198,7 @@ class DoctorsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.doctorDetails}$id',
+        '${ApiEndpoints.doctorEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -230,7 +230,7 @@ class DoctorsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.delete(
-        '${ApiEndpoints.doctorDetails}$id',
+        '${ApiEndpoints.doctorEndpoint}/$id',
       );
 
       if (result is Map<String, dynamic>) {

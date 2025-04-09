@@ -182,7 +182,7 @@ class AppointmentsService extends GetxService {
       };
 
       final dynamic result = await _httpClient.post(
-        ApiEndpoints.appointments,
+        ApiEndpoints.appointmentEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -237,7 +237,7 @@ class AppointmentsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.post(
-        ApiEndpoints.appointments,
+        ApiEndpoints.appointmentEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -271,7 +271,7 @@ class AppointmentsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.appointmentDetails}$id',
+        '${ApiEndpoints.appointmentEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -304,7 +304,7 @@ class AppointmentsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.delete(
-        '${ApiEndpoints.appointmentDetails}$id',
+        '${ApiEndpoints.appointmentEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },

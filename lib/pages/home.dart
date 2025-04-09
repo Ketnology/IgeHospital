@@ -26,11 +26,6 @@ class _DefaultPage extends State<DefaultPage> {
   void initState() {
     super.initState();
     dashboardService.fetchDashboardData();
-
-    Future.microtask(() => dashboardService.refreshDashboardData());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      dashboardService.refreshDashboardData();
-    });
   }
 
   @override
@@ -266,7 +261,7 @@ class _DefaultPage extends State<DefaultPage> {
   }
 
   Widget _buildComp1Grid({required int count}) {
-    return GridView.builder(
+    return Obx(() => GridView.builder(
       itemCount: dashboardData.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -287,7 +282,7 @@ class _DefaultPage extends State<DefaultPage> {
           ),
         );
       },
-    );
+    ));
   }
 
   void _navigateToPage(String title) {
@@ -356,7 +351,8 @@ class _DefaultPage extends State<DefaultPage> {
                   children: [
                     Text(
                       price,
-                      style: mainTextStyle.copyWith(color: notifier.getMainText),
+                      style:
+                          mainTextStyle.copyWith(color: notifier.getMainText),
                     ),
                     const SizedBox(width: 10),
                     const SizedBox(width: 5),

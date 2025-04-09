@@ -25,7 +25,8 @@ class EditPatientDialog extends StatefulWidget {
 }
 
 class _EditPatientDialogState extends State<EditPatientDialog> {
-  late TextEditingController nameController;
+  late TextEditingController firstNameController;
+  late TextEditingController lastNameController;
   late TextEditingController emailController;
   late TextEditingController phoneController;
   late TextEditingController dobController;
@@ -42,8 +43,15 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
   void initState() {
     super.initState();
 
-    // Initialize controllers with patient data
-    nameController = TextEditingController(text: widget.patient.user['full_name'] ?? '');
+    String fullName = widget.patient.user['full_name'] ?? '';
+    List<String> nameParts = fullName.split(' ');
+
+    String firstName = nameParts.isNotEmpty ? nameParts.first : '';
+    String lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+    firstNameController = TextEditingController(text: firstName);
+    lastNameController = TextEditingController(text: lastName);
+
     emailController = TextEditingController(text: widget.patient.user['email'] ?? '');
     phoneController = TextEditingController(text: widget.patient.user['phone'] ?? '');
     dobController = TextEditingController(text: widget.patient.user['dob'] ?? '');
@@ -70,7 +78,8 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
 
   @override
   void dispose() {
-    nameController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     dobController.dispose();
@@ -161,29 +170,15 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       MyTextField(
-                        title: 'Full Name',
-                        hinttext: "Enter Patient's Full Name",
-                        controller: nameController,
+                        title: 'First Name',
+                        hinttext: "Enter Patient's First Name",
+                        controller: firstNameController,
                       ),
                       const SizedBox(height: 15),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: MyTextField(
-                              title: 'Email',
-                              hinttext: "Enter Patient's Email",
-                              controller: emailController,
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: MyTextField(
-                              title: 'Phone',
-                              hinttext: "Enter Patient's Phone Number",
-                              controller: phoneController,
-                            ),
-                          ),
-                        ],
+                      MyTextField(
+                        title: 'Last Name',
+                        hinttext: "Enter Patient's Last Name",
+                        controller: lastNameController,
                       ),
                       const SizedBox(height: 15),
                       Row(
@@ -278,12 +273,6 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                                     DropdownMenuItem(
                                       value: "female",
                                       child: Text("Female",
-                                          style: TextStyle(
-                                              color: widget.notifier.getMainText)),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: "other",
-                                      child: Text("Other",
                                           style: TextStyle(
                                               color: widget.notifier.getMainText)),
                                     ),
@@ -589,7 +578,8 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                         title: "Save Changes",
                         color: appMainColor,
                         onTap: () {
-                          if (nameController.text.isEmpty ||
+                          if (firstNameController.text.isEmpty ||
+                              lastNameController.text.isEmpty ||
                               emailController.text.isEmpty ||
                               phoneController.text.isEmpty) {
                             Get.snackbar(
@@ -622,7 +612,8 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
 
                           // Prepare the data to be updated
                           final Map<String, dynamic> userData = {
-                            "full_name": nameController.text,
+                            "first_name": firstNameController.text,
+                            "last_name": lastNameController.text,
                             "email": emailController.text,
                             "phone": phoneController.text,
                             "dob": dobController.text,

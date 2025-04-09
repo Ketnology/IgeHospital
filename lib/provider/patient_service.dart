@@ -95,6 +95,65 @@ class PatientsService extends GetxService {
     }
   }
 
+  Future<void> fetchUpdatedPatients() async {
+    isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = '';
+
+    try {
+      final Map<String, String> queryParams = {
+        if (selectedGender.value.isNotEmpty) 'gender': selectedGender.value,
+        if (selectedBloodGroup.value.isNotEmpty)
+          'blood_group': selectedBloodGroup.value,
+        if (dateFrom.value.isNotEmpty) 'date_from': dateFrom.value,
+        if (dateTo.value.isNotEmpty) 'date_to': dateTo.value,
+        if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
+        'sort_by': sortBy.value,
+        'sort_direction': sortDirection.value,
+        'page': currentPage.value.toString(),
+        'per_page': perPage.value.toString(),
+      };
+
+      final Uri uri = Uri.parse(ApiEndpoints.patientEndpoint)
+          .replace(queryParameters: queryParams);
+
+      final dynamic result = await _httpClient.get(uri.toString());
+
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 200) {
+          final List<dynamic> patientsList = result['data']['patients'] ?? [];
+          patients.value =
+              patientsList.map((json) => PatientModel.fromJson(json)).toList();
+
+          // Save pagination info
+          totalPatients.value = result['data']['total'] is int
+              ? result['data']['total']
+              : int.tryParse(result['data']['total'].toString()) ?? 0;
+
+          perPage.value = result['data']['per_page'] is int
+              ? result['data']['per_page']
+              : int.tryParse(result['data']['per_page'].toString()) ?? 1000;
+
+          // If we're on a page that doesn't exist anymore, go back to page 1
+          if (patients.isEmpty &&
+              totalPatients.value > 0 &&
+              currentPage.value > 1) {
+            currentPage.value = 1;
+            fetchPatients();
+          }
+        } else {
+          hasError.value = true;
+          errorMessage.value = result['message'] ?? 'Failed to fetch patients';
+        }
+      }
+    } catch (e) {
+      hasError.value = true;
+      errorMessage.value = 'Failed to connect to server: $e';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<PatientModel?> getPatientDetails(String id) async {
     isLoading.value = true;
     hasError.value = false;
@@ -155,14 +214,13 @@ class PatientsService extends GetxService {
     }
   }
 
-  Future<void> updatePatient(
-      String id, Map<String, dynamic> patientData) async {
+  Future<void> updatePatient(String id, Map<String, dynamic> patientData) async {
     isLoading.value = true;
     hasError.value = false;
 
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.patientEndpoint}$id',
+        '${ApiEndpoints.patientEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -172,7 +230,7 @@ class PatientsService extends GetxService {
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Patient updated successfully');
-          fetchPatients();
+          fetchUpdatedPatients();
         } else {
           hasError.value = true;
           errorMessage.value = result['message'] ?? 'Failed to update patient';
