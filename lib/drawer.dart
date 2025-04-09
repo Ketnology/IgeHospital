@@ -103,14 +103,14 @@ class _DrawerCodeState extends State<DrawerCode> {
                                   controller.changePage('patients');
                                   Get.back();
                                 }),
-                            _buildSingleTile(
-                                header: "Hospital Stay",
-                                iconPath: "assets/home.svg",
-                                index: 'in-patient',
-                                onTap: () {
-                                  // controller.changePage('in-patient');
-                                  Get.back();
-                                }),
+                            // _buildSingleTile(
+                            //     header: "Hospital Stay",
+                            //     iconPath: "assets/home.svg",
+                            //     index: 'in-patient',
+                            //     onTap: () {
+                            //       // controller.changePage('in-patient');
+                            //       Get.back();
+                            //     }),
                             _buildDivider(title: 'Clinical Documentation'),
                             _buildSingleTile(
                                 header: "Prescriptions",
@@ -128,23 +128,23 @@ class _DrawerCodeState extends State<DrawerCode> {
                                   // controller.changePage(12);
                                   Get.back();
                                 }),
-                            _buildDivider(title: 'Treatment'),
-                            _buildSingleTile(
-                                header: "Procedures",
-                                iconPath: "assets/settings.svg",
-                                index: 'procedures',
-                                onTap: () {
-                                  // controller.changePage(12);
-                                  Get.back();
-                                }),
-                            _buildSingleTile(
-                                header: "Surgery",
-                                iconPath: "assets/grid-web-5.svg",
-                                index: 'surgery',
-                                onTap: () {
-                                  // controller.changePage(12);
-                                  Get.back();
-                                }),
+                            // _buildDivider(title: 'Treatment'),
+                            // _buildSingleTile(
+                            //     header: "Procedures",
+                            //     iconPath: "assets/settings.svg",
+                            //     index: 'procedures',
+                            //     onTap: () {
+                            //       // controller.changePage(12);
+                            //       Get.back();
+                            //     }),
+                            // _buildSingleTile(
+                            //     header: "Surgery",
+                            //     iconPath: "assets/grid-web-5.svg",
+                            //     index: 'surgery',
+                            //     onTap: () {
+                            //       // controller.changePage(12);
+                            //       Get.back();
+                            //     }),
                             _buildDivider(title: 'Updates & Support'),
                             _buildSingleTile(
                                 header: 'Notifications',

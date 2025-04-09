@@ -1,0 +1,2 @@
+/Users/ketuojo/development/ige_hospital/android/app/.cxx/Debug/4v141z5k/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/ketuojo/development/ige_hospital/android/app/.cxx/Debug/4v141z5k/armeabi-v7a/CMakeFiles/rebuild_cache.dir
