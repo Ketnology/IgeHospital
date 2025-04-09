@@ -123,14 +123,15 @@ class PatientDetailDialog extends StatelessWidget {
                   children: [
                     // Personal Information
                     _sectionTitle("Personal Information", notifier),
+                    _detailRow("First Name", patient.user['first_name'], notifier),
+                    _detailRow("Middle Name", patient.user['middle_name'] ?? 'N/A', notifier),
+                    _detailRow("Last Name", patient.user['last_name'], notifier),
                     _detailRow("Email", patient.user['email'] ?? 'N/A', notifier),
                     _detailRow("Phone", patient.user['phone'] ?? 'N/A', notifier),
                     _detailRow("Gender", patient.user['gender'] ?? 'N/A', notifier),
                     _detailRow("Date of Birth", patient.user['dob'] ?? 'N/A', notifier),
                     _detailRow(
                         "Blood Group", patient.user['blood_group'] ?? 'N/A', notifier),
-                    _detailRow("Qualification",
-                        patient.user['qualification'] ?? 'N/A', notifier),
 
                     const SizedBox(height: 20),
 
@@ -145,15 +146,13 @@ class PatientDetailDialog extends StatelessWidget {
 
                     // Address (if available)
                     if (patient.address != null) ...[
-                      _sectionTitle("Address", notifier),
+                      // _sectionTitle("Address", notifier),
                       _detailRow(
-                          "Street", patient.address!['street'] ?? 'N/A', notifier),
-                      _detailRow("City", patient.address!['city'] ?? 'N/A', notifier),
-                      _detailRow("State", patient.address!['state'] ?? 'N/A', notifier),
-                      _detailRow(
-                          "Zip Code", patient.address!['zip'] ?? 'N/A', notifier),
-                      _detailRow(
-                          "Country", patient.address!['country'] ?? 'N/A', notifier),
+                          "Address", patient.address!['address1'] ?? 'N/A', notifier),
+                      // _detailRow("City", patient.address!['city'] ?? 'N/A', notifier),
+                      // _detailRow("State", patient.address!['state'] ?? 'N/A', notifier),
+                      // _detailRow("Zip Code", patient.address!['zip'] ?? 'N/A', notifier),
+                      // _detailRow("Country", patient.address!['country'] ?? 'N/A', notifier),
                       const SizedBox(height: 20),
                     ],
 
@@ -295,9 +294,8 @@ class PatientDetailDialog extends StatelessWidget {
         ),
         subtitle: Text(
           document['notes'] != null
-              ? document['notes'].toString().substring(
-              0, min(50, document['notes'].toString().length)) +
-              '...'
+              ? '${document['notes'].toString().substring(
+              0, min(50, document['notes'].toString().length))}...'
               : 'No notes',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
