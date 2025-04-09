@@ -30,7 +30,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
   late TextEditingController emailController;
   late TextEditingController phoneController;
   late TextEditingController dobController;
-  late TextEditingController qualificationController;
+  // late TextEditingController qualificationController;
   late TextEditingController addressController;
 
   late String selectedGender;
@@ -55,10 +55,10 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     emailController = TextEditingController(text: widget.patient.user['email'] ?? '');
     phoneController = TextEditingController(text: widget.patient.user['phone'] ?? '');
     dobController = TextEditingController(text: widget.patient.user['dob'] ?? '');
-    qualificationController = TextEditingController(text: widget.patient.user['qualification'] ?? '');
+    // qualificationController = TextEditingController(text: widget.patient.user['qualification'] ?? '');
     addressController = TextEditingController(
         text: widget.patient.address != null
-            ? "${widget.patient.address!['street'] ?? ''}, ${widget.patient.address!['city'] ?? ''}"
+            ? " ${widget.patient.address!['address1'] ?? ''}"
             : '');
 
     // Initialize dropdowns with patient data
@@ -83,7 +83,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     emailController.dispose();
     phoneController.dispose();
     dobController.dispose();
-    qualificationController.dispose();
+    // qualificationController.dispose();
     addressController.dispose();
     super.dispose();
   }
@@ -505,15 +505,15 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                         ],
                       ),
                       const SizedBox(height: 15),
-                      MyTextField(
-                        title: 'Qualification',
-                        hinttext: "Enter Patient's Qualification",
-                        controller: qualificationController,
-                      ),
-                      const SizedBox(height: 15),
+                      // MyTextField(
+                      //   title: 'Qualification',
+                      //   hinttext: "Enter Patient's Qualification",
+                      //   controller: qualificationController,
+                      // ),
+                      // const SizedBox(height: 15),
                       MyTextField(
                         title: 'Address',
-                        hinttext: "Enter Patient's Address",
+                        hinttext: "Enter Patient's Full Address",
                         controller: addressController,
                       ),
 
@@ -619,7 +619,8 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                             "dob": dobController.text,
                             "gender": selectedGender,
                             "blood_group": selectedBloodGroup,
-                            "qualification": qualificationController.text,
+                            // "qualification": qualificationController.text,
+                            "address1": addressController.text,
                             "status": selectedStatus,
                             "address": addressData,
                           };

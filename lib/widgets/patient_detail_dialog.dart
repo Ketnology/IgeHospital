@@ -3,6 +3,7 @@ import 'package:ige_hospital/models/patient_model.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/widgets/common_button.dart';
 import 'dart:math';
+import 'package:intl/intl.dart';
 
 class PatientDetailDialog extends StatelessWidget {
   final PatientModel patient;
@@ -16,6 +17,20 @@ class PatientDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedDocuments = List<Map<String, dynamic>>.from(patient.documents);
+    sortedDocuments.sort((a, b) {
+      final aDate = a['created_at'] ?? '';
+      final bDate = b['created_at'] ?? '';
+      return bDate.compareTo(aDate); // Descending order
+    });
+
+    final sortedAppointments = List<Map<String, dynamic>>.from(patient.appointments);
+    sortedAppointments.sort((a, b) {
+      final aDate = a['opd_date'] ?? a['date'] ?? '';
+      final bDate = b['opd_date'] ?? b['date'] ?? '';
+      return bDate.compareTo(aDate); // Descending order
+    });
+
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
       backgroundColor: notifier.getContainer,
@@ -157,39 +172,52 @@ class PatientDetailDialog extends StatelessWidget {
                     ],
 
                     // Documents
-                    if (patient.documents.isNotEmpty) ...[
-                      _sectionTitle("Recent Documents", notifier),
-                      ...patient.documents
+                    if (sortedDocuments.isNotEmpty) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _sectionTitle("Recent Documents", notifier),
+                          TextButton.icon(
+                            onPressed: () {
+                              // Show all documents dialog
+                              _showAllDocumentsDialog(context, sortedDocuments);
+                            },
+                            icon: Icon(Icons.folder_open, color: notifier.getIconColor, size: 16),
+                            label: Text(
+                              "View All (${sortedDocuments.length})",
+                              style: TextStyle(color: notifier.getIconColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                      ...sortedDocuments
                           .take(3)
                           .map((doc) => _documentItem(doc, notifier)),
-                      if (patient.documents.length > 3)
-                        TextButton(
-                          onPressed: () {
-                            // View all documents
-                          },
-                          child: Text(
-                            "View all ${patient.documents.length} documents",
-                            style: TextStyle(color: notifier.getIconColor),
-                          ),
-                        ),
                       const SizedBox(height: 20),
                     ],
 
                     // Appointments
-                    if (patient.appointments.isNotEmpty) ...[
-                      _sectionTitle("Recent Appointments", notifier),
-                      ...patient.appointments.take(3).map(
-                              (appointment) => _appointmentItem(appointment, notifier)),
-                      if (patient.appointments.length > 3)
-                        TextButton(
-                          onPressed: () {
-                            // View all appointments
-                          },
-                          child: Text(
-                            "View all ${patient.appointments.length} appointments",
-                            style: TextStyle(color: notifier.getIconColor),
+                    if (sortedAppointments.isNotEmpty) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _sectionTitle("Recent Appointments", notifier),
+                          TextButton.icon(
+                            onPressed: () {
+                              // Show all appointments dialog
+                              _showAllAppointmentsDialog(context, sortedAppointments);
+                            },
+                            icon: Icon(Icons.calendar_month, color: notifier.getIconColor, size: 16),
+                            label: Text(
+                              "View All (${sortedAppointments.length})",
+                              style: TextStyle(color: notifier.getIconColor),
+                            ),
                           ),
-                        ),
+                        ],
+                      ),
+                      ...sortedAppointments
+                          .take(3)
+                          .map((appointment) => _appointmentItem(appointment, notifier)),
                     ],
                   ],
                 ),
@@ -217,6 +245,104 @@ class PatientDetailDialog extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAllDocumentsDialog(BuildContext context, List<Map<String, dynamic>> documents) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "All Documents",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        backgroundColor: notifier.getContainer,
+        content: Container(
+          width: 600,
+          height: 400,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: documents.length,
+                  itemBuilder: (context, index) {
+                    final document = documents[index];
+                    // Add date information to each document item
+                    return _documentItemWithDate(document, notifier);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Close",
+              style: TextStyle(color: notifier.getIconColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAllAppointmentsDialog(BuildContext context, List<Map<String, dynamic>> appointments) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "All Appointments",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        backgroundColor: notifier.getContainer,
+        content: Container(
+          width: 600,
+          height: 400,
+          child: Column(
+            children: [
+              // Appointment sorting options
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Text(
+                      "Sorted by: ",
+                      style: TextStyle(color: notifier.getMainText),
+                    ),
+                    Text(
+                      "Date (newest first)",
+                      style: TextStyle(
+                        color: notifier.getIconColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: appointments.length,
+                  itemBuilder: (context, index) {
+                    return _appointmentItem(appointments[index], notifier);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Close",
+              style: TextStyle(color: notifier.getIconColor),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -294,12 +420,76 @@ class PatientDetailDialog extends StatelessWidget {
         ),
         subtitle: Text(
           document['notes'] != null
-              ? '${document['notes'].toString().substring(
-              0, min(50, document['notes'].toString().length))}...'
+              ? document['notes'].toString().substring(
+              0, min(50, document['notes'].toString().length)) +
+              '...'
               : 'No notes',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(color: notifier.getMaingey),
+        ),
+        trailing: document['file_info']?['file_url'] != null
+            ? IconButton(
+          icon: Icon(Icons.download, color: notifier.getIconColor),
+          onPressed: () {
+            // Download document
+          },
+        )
+            : null,
+      ),
+    );
+  }
+
+  Widget _documentItemWithDate(Map<String, dynamic> document, ColourNotifier notifier) {
+    // Format the date if available
+    String dateText = 'No date';
+    if (document['created_at'] != null && document['created_at'].toString().isNotEmpty) {
+      try {
+        final date = DateTime.parse(document['created_at']);
+        dateText = DateFormat('MMM dd, yyyy - hh:mm a').format(date);
+      } catch (e) {
+        dateText = document['created_at'].toString();
+      }
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      color: notifier.getBgColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: notifier.getBorderColor),
+      ),
+      child: ListTile(
+        title: Text(
+          document['title'] ?? 'Untitled Document',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: notifier.getMainText,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              dateText,
+              style: TextStyle(
+                color: notifier.getIconColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              document['notes'] != null
+                  ? '${document['notes'].toString().substring(
+                  0, min(50, document['notes'].toString().length))}...'
+                  : 'No notes',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: notifier.getMaingey),
+            ),
+          ],
         ),
         trailing: document['file_info']?['file_url'] != null
             ? IconButton(

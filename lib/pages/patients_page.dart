@@ -43,14 +43,22 @@ class _PatientsPageState extends State<PatientsPage> {
     end: DateTime.now(),
   );
 
+  // Key for PatientDataTable to force rebuild when data changes
+  final tableKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
+    // Fetch patients on page load
     patientsService.fetchPatients();
 
+    // Set up listener for patient data changes
     ever(patientsService.patients, (_) {
       if (mounted) {
-        setState(() {});
+        // Update the table key to force a rebuild
+        setState(() {
+          tableKey.currentState?.setState(() {});
+        });
       }
     });
   }
@@ -191,6 +199,73 @@ class _PatientsPageState extends State<PatientsPage> {
     });
   }
 
+  void _showViewPatientDialog(PatientModel patient) {
+    showDialog(
+      context: context,
+      builder: (context) => PatientDetailDialog(
+        patient: patient,
+        notifier: notifier,
+      ),
+    ).then((result) {
+      if (result == 'edit') {
+        _showEditPatientDialog(patient);
+      }
+    });
+  }
+
+  void _showEditPatientDialog(PatientModel patient) {
+    showDialog(
+      context: context,
+      builder: (context) => EditPatientDialog(
+        patient: patient,
+        notifier: notifier,
+        patientsService: patientsService,
+      ),
+    ).then((_) {
+      if (mounted) {
+        patientsService.fetchPatients();
+        // Trigger UI update
+        setState(() {});
+      }
+    });
+  }
+
+  void _showDeleteConfirmation(PatientModel patient) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: notifier.getContainer,
+        title: Text(
+          "Confirm Delete",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        content: Text(
+          "Are you sure you want to delete ${patient.user['full_name']}?",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: notifier.getMainText),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              patientsService.deletePatient(patient.id);
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     notifier = Provider.of<ColourNotifier>(context, listen: true);
@@ -295,6 +370,7 @@ class _PatientsPageState extends State<PatientsPage> {
                         );
                       }
 
+                      // Use a unique key based on the patients list length to force rebuild
                       return PatientDataTable(
                         key: ValueKey('patient-table-${patientsService.patients.length}'),
                         patients: patientsService.patients,
@@ -308,6 +384,9 @@ class _PatientsPageState extends State<PatientsPage> {
                             currentPage = page;
                           });
                         },
+                        onViewPatient: _showViewPatientDialog,
+                        onEditPatient: _showEditPatientDialog,
+                        onDeletePatient: _showDeleteConfirmation,
                         paginationBuilder: _buildPagination,
                       );
                     }),

@@ -1,10 +1,10 @@
-import 'package:expandable_datatable/expandable_datatable.dart';
 import 'package:flutter/material.dart';
+import 'package:expandable_datatable/expandable_datatable.dart';
 import 'package:ige_hospital/models/patient_model.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/patient_service.dart';
-import 'package:ige_hospital/widgets/patient_detail_dialog.dart';
-import 'package:ige_hospital/widgets/edit_patient_dialog.dart';
+import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 class PatientDataTable extends StatefulWidget {
   final List<PatientModel> patients;
@@ -15,9 +15,12 @@ class PatientDataTable extends StatefulWidget {
   final int currentPage;
   final Function(int) onPageChanged;
   final Widget Function(int, int, Function(int)) paginationBuilder;
+  final Function(PatientModel)? onViewPatient;
+  final Function(PatientModel)? onEditPatient;
+  final Function(PatientModel)? onDeletePatient;
 
   const PatientDataTable({
-    super.key,
+    Key? key,
     required this.patients,
     required this.notifier,
     required this.patientsService,
@@ -26,7 +29,10 @@ class PatientDataTable extends StatefulWidget {
     required this.currentPage,
     required this.onPageChanged,
     required this.paginationBuilder,
-  });
+    this.onViewPatient,
+    this.onEditPatient,
+    this.onDeletePatient,
+  }) : super(key: key);
 
   @override
   State<PatientDataTable> createState() => _PatientDataTableState();
@@ -45,40 +51,39 @@ class _PatientDataTableState extends State<PatientDataTable> {
   @override
   void didUpdateWidget(PatientDataTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.patients != widget.patients) {
+    // Recreate data source if patients list changed
+    if (widget.patients != oldWidget.patients) {
       createDataSource();
     }
   }
 
   void createDataSource() {
     headers = [
-      ExpandableColumn<String>(columnTitle: "Patient Name", columnFlex: 2),
+      ExpandableColumn<String>(columnTitle: "Name", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Email", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Phone", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Gender", columnFlex: 1),
       ExpandableColumn<String>(columnTitle: "Blood Group", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Date of Birth", columnFlex: 2),
+      ExpandableColumn<String>(columnTitle: "Registration Date", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "ID", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Unique ID", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Appointments", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Documents", columnFlex: 1),
-      ExpandableColumn<Widget>(columnTitle: "Profile Image", columnFlex: 2),
       ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
     ];
 
-    // Check if we have patients to display
-    if (widget.patients.isEmpty) {
-      rows = [];
-      return;
-    }
-
-    // Map the patients to expandable rows
     rows = widget.patients.map<ExpandableRow>((patient) {
+      // Format the created_at date
+      String formattedDate = 'N/A';
+      try {
+        if (patient.createdAt.isNotEmpty) {
+          final date = DateTime.parse(patient.createdAt);
+          formattedDate = DateFormat('MMM dd, yyyy').format(date);
+        }
+      } catch (e) {
+        print("Error parsing date: $e");
+      }
+
       return ExpandableRow(cells: [
         ExpandableCell<String>(
-            columnTitle: "Patient Name",
-            value: patient.user['full_name'] ?? 'N/A'),
+            columnTitle: "Name", value: patient.user['full_name'] ?? 'N/A'),
         ExpandableCell<String>(
             columnTitle: "Email", value: patient.user['email'] ?? 'N/A'),
         ExpandableCell<String>(
@@ -89,49 +94,34 @@ class _PatientDataTableState extends State<PatientDataTable> {
             columnTitle: "Blood Group",
             value: patient.user['blood_group'] ?? 'N/A'),
         ExpandableCell<String>(
-            columnTitle: "Date of Birth", value: patient.user['dob'] ?? 'N/A'),
+            columnTitle: "Registration Date", value: formattedDate),
         ExpandableCell<String>(
             columnTitle: "Status", value: patient.user['status'] ?? 'N/A'),
-        ExpandableCell<String>(columnTitle: "ID", value: patient.id),
-        ExpandableCell<String>(
-            columnTitle: "Unique ID", value: patient.patientUniqueId),
-        ExpandableCell<String>(
-            columnTitle: "Appointments",
-            value: patient.stats['appointments_count']?.toString() ?? '0'),
-        ExpandableCell<String>(
-            columnTitle: "Documents",
-            value: patient.stats['documents_count']?.toString() ?? '0'),
-        ExpandableCell<Widget>(
-          columnTitle: "Profile Image",
-          value: patient.user['profile_image'] != null
-              ? Image.network(
-            patient.user['profile_image'].toString(),
-            width: 40,
-            height: 40,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-              Icons.person,
-              size: 40,
-            ),
-          )
-              : const Icon(Icons.person, size: 40),
-        ),
         ExpandableCell<Widget>(
           columnTitle: "Actions",
           value: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(Icons.edit, color: widget.notifier.getIconColor),
-                onPressed: () {
-                  // Open edit dialog
-                  _showEditDialog(patient);
-                },
+                icon: Icon(Icons.visibility, color: widget.notifier.getIconColor),
+                onPressed: widget.onViewPatient != null
+                    ? () => widget.onViewPatient!(patient)
+                    : null,
+                tooltip: "View Details",
               ),
               IconButton(
-                icon: Icon(Icons.visibility, color: Colors.blue),
-                onPressed: () {
-                  // Show view patient detail
-                  _showPatientDetail(patient);
-                },
+                icon: Icon(Icons.edit, color: Colors.blue),
+                onPressed: widget.onEditPatient != null
+                    ? () => widget.onEditPatient!(patient)
+                    : null,
+                tooltip: "Edit",
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red),
+                onPressed: widget.onDeletePatient != null
+                    ? () => widget.onDeletePatient!(patient)
+                    : null,
+                tooltip: "Delete",
               ),
             ],
           ),
@@ -142,6 +132,9 @@ class _PatientDataTableState extends State<PatientDataTable> {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure data source is up-to-date with current patients
+    createDataSource();
+
     return ExpandableTheme(
       data: ExpandableThemeData(
         context,
@@ -187,51 +180,22 @@ class _PatientDataTableState extends State<PatientDataTable> {
         visibleColumnCount: widget.visibleCount,
         pageSize: widget.pageSize,
         onPageChanged: widget.onPageChanged,
-        renderExpansionContent: (row) {
-          int index = rows.indexOf(row);
-          if (index == -1 || index >= widget.patients.length) {
-            return const SizedBox();
-          }
-
-          final patient = widget.patients[index];
-          return _buildExpandedContent(patient);
-        },
+        renderExpansionContent: (row) => _buildExpandedContent(row),
         renderCustomPagination: widget.paginationBuilder,
       ),
     );
   }
 
-  void _showPatientDetail(PatientModel patient) {
-    showDialog(
-      context: context,
-      builder: (context) => PatientDetailDialog(
-        patient: patient,
-        notifier: widget.notifier,
-      ),
-    ).then((result) {
-      // If the user clicked "Edit Patient" from the detail dialog
-      if (result == 'edit') {
-        _showEditDialog(patient);
-      }
-    });
-  }
+  Widget _buildExpandedContent(ExpandableRow row) {
+    // Find the corresponding patient
+    int index = rows.indexOf(row);
+    if (index == -1 || index >= widget.patients.length) {
+      return const SizedBox(); // Fallback
+    }
 
-  void _showEditDialog(PatientModel patient) {
-    showDialog(
-      context: context,
-      builder: (context) => EditPatientDialog(
-        patient: patient,
-        notifier: widget.notifier,
-        patientsService: widget.patientsService,
-      ),
-    ).then((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
+    // Get the patient data
+    final patient = widget.patients[index];
 
-  Widget _buildExpandedContent(PatientModel patient) {
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Column(
@@ -242,34 +206,32 @@ class _PatientDataTableState extends State<PatientDataTable> {
             children: [
               // Profile image
               CircleAvatar(
-                radius: 30,
+                radius: 40,
                 backgroundColor: Colors.grey.shade200,
                 child: patient.user['profile_image'] != null
                     ? ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(40),
                   child: Image.network(
                     patient.user['profile_image'],
-                    width: 60,
-                    height: 60,
+                    width: 80,
+                    height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(
-                          Icons.person,
-                          size: 30,
-                          color: widget.notifier.getIconColor,
-                        ),
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.person,
+                      size: 40,
+                      color: widget.notifier.getIconColor,
+                    ),
                   ),
                 )
                     : Icon(
                   Icons.person,
-                  size: 30,
+                  size: 40,
                   color: widget.notifier.getIconColor,
                 ),
               ),
+              const SizedBox(width: 20),
 
-              const SizedBox(width: 15),
-
-              // Patient name and ID
+              // Patient name and status
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,155 +239,158 @@ class _PatientDataTableState extends State<PatientDataTable> {
                     Text(
                       patient.user['full_name'] ?? 'N/A',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: widget.notifier.getMainText,
                       ),
                     ),
                     const SizedBox(height: 5),
-                    Text(
-                      "Patient ID: ${patient.patientUniqueId}",
-                      style: TextStyle(
-                        color: widget.notifier.getMaingey,
-                        fontSize: 14,
-                      ),
+                    Wrap(
+                      spacing: 10,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(
+                                patient.user['status'] ?? 'active'),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            patient.user['status']?.toUpperCase() ?? 'N/A',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "ID: ${patient.patientUniqueId}",
+                          style: TextStyle(
+                            color: widget.notifier.getMainText,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              // Status badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(
-                      patient.user['status'] ?? 'active'),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  (patient.user['status'] ?? 'active')
-                      .toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              // Action buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.visibility, color: widget.notifier.getIconColor),
+                    onPressed: widget.onViewPatient != null
+                        ? () => widget.onViewPatient!(patient)
+                        : null,
+                    tooltip: "View Details",
                   ),
-                ),
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue),
+                    onPressed: widget.onEditPatient != null
+                        ? () => widget.onEditPatient!(patient)
+                        : null,
+                    tooltip: "Edit",
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: widget.onDeletePatient != null
+                        ? () => widget.onDeletePatient!(patient)
+                        : null,
+                    tooltip: "Delete",
+                  ),
+                ],
               ),
             ],
           ),
 
           const Divider(height: 30),
 
-          // Patient details in a grid layout
-          Wrap(
-            spacing: 30,
-            runSpacing: 15,
-            children: [
-              _detailItem(
-                  "Email",
-                  patient.user['email'] ?? 'N/A',
-                  Icons.email),
-              _detailItem(
-                  "Phone",
-                  patient.user['phone'] ?? 'N/A',
-                  Icons.phone),
-              _detailItem(
-                  "Gender",
-                  patient.user['gender'] ?? 'N/A',
-                  Icons.person),
-              _detailItem(
-                  "Date of Birth",
-                  patient.user['dob'] ?? 'N/A',
-                  Icons.calendar_today),
-              _detailItem(
-                  "Blood Group",
-                  patient.user['blood_group'] ?? 'N/A',
-                  Icons.bloodtype),
-              _detailItem(
-                  "Qualification",
-                  patient.user['qualification'] ?? 'N/A',
-                  Icons.school),
-              _detailItem(
-                  "Appointments",
-                  "${patient.stats['appointments_count'] ?? '0'}",
-                  Icons.calendar_month),
-              _detailItem(
-                  "Documents",
-                  "${patient.stats['documents_count'] ?? '0'}",
-                  Icons.file_copy),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // Action buttons at the bottom
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Navigate to detailed patient view or open in a new tab
-                  _showPatientDetail(patient);
-                },
-                icon: const Icon(Icons.visibility, size: 16),
-                label: const Text("View Details"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: widget.notifier.getIconColor,
-                  side: BorderSide(color: widget.notifier.getIconColor),
-                ),
+          // Patient details - Use SingleChildScrollView to prevent overflow
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width - 30,
               ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Show edit dialog
-                  _showEditDialog(patient);
-                },
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text("Edit"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.blue,
-                  side: const BorderSide(color: Colors.blue),
-                ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left column - Personal details
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _detailRow("Email", patient.user['email'] ?? 'N/A'),
+                        _detailRow("Phone", patient.user['phone'] ?? 'N/A'),
+                        _detailRow("Gender", patient.user['gender'] ?? 'N/A'),
+                        _detailRow("Date of Birth", patient.user['dob'] ?? 'N/A'),
+                        _detailRow("Blood Group", patient.user['blood_group'] ?? 'N/A'),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(width: 20),
+
+                  // Right column - Additional details
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _sectionTitle("Statistics"),
+                        _detailRow("Appointments", "${patient.stats['appointments_count'] ?? '0'} total"),
+                        _detailRow("Documents", "${patient.stats['documents_count'] ?? '0'} total"),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _detailItem(String label, String value, IconData icon) {
-    return SizedBox(
-      width: 200,
-      child: Row(
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: widget.notifier.getMainText,
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: widget.notifier.getIconColor,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: widget.notifier.getMaingey,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(color: widget.notifier.getMainText),
-                ),
-              ],
+          Text(
+            "$label:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: widget.notifier.getMainText,
             ),
+          ),
+          Text(
+            value,
+            style: TextStyle(color: widget.notifier.getMainText),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

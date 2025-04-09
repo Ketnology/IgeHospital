@@ -161,7 +161,7 @@ class PatientsService extends GetxService {
 
     try {
       final dynamic result =
-          await _httpClient.get('${ApiEndpoints.patientEndpoint}$id');
+          await _httpClient.get('${ApiEndpoints.patientEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -230,7 +230,7 @@ class PatientsService extends GetxService {
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Patient updated successfully');
-          fetchUpdatedPatients();
+          // fetchUpdatedPatients();
         } else {
           hasError.value = true;
           errorMessage.value = result['message'] ?? 'Failed to update patient';
@@ -252,7 +252,7 @@ class PatientsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.delete(
-        '${ApiEndpoints.patientEndpoint}$id',
+        '${ApiEndpoints.patientEndpoint}/$id',
       );
 
       if (result is Map<String, dynamic>) {
