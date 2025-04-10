@@ -17,4 +17,5 @@ class ApiEndpoints {
   static const String staffEndpoint = "$baseUrl/staff";
 
   static const String userProfile = "$baseUrl/user/profile";
+  static const String updateProfile = "$baseUrl/user/profile/update";
 }
