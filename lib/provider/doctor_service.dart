@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:ige_hospital/constants/api_endpoints.dart';
+import 'package:ige_hospital/provider/department_service.dart';
 import 'package:ige_hospital/utils/http_client.dart';
 import 'package:ige_hospital/utils/snack_bar_utils.dart';
 
@@ -56,6 +57,10 @@ class DoctorModel {
 class DoctorsService extends GetxService {
   final HttpClient _httpClient = HttpClient();
 
+  // Try to find DepartmentService
+  late DepartmentService _departmentService;
+  bool _departmentServiceInitialized = false;
+
   // Reactive variables
   final RxList<DoctorModel> doctors = <DoctorModel>[].obs;
   final RxBool isLoading = false.obs;
@@ -77,7 +82,35 @@ class DoctorsService extends GetxService {
   @override
   void onInit() {
     super.onInit();
+    _initDepartmentService();
     fetchDoctors();
+  }
+
+  void _initDepartmentService() {
+    try {
+      _departmentService = Get.find<DepartmentService>();
+      _departmentServiceInitialized = true;
+    } catch (e) {
+      // Service not found, it will be initialized later
+      _departmentServiceInitialized = false;
+      Get.log("DepartmentService not found, will try again later: $e");
+    }
+  }
+
+  String getDepartmentName(String departmentId) {
+    if (_departmentServiceInitialized) {
+      return _departmentService.getDepartmentTitle(departmentId);
+    }
+
+    // If department service is not initialized, try to find it
+    try {
+      _departmentService = Get.find<DepartmentService>();
+      _departmentServiceInitialized = true;
+      return _departmentService.getDepartmentTitle(departmentId);
+    } catch (e) {
+      // Return default value if service not found
+      return "Unknown Department";
+    }
   }
 
   Future<void> fetchDoctors() async {
@@ -165,6 +198,8 @@ class DoctorsService extends GetxService {
     hasError.value = false;
 
     try {
+      Get.log("Creating doctor with data: $doctorData");
+
       final dynamic result = await _httpClient.post(
         ApiEndpoints.doctorEndpoint,
         headers: {

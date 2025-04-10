@@ -13,6 +13,7 @@ class ApiEndpoints {
   static const String patientEndpoint = "$baseUrl/patient";
 
   static const String doctorEndpoint = "$baseUrl/doctor";
+  static const String doctorDepartmentsEndpoint = "$baseUrl/doctor-departments";
 
   static const String staffEndpoint = "$baseUrl/staff";
 
