@@ -6,6 +6,11 @@ import 'package:ige_hospital/provider/doctor_service.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/common_button.dart';
+import 'package:ige_hospital/widgets/doctor_detail_dialog.dart';
+import 'package:ige_hospital/widgets/doctor_filters.dart';
+import 'package:ige_hospital/widgets/doctor_pagination.dart';
+import 'package:ige_hospital/widgets/add_doctor_dialog.dart';
+import 'package:ige_hospital/widgets/edit_doctor_dialog.dart';
 import 'package:ige_hospital/widgets/text_field.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +43,9 @@ class _DoctorsPageState extends State<DoctorsPage> {
   final TextEditingController departmentController = TextEditingController();
   final TextEditingController specialistController = TextEditingController();
 
+  // Key for the datatable to force rebuild when data changes
+  final tableKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +55,9 @@ class _DoctorsPageState extends State<DoctorsPage> {
     // Add listener to update data source when doctors change
     ever(doctorsService.doctors, (_) {
       createDataSource();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -121,22 +132,19 @@ class _DoctorsPageState extends State<DoctorsPage> {
               IconButton(
                 icon: Icon(Icons.edit, color: notifier.getIconColor),
                 onPressed: () {
-                  // Open edit dialog
-                  // _showEditDialog(doctor);
+                  _showEditDialog(doctor);
                 },
               ),
               IconButton(
                 icon: Icon(Icons.visibility, color: Colors.blue),
                 onPressed: () {
-                  // Show view doctor detail
-                  // _showDoctorDetail(doctor);
+                  _showDoctorDetail(doctor);
                 },
               ),
               IconButton(
                 icon: Icon(Icons.delete, color: Colors.red),
                 onPressed: () {
-                  // Show delete confirmation
-                  // _showDeleteConfirmation(doctor);
+                  _showDeleteConfirmation(doctor);
                 },
               ),
             ],
@@ -144,9 +152,6 @@ class _DoctorsPageState extends State<DoctorsPage> {
         ),
       ]);
     }).toList();
-
-    // Force UI update
-    if (mounted) setState(() {});
   }
 
   Color _getStatusColor(String status) {
@@ -184,8 +189,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
               children: [
                 const CommonTitle(
                     title: 'Doctors', path: "Hospital Operations"),
-                // _buildPageTopBar(),
-                // _buildFilterSection(),
+                _buildPageTopBar(),
+                DoctorFilters(
+                  notifier: notifier,
+                  doctorsService: doctorsService,
+                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -323,215 +331,17 @@ class _DoctorsPageState extends State<DoctorsPage> {
                             // Get the doctor data
                             final doctor = doctorsService.doctors[index];
 
-                            return Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Doctor header with profile image and status
-                                  Row(
-                                    children: [
-                                      // Profile image
-                                      CircleAvatar(
-                                        radius: 30,
-                                        backgroundColor: Colors.grey.shade200,
-                                        child: doctor.profileImage.isNotEmpty
-                                            ? ClipRRect(
-                                          borderRadius:
-                                          BorderRadius.circular(30),
-                                          child: Image.network(
-                                            doctor.profileImage,
-                                            width: 60,
-                                            height: 60,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error,
-                                                stackTrace) =>
-                                                Icon(
-                                                  Icons.person,
-                                                  size: 30,
-                                                  color:
-                                                  notifier.getIconColor,
-                                                ),
-                                          ),
-                                        )
-                                            : Icon(
-                                          Icons.person,
-                                          size: 30,
-                                          color: notifier.getIconColor,
-                                        ),
-                                      ),
-
-                                      const SizedBox(width: 15),
-
-                                      // Doctor name and ID
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              doctor.fullName,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: notifier.getMainText,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 5),
-                                            Text(
-                                              "Doctor ID: ${doctor.id}",
-                                              style: TextStyle(
-                                                color: notifier.getMaingey,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      // Status badge
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: _getStatusColor(doctor.status),
-                                          borderRadius:
-                                          BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          doctor.status.toUpperCase(),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const Divider(height: 30),
-
-                                  // Doctor details in a grid layout
-                                  Wrap(
-                                    spacing: 30,
-                                    runSpacing: 15,
-                                    children: [
-                                      // _detailItem(
-                                      //     "Email",
-                                      //     doctor.email,
-                                      //     Icons.email),
-                                      // _detailItem(
-                                      //     "Phone",
-                                      //     doctor.phone,
-                                      //     Icons.phone),
-                                      // _detailItem(
-                                      //     "Gender",
-                                      //     doctor.gender,
-                                      //     Icons.person),
-                                      // _detailItem(
-                                      //     "Department",
-                                      //     doctor.departmentName,
-                                      //     Icons.business),
-                                      // _detailItem(
-                                      //     "Specialist",
-                                      //     doctor.specialist,
-                                      //     Icons.local_hospital),
-                                      // _detailItem(
-                                      //     "Qualification",
-                                      //     doctor.qualification,
-                                      //     Icons.school),
-                                      // _detailItem(
-                                      //     "Created At",
-                                      //     doctor.createdAt,
-                                      //     Icons.calendar_today),
-                                      // _detailItem(
-                                      //     "Updated At",
-                                      //     doctor.updatedAt,
-                                      //     Icons.update),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // Doctor description
-                                  Text(
-                                    "Description",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: notifier.getMainText,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    doctor.description,
-                                    style: TextStyle(
-                                      color: notifier.getMainText,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // Action buttons at the bottom
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          // Navigate to detailed doctor view or open in a new tab
-                                          // _showDoctorDetail(doctor);
-                                        },
-                                        icon: const Icon(Icons.visibility,
-                                            size: 16),
-                                        label: const Text("View Details"),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor:
-                                          notifier.getIconColor,
-                                          side: BorderSide(
-                                              color: notifier.getIconColor),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          // Show edit dialog
-                                          // _showEditDialog(doctor);
-                                        },
-                                        icon: const Icon(Icons.edit, size: 16),
-                                        label: const Text("Edit"),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.blue,
-                                          side: const BorderSide(
-                                              color: Colors.blue),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          // Show delete confirmation
-                                          // _showDeleteConfirmation(doctor);
-                                        },
-                                        icon: const Icon(Icons.delete,
-                                            size: 16),
-                                        label: const Text("Delete"),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.red,
-                                          side: const BorderSide(
-                                              color: Colors.red),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
+                            return _buildExpandedContent(doctor);
                           },
                           renderCustomPagination:
                               (totalPages, currentPage, onPageChanged) =>
-                              _buildCustomPagination(
-                                  totalPages, currentPage, onPageChanged),
+                              DoctorPagination(
+                                notifier: notifier,
+                                doctorsService: doctorsService,
+                                totalPages: totalPages,
+                                currentPage: currentPage,
+                                onPageChanged: onPageChanged,
+                              ),
                         ),
                       );
                     }),
@@ -545,68 +355,378 @@ class _DoctorsPageState extends State<DoctorsPage> {
     );
   }
 
-  Widget _buildCustomPagination(
-      int totalPages, int currentPage, void Function(int) onPageChanged) {
-    return Obx(
-          () {
-        final calculatedTotalPages = (doctorsService.totalDoctors.value /
-            doctorsService.perPage.value)
-            .ceil();
+  Widget _buildPageTopBar() {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          bool isMobile = constraints.maxWidth < 600;
+          bool isTablet =
+              constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
+          bool isDesktop = constraints.maxWidth >= 1024;
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          return
+                  Expanded(
+                    flex: isDesktop ? 1 : (isTablet ? 2 : 3),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showAddDoctorDialog();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appMainColor,
+                        fixedSize: const Size.fromHeight(40),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            "assets/plus-circle.svg",
+                            color: Colors.white,
+                            width: 18,
+                            height: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Add Doctor",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w200,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+        },
+      ),
+    );
+  }
+
+  Widget _buildExpandedContent(DoctorModel doctor) {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Doctor header with profile image and status
+          Row(
             children: [
-              // First page button
-              IconButton(
-                icon: Icon(Icons.first_page,
-                    color:
-                    currentPage == 0 ? Colors.grey : notifier.getMainText),
-                onPressed: currentPage > 0 ? () => onPageChanged(0) : null,
+              // Profile image
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.grey.shade200,
+                child: doctor.profileImage.isNotEmpty
+                    ? ClipRRect(
+                  borderRadius:
+                  BorderRadius.circular(30),
+                  child: Image.network(
+                    doctor.profileImage,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error,
+                        stackTrace) =>
+                        Icon(
+                          Icons.person,
+                          size: 30,
+                          color:
+                          notifier.getIconColor,
+                        ),
+                  ),
+                )
+                    : Icon(
+                  Icons.person,
+                  size: 30,
+                  color: notifier.getIconColor,
+                ),
               ),
 
-              // Previous page button
-              IconButton(
-                icon: Icon(Icons.chevron_left,
-                    color:
-                    currentPage > 0 ? notifier.getMainText : Colors.grey),
-                onPressed: currentPage > 0
-                    ? () => onPageChanged(currentPage - 1)
-                    : null,
+              const SizedBox(width: 15),
+
+              // Doctor name and ID
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      doctor.fullName,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: notifier.getMainText,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "Doctor ID: ${doctor.id}",
+                      style: TextStyle(
+                        color: notifier.getMaingey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
-              // Page counter
-              Text(
-                "Page ${currentPage + 1} of $totalPages",
-                style: TextStyle(fontSize: 14, color: notifier.getMainText),
-              ),
-
-              // Next page button
-              IconButton(
-                icon: Icon(Icons.chevron_right,
-                    color: currentPage < calculatedTotalPages - 1
-                        ? notifier.getMainText
-                        : Colors.grey),
-                onPressed: currentPage < totalPages - 1
-                    ? () => onPageChanged(currentPage + 1)
-                    : null,
-              ),
-
-              // Last page button
-              IconButton(
-                icon: Icon(Icons.last_page,
-                    color: currentPage < calculatedTotalPages - 1
-                        ? notifier.getMainText
-                        : Colors.grey),
-                onPressed: currentPage < calculatedTotalPages - 1
-                    ? () => onPageChanged(calculatedTotalPages - 1)
-                    : null,
+              // Status badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(doctor.status),
+                  borderRadius:
+                  BorderRadius.circular(20),
+                ),
+                child: Text(
+                  doctor.status.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
-        );
-      },
+
+          const Divider(height: 30),
+
+          // Doctor details in a grid layout
+          Wrap(
+            spacing: 30,
+            runSpacing: 15,
+            children: [
+              _detailItem(
+                  "Email",
+                  doctor.email,
+                  Icons.email),
+              _detailItem(
+                  "Phone",
+                  doctor.phone,
+                  Icons.phone),
+              _detailItem(
+                  "Gender",
+                  doctor.gender,
+                  Icons.person),
+              _detailItem(
+                  "Department",
+                  doctor.departmentName,
+                  Icons.business),
+              _detailItem(
+                  "Specialist",
+                  doctor.specialist,
+                  Icons.local_hospital),
+              _detailItem(
+                  "Qualification",
+                  doctor.qualification,
+                  Icons.school),
+              _detailItem(
+                  "Created At",
+                  doctor.createdAt,
+                  Icons.calendar_today),
+              _detailItem(
+                  "Updated At",
+                  doctor.updatedAt,
+                  Icons.update),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Doctor description
+          Text(
+            "Description",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: notifier.getMainText,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            doctor.description,
+            style: TextStyle(
+              color: notifier.getMainText,
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Action buttons at the bottom
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () {
+                  // Navigate to detailed doctor view or open in a new tab
+                  _showDoctorDetail(doctor);
+                },
+                icon: const Icon(Icons.visibility,
+                    size: 16),
+                label: const Text("View Details"),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                  notifier.getIconColor,
+                  side: BorderSide(
+                      color: notifier.getIconColor),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: () {
+                  // Show edit dialog
+                  _showEditDialog(doctor);
+                },
+                icon: const Icon(Icons.edit, size: 16),
+                label: const Text("Edit"),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  side: const BorderSide(
+                      color: Colors.blue),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: () {
+                  // Show delete confirmation
+                  _showDeleteConfirmation(doctor);
+                },
+                icon: const Icon(Icons.delete,
+                    size: 16),
+                label: const Text("Delete"),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(
+                      color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailItem(String label, String value, IconData icon) {
+    return SizedBox(
+      width: 200,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: notifier.getIconColor,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: notifier.getMaingey,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(color: notifier.getMainText),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddDoctorDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AddDoctorDialog(
+        notifier: notifier,
+        doctorsService: doctorsService,
+      ),
+    ).then((_) {
+      // Refresh data after dialog is closed
+      doctorsService.fetchDoctors();
+    });
+  }
+
+  void _showEditDialog(DoctorModel doctor) {
+    // showDialog(
+    //   context: context,
+    //   builder: (context) => EditDoctorDialog(
+    //     doctor: doctor,
+    //     notifier: notifier,
+    //     doctorsService: doctorsService,
+    //   ),
+    // ).then((_) {
+    //   if (mounted) {
+    //     doctorsService.fetchDoctors();
+    //     // Trigger UI update
+    //     setState(() {});
+    //   }
+    // });
+  }
+
+  void _showDoctorDetail(DoctorModel doctor) {
+    showDialog(
+      context: context,
+      builder: (context) => DoctorDetailDialog(
+        doctor: doctor,
+        notifier: notifier,
+      ),
+    ).then((result) {
+      if (result == 'edit') {
+        _showEditDialog(doctor);
+      }
+    });
+  }
+
+  void _showDeleteConfirmation(DoctorModel doctor) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: notifier.getContainer,
+        title: Text(
+          "Confirm Delete",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        content: Text(
+          "Are you sure you want to delete Dr. ${doctor.fullName}?",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: notifier.getMainText),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              doctorsService.deleteDoctor(doctor.id);
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
