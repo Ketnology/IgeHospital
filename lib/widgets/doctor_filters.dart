@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/doctor_service.dart';
+import 'package:ige_hospital/provider/department_service.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 
 class DoctorFilters extends StatefulWidget {
@@ -21,11 +22,33 @@ class DoctorFilters extends StatefulWidget {
 class _DoctorFiltersState extends State<DoctorFilters> {
   bool _isFilterExpanded = false;
   final TextEditingController specialtyController = TextEditingController();
+  late DepartmentService _departmentService;
+  bool _departmentServiceInitialized = false;
 
   @override
   void initState() {
     super.initState();
     specialtyController.text = widget.doctorsService.specialist.value;
+    _initDepartmentService();
+  }
+
+  void _initDepartmentService() {
+    try {
+      _departmentService = Get.find<DepartmentService>();
+      _departmentServiceInitialized = true;
+    } catch (e) {
+      // Service not found, create it
+      _departmentServiceInitialized = false;
+      // Create and initialize the department service
+      _departmentService = Get.put(DepartmentService());
+      _departmentServiceInitialized = true;
+      // Trigger a refresh after fetching data
+      _departmentService.fetchDepartments().then((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
   }
 
   @override
@@ -161,27 +184,7 @@ class _DoctorFiltersState extends State<DoctorFilters> {
     return Row(
       children: [
         Expanded(
-          child: _buildDropdown(
-            labelText: "Department",
-            value: widget.doctorsService.departmentId.value.isEmpty
-                ? null
-                : widget.doctorsService.departmentId.value,
-            items: const [
-              DropdownMenuItem(value: '', child: Text('All Departments')),
-              DropdownMenuItem(value: '1', child: Text('Cardiology')),
-              DropdownMenuItem(value: '2', child: Text('Neurology')),
-              DropdownMenuItem(value: '3', child: Text('Orthopedics')),
-              DropdownMenuItem(value: '4', child: Text('Pediatrics')),
-              DropdownMenuItem(value: '5', child: Text('Obstetrics & Gynecology')),
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                widget.doctorsService.departmentId.value = value;
-                widget.doctorsService.fetchDoctors();
-              }
-            },
-            icon: Icons.business,
-          ),
+          child: _buildDepartmentDropdown(),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -212,6 +215,53 @@ class _DoctorFiltersState extends State<DoctorFilters> {
         ),
       ],
     );
+  }
+
+  Widget _buildDepartmentDropdown() {
+    // If department service is not initialized yet, show loading
+    if (!_departmentServiceInitialized) {
+      return _buildDropdown(
+        labelText: "Department (Loading...)",
+        value: '',
+        items: const [
+          DropdownMenuItem(value: '', child: Text("Loading departments...")),
+        ],
+        onChanged: (value) {},
+        icon: Icons.business,
+      );
+    }
+
+    // Get department items from service
+    return Obx(() {
+      final dropdownItems = [
+        const DropdownMenuItem(value: '', child: Text('All Departments')),
+      ];
+
+      // Add departments from service
+      if (_departmentService.departments.isNotEmpty) {
+        for (var dept in _departmentService.departments) {
+          if (dept.status.toLowerCase() == 'active') {
+            dropdownItems.add(DropdownMenuItem(
+              value: dept.id,
+              child: Text(dept.title),
+            ));
+          }
+        }
+      }
+
+      return _buildDropdown(
+        labelText: "Department",
+        value: widget.doctorsService.departmentId.value,
+        items: dropdownItems,
+        onChanged: (value) {
+          if (value != null) {
+            widget.doctorsService.departmentId.value = value;
+            widget.doctorsService.fetchDoctors();
+          }
+        },
+        icon: Icons.business,
+      );
+    });
   }
 
   Widget _buildStatusAndSortRow() {

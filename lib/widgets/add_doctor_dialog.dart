@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/doctor_service.dart';
+import 'package:ige_hospital/provider/department_service.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:intl/intl.dart';
 
@@ -34,11 +35,21 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
 
   // Selected values
   String selectedGender = 'male';
-  String selectedDepartment = '1';
+  String selectedDepartment = '';
   String selectedBloodGroup = 'O+';
 
   // Loading state
   bool isLoading = false;
+
+  // Department service
+  late DepartmentService _departmentService;
+  bool _departmentServiceInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDepartmentService();
+  }
 
   @override
   void dispose() {
@@ -51,6 +62,25 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
     descriptionController.dispose();
     dobController.dispose();
     super.dispose();
+  }
+
+  void _initDepartmentService() {
+    try {
+      _departmentService = Get.find<DepartmentService>();
+      _departmentServiceInitialized = true;
+    } catch (e) {
+      // Service not found, create it
+      _departmentServiceInitialized = false;
+      // Create and initialize the department service
+      _departmentService = Get.put(DepartmentService());
+      _departmentServiceInitialized = true;
+      // Trigger a refresh after fetching data
+      _departmentService.fetchDepartments().then((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
   }
 
   @override
@@ -253,22 +283,33 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
                         Row(
                           children: [
                             Expanded(
-                              child: _buildDropdown(
-                                label: "Department",
-                                value: selectedDepartment,
-                                items: const [
-                                  DropdownMenuItem(value: "1", child: Text("Cardiology")),
-                                  DropdownMenuItem(value: "2", child: Text("Neurology")),
-                                  DropdownMenuItem(value: "3", child: Text("Orthopedics")),
-                                  DropdownMenuItem(value: "4", child: Text("Pediatrics")),
-                                  DropdownMenuItem(value: "5", child: Text("Obstetrics & Gynecology")),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedDepartment = value!;
-                                  });
-                                },
-                              ),
+                              child: Obx(() {
+                                // Use the department service if available
+                                if (_departmentServiceInitialized && _departmentService.departments.isNotEmpty) {
+                                  return _buildDropdown(
+                                    label: "Department",
+                                    value: selectedDepartment.isEmpty && _departmentService.departments.isNotEmpty
+                                        ? _departmentService.departments.first.id
+                                        : selectedDepartment,
+                                    items: _getDepartmentItems(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedDepartment = value!;
+                                      });
+                                    },
+                                  );
+                                } else {
+                                  // Show loading dropdown
+                                  return _buildDropdown(
+                                    label: "Department (Loading...)",
+                                    value: '',
+                                    items: const [
+                                      DropdownMenuItem(value: '', child: Text("Loading departments...")),
+                                    ],
+                                    onChanged: (value) {},
+                                  );
+                                }
+                              }),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -381,6 +422,17 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
 
   void _saveDoctor() async {
     if (_formKey.currentState!.validate()) {
+      if (selectedDepartment.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "Please select a department",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
       setState(() {
         isLoading = true;
       });
@@ -401,6 +453,7 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
           if (dobController.text.isNotEmpty) "dob": dobController.text,
         };
 
+        Get.log("Creating doctor with department ID: $selectedDepartment");
         await widget.doctorsService.createDoctor(doctorData);
 
         Navigator.pop(context);
@@ -469,5 +522,23 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
       items: items,
       onChanged: onChanged,
     );
+  }
+
+  List<DropdownMenuItem<String>> _getDepartmentItems() {
+    if (!_departmentServiceInitialized) {
+      return [const DropdownMenuItem(value: '', child: Text("No departments available"))];
+    }
+
+    if (_departmentService.departments.isEmpty) {
+      return [const DropdownMenuItem(value: '', child: Text("No departments available"))];
+    }
+
+    return _departmentService.departments
+        .where((dept) => dept.status.toLowerCase() == 'active')
+        .map((dept) => DropdownMenuItem<String>(
+      value: dept.id,
+      child: Text(dept.title),
+    ))
+        .toList();
   }
 }

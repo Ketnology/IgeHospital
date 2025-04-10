@@ -49,9 +49,6 @@ class DepartmentService extends GetxService {
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
 
-  // Define the endpoint for departments APIs
-  final String departmentsEndpoint = "${ApiEndpoints.baseUrl}/departments";
-
   @override
   void onInit() {
     super.onInit();
@@ -71,7 +68,7 @@ class DepartmentService extends GetxService {
     errorMessage.value = '';
 
     try {
-      final dynamic result = await _httpClient.get(departmentsEndpoint);
+      final dynamic result = await _httpClient.get(ApiEndpoints.doctorDepartmentsEndpoint);
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
