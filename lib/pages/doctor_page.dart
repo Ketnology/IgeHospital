@@ -92,37 +92,31 @@ class _DoctorsPageState extends State<DoctorsPage> {
     rows = doctorsService.doctors.map<ExpandableRow>((doctor) {
       return ExpandableRow(cells: [
         ExpandableCell<String>(
-            columnTitle: "Doctor Name",
-            value: doctor.fullName),
-        ExpandableCell<String>(
-            columnTitle: "Email", value: doctor.email),
-        ExpandableCell<String>(
-            columnTitle: "Phone", value: doctor.phone),
-        ExpandableCell<String>(
-            columnTitle: "Gender", value: doctor.gender),
+            columnTitle: "Doctor Name", value: doctor.fullName),
+        ExpandableCell<String>(columnTitle: "Email", value: doctor.email),
+        ExpandableCell<String>(columnTitle: "Phone", value: doctor.phone),
+        ExpandableCell<String>(columnTitle: "Gender", value: doctor.gender),
         ExpandableCell<String>(
             columnTitle: "Department", value: doctor.departmentName),
         ExpandableCell<String>(
             columnTitle: "Specialist", value: doctor.specialist),
-        ExpandableCell<String>(
-            columnTitle: "Status", value: doctor.status),
+        ExpandableCell<String>(columnTitle: "Status", value: doctor.status),
         ExpandableCell<Widget>(
           columnTitle: "Profile Image",
           value: doctor.profileImage.isNotEmpty
               ? ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.network(
-              doctor.profileImage,
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-              const Icon(
-                Icons.person,
-                size: 40,
-              ),
-            ),
-          )
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    doctor.profileImage,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.person,
+                      size: 40,
+                    ),
+                  ),
+                )
               : const Icon(Icons.person, size: 40),
         ),
         ExpandableCell<Widget>(
@@ -224,8 +218,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton(
-                                onPressed: () =>
-                                    doctorsService.fetchDoctors(),
+                                onPressed: () => doctorsService.fetchDoctors(),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: notifier.getIconColor,
                                 ),
@@ -335,13 +328,13 @@ class _DoctorsPageState extends State<DoctorsPage> {
                           },
                           renderCustomPagination:
                               (totalPages, currentPage, onPageChanged) =>
-                              DoctorPagination(
-                                notifier: notifier,
-                                doctorsService: doctorsService,
-                                totalPages: totalPages,
-                                currentPage: currentPage,
-                                onPageChanged: onPageChanged,
-                              ),
+                                  DoctorPagination(
+                            notifier: notifier,
+                            doctorsService: doctorsService,
+                            totalPages: totalPages,
+                            currentPage: currentPage,
+                            onPageChanged: onPageChanged,
+                          ),
                         ),
                       );
                     }),
@@ -365,43 +358,39 @@ class _DoctorsPageState extends State<DoctorsPage> {
               constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
           bool isDesktop = constraints.maxWidth >= 1024;
 
-          return
-                  Expanded(
-                    flex: isDesktop ? 1 : (isTablet ? 2 : 3),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showAddDoctorDialog();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: appMainColor,
-                        fixedSize: const Size.fromHeight(40),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SvgPicture.asset(
-                            "assets/plus-circle.svg",
-                            color: Colors.white,
-                            width: 18,
-                            height: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            "Add Doctor",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w200,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+          return ElevatedButton(
+            onPressed: () {
+              _showAddDoctorDialog();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appMainColor,
+              fixedSize: const Size.fromHeight(40),
+              elevation: 0,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  "assets/plus-circle.svg",
+                  color: Colors.white,
+                  width: 18,
+                  height: 18,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  "Add Doctor",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w200,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
@@ -422,28 +411,24 @@ class _DoctorsPageState extends State<DoctorsPage> {
                 backgroundColor: Colors.grey.shade200,
                 child: doctor.profileImage.isNotEmpty
                     ? ClipRRect(
-                  borderRadius:
-                  BorderRadius.circular(30),
-                  child: Image.network(
-                    doctor.profileImage,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error,
-                        stackTrace) =>
-                        Icon(
-                          Icons.person,
-                          size: 30,
-                          color:
-                          notifier.getIconColor,
+                        borderRadius: BorderRadius.circular(30),
+                        child: Image.network(
+                          doctor.profileImage,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.person,
+                            size: 30,
+                            color: notifier.getIconColor,
+                          ),
                         ),
-                  ),
-                )
+                      )
                     : Icon(
-                  Icons.person,
-                  size: 30,
-                  color: notifier.getIconColor,
-                ),
+                        Icons.person,
+                        size: 30,
+                        color: notifier.getIconColor,
+                      ),
               ),
 
               const SizedBox(width: 15),
@@ -451,8 +436,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
               // Doctor name and ID
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       doctor.fullName,
@@ -476,12 +460,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
 
               // Status badge
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: _getStatusColor(doctor.status),
-                  borderRadius:
-                  BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   doctor.status.toUpperCase(),
@@ -502,38 +485,15 @@ class _DoctorsPageState extends State<DoctorsPage> {
             spacing: 30,
             runSpacing: 15,
             children: [
+              _detailItem("Email", doctor.email, Icons.email),
+              _detailItem("Phone", doctor.phone, Icons.phone),
+              _detailItem("Gender", doctor.gender, Icons.person),
+              _detailItem("Department", doctor.departmentName, Icons.business),
               _detailItem(
-                  "Email",
-                  doctor.email,
-                  Icons.email),
-              _detailItem(
-                  "Phone",
-                  doctor.phone,
-                  Icons.phone),
-              _detailItem(
-                  "Gender",
-                  doctor.gender,
-                  Icons.person),
-              _detailItem(
-                  "Department",
-                  doctor.departmentName,
-                  Icons.business),
-              _detailItem(
-                  "Specialist",
-                  doctor.specialist,
-                  Icons.local_hospital),
-              _detailItem(
-                  "Qualification",
-                  doctor.qualification,
-                  Icons.school),
-              _detailItem(
-                  "Created At",
-                  doctor.createdAt,
-                  Icons.calendar_today),
-              _detailItem(
-                  "Updated At",
-                  doctor.updatedAt,
-                  Icons.update),
+                  "Specialist", doctor.specialist, Icons.local_hospital),
+              _detailItem("Qualification", doctor.qualification, Icons.school),
+              _detailItem("Created At", doctor.createdAt, Icons.calendar_today),
+              _detailItem("Updated At", doctor.updatedAt, Icons.update),
             ],
           ),
 
@@ -568,14 +528,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
                   // Navigate to detailed doctor view or open in a new tab
                   _showDoctorDetail(doctor);
                 },
-                icon: const Icon(Icons.visibility,
-                    size: 16),
+                icon: const Icon(Icons.visibility, size: 16),
                 label: const Text("View Details"),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor:
-                  notifier.getIconColor,
-                  side: BorderSide(
-                      color: notifier.getIconColor),
+                  foregroundColor: notifier.getIconColor,
+                  side: BorderSide(color: notifier.getIconColor),
                 ),
               ),
               const SizedBox(width: 10),
@@ -588,8 +545,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                 label: const Text("Edit"),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.blue,
-                  side: const BorderSide(
-                      color: Colors.blue),
+                  side: const BorderSide(color: Colors.blue),
                 ),
               ),
               const SizedBox(width: 10),
@@ -598,13 +554,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
                   // Show delete confirmation
                   _showDeleteConfirmation(doctor);
                 },
-                icon: const Icon(Icons.delete,
-                    size: 16),
+                icon: const Icon(Icons.delete, size: 16),
                 label: const Text("Delete"),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red,
-                  side: const BorderSide(
-                      color: Colors.red),
+                  side: const BorderSide(color: Colors.red),
                 ),
               ),
             ],
