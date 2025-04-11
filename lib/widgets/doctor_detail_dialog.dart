@@ -53,25 +53,24 @@ class DoctorDetailDialog extends StatelessWidget {
                   backgroundColor: Colors.grey.shade200,
                   child: doctor.profileImage.isNotEmpty
                       ? ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.network(
-                      doctor.profileImage,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(
-                            Icons.person,
-                            size: 40,
-                            color: notifier.getIconColor,
+                          borderRadius: BorderRadius.circular(40),
+                          child: Image.network(
+                            doctor.profileImage,
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person,
+                              size: 40,
+                              color: notifier.getIconColor,
+                            ),
                           ),
-                    ),
-                  )
+                        )
                       : Icon(
-                    Icons.person,
-                    size: 40,
-                    color: notifier.getIconColor,
-                  ),
+                          Icons.person,
+                          size: 40,
+                          color: notifier.getIconColor,
+                        ),
                 ),
                 const SizedBox(width: 20),
 
@@ -183,13 +182,15 @@ class DoctorDetailDialog extends StatelessWidget {
                       _detailRow("Department ID", doctor.doctorDepartmentId),
                       _detailRow("Department Name", doctor.departmentName),
                       if (doctor.department['description'] != null)
-                        _detailRow("Description", doctor.department['description']),
+                        _detailRow(
+                            "Description", doctor.department['description']),
                       const SizedBox(height: 20),
                     ],
 
                     // More detailed doctor information from the user object
                     if (doctor.user.isNotEmpty &&
-                        (doctor.user['blood_group'] != null || doctor.user['address'] != null)) ...[
+                        (doctor.user['blood_group'] != null ||
+                            doctor.user['address'] != null)) ...[
                       _sectionTitle("Additional Information"),
                       if (doctor.user['blood_group'] != null)
                         _detailRow("Blood Group", doctor.user['blood_group']),
