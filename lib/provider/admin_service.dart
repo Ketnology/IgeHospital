@@ -61,9 +61,6 @@ class AdminsService extends GetxService {
   final RxString sortBy = 'created_at'.obs;
   final RxString sortDirection = 'desc'.obs;
 
-  // Define the endpoint for admins APIs
-  final String adminsEndpoint = "${ApiEndpoints.baseUrl}/admins";
-
   @override
   void onInit() {
     super.onInit();
@@ -86,7 +83,7 @@ class AdminsService extends GetxService {
         'per_page': perPage.value.toString(),
       };
 
-      final Uri uri = Uri.parse(adminsEndpoint).replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.adminsEndpoint).replace(queryParameters: queryParams);
 
       final dynamic result = await _httpClient.get(uri.toString());
 
@@ -128,7 +125,7 @@ class AdminsService extends GetxService {
     errorMessage.value = '';
 
     try {
-      final dynamic result = await _httpClient.get('$adminsEndpoint/$id');
+      final dynamic result = await _httpClient.get('${ApiEndpoints.adminsEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -154,7 +151,7 @@ class AdminsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.post(
-        adminsEndpoint,
+        ApiEndpoints.adminsEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -186,7 +183,7 @@ class AdminsService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.put(
-        '$adminsEndpoint/$id',
+        '${ApiEndpoints.adminsEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -217,7 +214,7 @@ class AdminsService extends GetxService {
     hasError.value = false;
 
     try {
-      final dynamic result = await _httpClient.delete('$adminsEndpoint/$id');
+      final dynamic result = await _httpClient.delete('${ApiEndpoints.adminsEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
