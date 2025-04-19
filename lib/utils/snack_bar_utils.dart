@@ -14,6 +14,8 @@ class SnackBarUtils {
     Duration? duration,
     SnackPosition? position,
   }) {
+    Get.log('Success message: $message');
+
     Get.snackbar(
       title ?? "Success",
       message,
@@ -38,6 +40,8 @@ class SnackBarUtils {
     Duration? duration,
     SnackPosition? position,
   }) {
+    Get.log('Error message: $message', isError: true);
+
     Get.snackbar(
       title ?? "Error",
       message,
@@ -62,6 +66,8 @@ class SnackBarUtils {
     Duration? duration,
     SnackPosition? position,
   }) {
+    Get.log('Warning message: $message');
+
     Get.snackbar(
       title ?? "Warning",
       message,
@@ -86,6 +92,8 @@ class SnackBarUtils {
     Duration? duration,
     SnackPosition? position,
   }) {
+    Get.log('Info message: $message');
+
     Get.snackbar(
       title ?? "Info",
       message,
