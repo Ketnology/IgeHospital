@@ -28,128 +28,80 @@ class PatientsService extends GetxService {
   final RxString sortBy = 'created_at'.obs;
   final RxString sortDirection = 'desc'.obs;
 
-  // Cache of all patients for local operations
-  final List<PatientModel> _allPatients = [];
-
   @override
   void onInit() {
+    Get.log("[PatientsService] Initializing PatientsService");
     super.onInit();
-    fetchAllPatients();
+    fetchPatients(); // Changed from fetchAllPatients to fetchPatients
   }
 
   // Parse API response safely, handling both array and object responses
   List<dynamic> _safelyParseResponse(dynamic result) {
+    Get.log(
+        "[PatientsService] Attempting to parse API response: ${result?.runtimeType}");
     try {
       // Case 1: Response is a Map with data.patients field
       if (result is Map<String, dynamic>) {
-        if (result['data'] != null && result['data']['patients'] != null) {
-          return result['data']['patients'] as List<dynamic>;
-        } else if (result['data'] != null && result['data'] is List) {
-          return result['data'] as List<dynamic>;
+        Get.log("[PatientsService] Response is a Map");
+        if (result['data'] != null) {
+          Get.log("[PatientsService] 'data' field exists in response");
+          if (result['data']['patients'] != null) {
+            Get.log(
+                "[PatientsService] 'data.patients' field exists, returning it");
+            return result['data']['patients'] as List<dynamic>;
+          } else if (result['data'] is List) {
+            Get.log("[PatientsService] 'data' field is a List, returning it");
+            return result['data'] as List<dynamic>;
+          }
         } else if (result['patients'] != null) {
+          Get.log(
+              "[PatientsService] 'patients' field exists at root level, returning it");
           return result['patients'] as List<dynamic>;
+        }
+
+        // Log what fields are actually in the response
+        Get.log(
+            "[PatientsService] Available fields in response: ${result.keys.join(', ')}");
+        if (result['data'] != null) {
+          if (result['data'] is Map) {
+            Get.log(
+                "[PatientsService] Fields in data object: ${(result['data'] as Map).keys.join(', ')}");
+          }
         }
       }
 
       // Case 2: Response is a direct array of patients
       if (result is List) {
+        Get.log("[PatientsService] Response is a List, returning directly");
         return result;
       }
 
       // Default empty list if no pattern matches
+      Get.log(
+          "[PatientsService] No recognizable pattern in response, returning empty list");
       return [];
     } catch (e) {
+      Get.log("[PatientsService] Error parsing response: $e");
       errorMessage.value = 'Error parsing response: $e';
       return [];
     }
   }
 
-  // Fetch all patients once to populate _allPatients (for caching)
-  Future<void> fetchAllPatients() async {
-    try {
-      isLoading.value = true;
-
-      final Map<String, String> queryParams = {
-        'per_page': '1000', // Get a larger number of patients
-        'sort_by': 'created_at',
-        'sort_direction': 'desc',
-      };
-
-      final Uri uri = Uri.parse(ApiEndpoints.patientEndpoint).replace(queryParameters: queryParams);
-
-      final dynamic result = await _httpClient.get(uri.toString());
-
-      // Parse the response to get the list of patients
-      final patientsList = _safelyParseResponse(result);
-
-      if (patientsList.isNotEmpty) {
-        _allPatients.clear();
-        _allPatients.addAll(patientsList.map((json) => PatientModel.fromJson(json)).toList());
-
-        // After populating _allPatients, fetch with filters for UI
-        fetchPatients();
-      } else {
-        // Try alternative approach for fetching data
-        Get.log("No patients found in main response, trying alternative approach");
-        if (result is Map<String, dynamic> && result['status'] == 200) {
-          // Look for patients in different locations in the response
-          if (result['data'] != null) {
-            dynamic dataContent = result['data'];
-            if (dataContent is Map && dataContent.containsKey('patients')) {
-              final List<dynamic> altPatientsList = dataContent['patients'];
-              _allPatients.clear();
-              _allPatients.addAll(altPatientsList.map((json) => PatientModel.fromJson(json)).toList());
-              fetchPatients();
-              return;
-            }
-          }
-        }
-
-        // If we get here, we couldn't find patients data
-        hasError.value = true;
-        errorMessage.value = 'No patients data found in the response';
-      }
-    } catch (e) {
-      hasError.value = true;
-      errorMessage.value = 'Failed to connect to server: $e';
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
   Future<void> fetchPatients() async {
+    Get.log("[PatientsService] fetchPatients() called");
+    Get.log(
+        "[PatientsService] Current filter state - search: '${searchQuery.value}', gender: '${selectedGender.value}', blood group: '${selectedBloodGroup.value}', dateFrom: '${dateFrom.value}', dateTo: '${dateTo.value}'");
+
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = '';
 
     try {
-      // If we have applied filters, use the API
-      if (searchQuery.value.isNotEmpty ||
-          selectedGender.value.isNotEmpty ||
-          selectedBloodGroup.value.isNotEmpty ||
-          dateFrom.value.isNotEmpty ||
-          dateTo.value.isNotEmpty) {
-
-        await _fetchPatientsFromApi();
-      } else {
-        // If no filters, use the local cache with pagination
-        _applyLocalPagination();
-      }
-    } catch (e) {
-      hasError.value = true;
-      errorMessage.value = 'Error processing patients: $e';
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // Fetch patients from API with filters
-  Future<void> _fetchPatientsFromApi() async {
-    try {
       final Map<String, String> queryParams = {
         if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
         if (selectedGender.value.isNotEmpty) 'gender': selectedGender.value,
-        if (selectedBloodGroup.value.isNotEmpty) 'blood_group': selectedBloodGroup.value,
+        if (selectedBloodGroup.value.isNotEmpty)
+          'blood_group': selectedBloodGroup.value,
         if (dateFrom.value.isNotEmpty) 'date_from': dateFrom.value,
         if (dateTo.value.isNotEmpty) 'date_to': dateTo.value,
         'sort_by': sortBy.value,
@@ -157,185 +109,142 @@ class PatientsService extends GetxService {
         'page': currentPage.value.toString(),
         'per_page': perPage.value.toString(),
       };
+      Get.log("[PatientsService] API query params: $queryParams");
 
-      final Uri uri = Uri.parse(ApiEndpoints.patientEndpoint).replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.patientEndpoint)
+          .replace(queryParameters: queryParams);
+      Get.log("[PatientsService] Making GET request to: $uri");
 
       final dynamic result = await _httpClient.get(uri.toString());
+      Get.log("[PatientsService] Received API response");
 
       // Parse the response
       final patientsList = _safelyParseResponse(result);
+      Get.log(
+          "[PatientsService] Parsed ${patientsList.length} patients from API response");
 
       if (patientsList.isNotEmpty) {
-        patients.value = patientsList.map((json) => PatientModel.fromJson(json)).toList();
+        patients.value =
+            patientsList.map((json) => PatientModel.fromJson(json)).toList();
+        Get.log(
+            "[PatientsService] Updated patients.value with ${patients.length} patients");
 
         // Get total count for pagination
         int total = patientsList.length;
+        Get.log("[PatientsService] Default total count: $total");
 
         // Try to get total from response if available
         if (result is Map<String, dynamic>) {
+          Get.log("[PatientsService] Looking for pagination metadata");
           if (result['meta'] != null && result['meta']['total'] != null) {
             total = result['meta']['total'];
+            Get.log("[PatientsService] Found total from meta.total: $total");
           } else if (result['data'] is Map && result['data']['total'] != null) {
             total = result['data']['total'] is int
                 ? result['data']['total']
-                : int.tryParse(result['data']['total'].toString()) ?? patientsList.length;
+                : int.tryParse(result['data']['total'].toString()) ??
+                    patientsList.length;
+            Get.log("[PatientsService] Found total from data.total: $total");
+          } else {
+            Get.log(
+                "[PatientsService] Could not find pagination metadata in response");
           }
         }
 
         totalPatients.value = total;
+        Get.log("[PatientsService] totalPatients.value set to: $total");
       } else {
+        Get.log(
+            "[PatientsService] No patients returned from API, setting empty list");
         patients.value = [];
         if (currentPage.value > 1) {
+          Get.log(
+              "[PatientsService] Current page > 1 but no results, resetting to page 1");
           currentPage.value = 1;
           fetchPatients();
         }
       }
     } catch (e) {
-      throw 'API fetch error: $e';
-    }
-  }
-
-  // Apply pagination to local cache
-  void _applyLocalPagination() {
-    try {
-      // Apply filtering locally
-      var filteredPatients = List<PatientModel>.from(_allPatients);
-
-      // Apply search filter if needed
-      if (searchQuery.value.isNotEmpty) {
-        final query = searchQuery.value.toLowerCase();
-        filteredPatients = filteredPatients.where((patient) {
-          final name = patient.user['full_name']?.toLowerCase() ?? '';
-          final email = patient.user['email']?.toLowerCase() ?? '';
-          final phone = patient.user['phone']?.toLowerCase() ?? '';
-          final id = patient.patientUniqueId.toLowerCase();
-          return name.contains(query) || email.contains(query) || phone.contains(query) || id.contains(query);
-        }).toList();
-      }
-
-      // Apply gender filter if needed
-      if (selectedGender.value.isNotEmpty) {
-        filteredPatients = filteredPatients.where((patient) {
-          return patient.user['gender']?.toLowerCase() == selectedGender.value.toLowerCase();
-        }).toList();
-      }
-
-      // Apply blood group filter if needed
-      if (selectedBloodGroup.value.isNotEmpty) {
-        filteredPatients = filteredPatients.where((patient) {
-          return patient.user['blood_group'] == selectedBloodGroup.value;
-        }).toList();
-      }
-
-      // Apply date filters if needed
-      if (dateFrom.value.isNotEmpty && dateTo.value.isNotEmpty) {
-        final fromDate = DateTime.parse(dateFrom.value);
-        final toDate = DateTime.parse(dateTo.value).add(const Duration(days: 1));
-
-        filteredPatients = filteredPatients.where((patient) {
-          if (patient.createdAt.isEmpty) return false;
-          final createdDate = DateTime.parse(patient.createdAt);
-          return createdDate.isAfter(fromDate) && createdDate.isBefore(toDate);
-        }).toList();
-      }
-
-      // Apply sorting
-      filteredPatients.sort((a, b) {
-        int compareResult;
-
-        switch (sortBy.value) {
-          case 'created_at':
-            compareResult = a.createdAt.compareTo(b.createdAt);
-            break;
-          case 'first_name':
-            compareResult = (a.user['first_name'] ?? '').compareTo(b.user['first_name'] ?? '');
-            break;
-          case 'last_name':
-            compareResult = (a.user['last_name'] ?? '').compareTo(b.user['last_name'] ?? '');
-            break;
-          case 'email':
-            compareResult = (a.user['email'] ?? '').compareTo(b.user['email'] ?? '');
-            break;
-          case 'patient_unique_id':
-            compareResult = a.patientUniqueId.compareTo(b.patientUniqueId);
-            break;
-          default:
-            compareResult = a.createdAt.compareTo(b.createdAt);
-        }
-
-        return sortDirection.value == 'asc' ? compareResult : -compareResult;
-      });
-
-      // Update total count
-      totalPatients.value = filteredPatients.length;
-
-      // Apply pagination
-      final startIndex = (currentPage.value - 1) * perPage.value;
-      final endIndex = startIndex + perPage.value;
-
-      if (startIndex < filteredPatients.length) {
-        final paginatedPatients = filteredPatients.sublist(
-            startIndex,
-            endIndex > filteredPatients.length ? filteredPatients.length : endIndex
-        );
-        patients.value = paginatedPatients;
-      } else {
-        patients.value = [];
-        if (currentPage.value > 1) {
-          currentPage.value = 1;
-          _applyLocalPagination();
-        }
-      }
-    } catch (e) {
-      throw 'Local pagination error: $e';
+      Get.log("[PatientsService] Error in fetchPatients: $e");
+      Get.log("[PatientsService] Error stack trace: ${StackTrace.current}");
+      hasError.value = true;
+      errorMessage.value = 'Failed to fetch patients: $e';
+    } finally {
+      isLoading.value = false;
     }
   }
 
   Future<PatientModel?> getPatientDetails(String id) async {
+    Get.log("[PatientsService] getPatientDetails() called for id: $id");
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = '';
 
     try {
-      // First check if we have it in our local cache
-      final cachedPatient = _allPatients.firstWhereOrNull((patient) => patient.id == id);
-      if (cachedPatient != null) {
-        return cachedPatient;
-      }
-
-      // If not in cache, fetch from API
-      final dynamic result = await _httpClient.get('${ApiEndpoints.patientEndpoint}/$id');
+      Get.log("[PatientsService] Fetching patient from API");
+      final dynamic result =
+          await _httpClient.get('${ApiEndpoints.patientEndpoint}/$id');
+      Get.log("[PatientsService] Received API response for patient details");
 
       PatientModel? patient;
 
       if (result is Map<String, dynamic>) {
+        Get.log(
+            "[PatientsService] Response is a Map with keys: ${result.keys.join(', ')}");
         // Try to find patient data in various places in the response
         if (result['data'] != null) {
-          patient = PatientModel.fromJson(result['data']);
+          Get.log("[PatientsService] Found 'data' field in response");
+          try {
+            patient = PatientModel.fromJson(result['data']);
+            Get.log(
+                "[PatientsService] Successfully created PatientModel from data field");
+          } catch (e) {
+            Get.log(
+                "[PatientsService] Error creating PatientModel from data field: $e");
+          }
         } else if (result['patient'] != null) {
-          patient = PatientModel.fromJson(result['patient']);
+          Get.log("[PatientsService] Found 'patient' field in response");
+          try {
+            patient = PatientModel.fromJson(result['patient']);
+            Get.log(
+                "[PatientsService] Successfully created PatientModel from patient field");
+          } catch (e) {
+            Get.log(
+                "[PatientsService] Error creating PatientModel from patient field: $e");
+          }
+        } else {
+          Get.log(
+              "[PatientsService] No recognized patient data structure in response");
         }
       } else if (result is List && result.isNotEmpty) {
         // In case the API returns a list with one patient
-        patient = PatientModel.fromJson(result[0]);
+        Get.log(
+            "[PatientsService] Response is a List with ${result.length} items");
+        try {
+          patient = PatientModel.fromJson(result[0]);
+          Get.log(
+              "[PatientsService] Successfully created PatientModel from first list item");
+        } catch (e) {
+          Get.log(
+              "[PatientsService] Error creating PatientModel from list item: $e");
+        }
+      } else {
+        Get.log(
+            "[PatientsService] Unexpected response type: ${result?.runtimeType}");
       }
 
       if (patient != null) {
-        // Update cache
-        final index = _allPatients.indexWhere((p) => p.id == id);
-        if (index != -1) {
-          _allPatients[index] = patient;
-        } else {
-          _allPatients.add(patient);
-        }
-
         return patient;
       } else {
+        Get.log(
+            "[PatientsService] Could not find patient data in the response");
         hasError.value = true;
         errorMessage.value = 'Could not find patient data in the response';
         return null;
       }
     } catch (e) {
+      Get.log("[PatientsService] Error in getPatientDetails: $e");
+      Get.log("[PatientsService] Error stack trace: ${StackTrace.current}");
       hasError.value = true;
       errorMessage.value = 'Failed to get patient details: $e';
       return null;
@@ -345,10 +254,14 @@ class PatientsService extends GetxService {
   }
 
   Future<void> createPatient(Map<String, dynamic> patientData) async {
+    Get.log(
+        "[PatientsService] createPatient() called with data: ${jsonEncode(patientData)}");
     isLoading.value = true;
     hasError.value = false;
 
     try {
+      Get.log(
+          "[PatientsService] Sending POST request to ${ApiEndpoints.patientEndpoint}");
       final dynamic result = await _httpClient.post(
         ApiEndpoints.patientEndpoint,
         headers: {
@@ -356,51 +269,50 @@ class PatientsService extends GetxService {
         },
         body: jsonEncode(patientData),
       );
+      Get.log("[PatientsService] Received response");
 
       bool success = false;
-      PatientModel? newPatient;
 
       if (result is Map<String, dynamic>) {
+        Get.log(
+            "[PatientsService] Response is a Map with keys: ${result.keys.join(', ')}");
         // Check various success indicators
         if (result['status'] == 201 || result['status'] == 200) {
+          Get.log(
+              "[PatientsService] Request successful (status ${result['status']})");
           success = true;
-
-          // Try to get patient data from response
-          if (result['data'] != null) {
-            newPatient = PatientModel.fromJson(result['data']);
-          } else if (result['patient'] != null) {
-            newPatient = PatientModel.fromJson(result['patient']);
+        } else {
+          Get.log(
+              "[PatientsService] Request failed with status: ${result['status']}");
+          if (result['message'] != null) {
+            Get.log("[PatientsService] Error message: ${result['message']}");
           }
         }
+      } else {
+        Get.log(
+            "[PatientsService] Unexpected response type: ${result?.runtimeType}");
       }
 
       if (success) {
-        // Add to local cache if we have patient data
-        if (newPatient != null) {
-          final existingIndex = _allPatients.indexWhere((p) => p.id == newPatient!.id);
-          if (existingIndex != -1) {
-            _allPatients[existingIndex] = newPatient;
-          } else {
-            _allPatients.add(newPatient);
-          }
-        } else {
-          // If patient data is not returned, refresh the whole cache
-          await fetchAllPatients();
-        }
-
+        Get.log(
+            "[PatientsService] Patient created successfully, refreshing list");
         SnackBarUtils.showSuccessSnackBar('Patient created successfully');
-        fetchPatients();
+        fetchPatients(); // Refresh the list from API
       } else {
         // Handle error
+        Get.log("[PatientsService] Failed to create patient");
         hasError.value = true;
         if (result is Map<String, dynamic> && result['message'] != null) {
           errorMessage.value = result['message'];
+          Get.log("[PatientsService] Error message: ${result['message']}");
         } else {
           errorMessage.value = 'Failed to create patient';
         }
         SnackBarUtils.showErrorSnackBar(errorMessage.value);
       }
     } catch (e) {
+      Get.log("[PatientsService] Error in createPatient: $e");
+      Get.log("[PatientsService] Error stack trace: ${StackTrace.current}");
       hasError.value = true;
       errorMessage.value = 'Failed to connect to server: $e';
       SnackBarUtils.showErrorSnackBar(errorMessage.value);
@@ -409,11 +321,16 @@ class PatientsService extends GetxService {
     }
   }
 
-  Future<void> updatePatient(String id, Map<String, dynamic> patientData) async {
+  Future<void> updatePatient(
+      String id, Map<String, dynamic> patientData) async {
+    Get.log(
+        "[PatientsService] updatePatient() called for id: $id with data: ${jsonEncode(patientData)}");
     isLoading.value = true;
     hasError.value = false;
 
     try {
+      Get.log(
+          "[PatientsService] Sending PUT request to ${ApiEndpoints.patientEndpoint}/$id");
       final dynamic result = await _httpClient.put(
         '${ApiEndpoints.patientEndpoint}/$id',
         headers: {
@@ -421,96 +338,35 @@ class PatientsService extends GetxService {
         },
         body: jsonEncode(patientData),
       );
+      Get.log("[PatientsService] Received response");
 
       bool success = false;
-      PatientModel? updatedPatient;
 
       if (result is Map<String, dynamic>) {
+        Get.log(
+            "[PatientsService] Response is a Map with keys: ${result.keys.join(', ')}");
         // Check for success
         if (result['status'] == 200 || result['status'] == 201) {
+          Get.log(
+              "[PatientsService] Request successful (status ${result['status']})");
           success = true;
-
-          // Try to extract patient data
-          if (result['data'] != null) {
-            updatedPatient = PatientModel.fromJson(result['data']);
-          } else if (result['patient'] != null) {
-            updatedPatient = PatientModel.fromJson(result['patient']);
+        } else {
+          Get.log(
+              "[PatientsService] Request failed with status: ${result['status']}");
+          if (result['message'] != null) {
+            Get.log("[PatientsService] Error message: ${result['message']}");
           }
         }
+      } else {
+        Get.log(
+            "[PatientsService] Unexpected response type: ${result?.runtimeType}");
       }
 
       if (success) {
-        // Update local cache
-        if (updatedPatient != null) {
-          final index = _allPatients.indexWhere((p) => p.id == id);
-          if (index != -1) {
-            _allPatients[index] = updatedPatient;
-          } else {
-            _allPatients.add(updatedPatient);
-          }
-        } else {
-          // Update in-memory cache with partial data
-          final index = _allPatients.indexWhere((patient) => patient.id == id);
-          if (index != -1) {
-            final currentPatient = _allPatients[index];
-
-            // Update user data
-            if (patientData['first_name'] != null || patientData['last_name'] != null) {
-              final firstName = patientData['first_name'] ?? currentPatient.user['first_name'];
-              final lastName = patientData['last_name'] ?? currentPatient.user['last_name'];
-              currentPatient.user['first_name'] = firstName;
-              currentPatient.user['last_name'] = lastName;
-              currentPatient.user['full_name'] = '$firstName $lastName';
-            }
-
-            if (patientData['email'] != null) {
-              currentPatient.user['email'] = patientData['email'];
-            }
-
-            if (patientData['phone'] != null) {
-              currentPatient.user['phone'] = patientData['phone'];
-            }
-
-            if (patientData['gender'] != null) {
-              currentPatient.user['gender'] = patientData['gender'];
-            }
-
-            if (patientData['blood_group'] != null) {
-              currentPatient.user['blood_group'] = patientData['blood_group'];
-            }
-
-            if (patientData['dob'] != null) {
-              currentPatient.user['dob'] = patientData['dob'];
-            }
-
-            if (patientData['status'] != null) {
-              currentPatient.user['status'] = patientData['status'];
-            }
-
-            // Update address if provided
-            if (patientData['address1'] != null && currentPatient.address != null) {
-              currentPatient.address!['address1'] = patientData['address1'];
-            }
-
-            // Update updatedAt timestamp
-            _allPatients[index] = PatientModel(
-              id: currentPatient.id,
-              patientUniqueId: currentPatient.patientUniqueId,
-              customField: currentPatient.customField,
-              createdAt: currentPatient.createdAt,
-              updatedAt: DateTime.now().toIso8601String(),
-              user: currentPatient.user,
-              address: currentPatient.address,
-              template: currentPatient.template,
-              stats: currentPatient.stats,
-              appointments: currentPatient.appointments,
-              documents: currentPatient.documents,
-            );
-          }
-        }
-
+        Get.log(
+            "[PatientsService] Patient updated successfully, refreshing list");
         SnackBarUtils.showSuccessSnackBar('Patient updated successfully');
-        fetchPatients();
+        // fetchPatients(); // Refresh the list from API
       } else {
         // Handle error
         hasError.value = true;
@@ -548,11 +404,10 @@ class PatientsService extends GetxService {
       }
 
       if (success) {
-        // Remove from local cache
-        _allPatients.removeWhere((patient) => patient.id == id);
-
+        Get.log(
+            "[PatientsService] Patient deleted successfully, refreshing list");
         SnackBarUtils.showSuccessSnackBar('Patient deleted successfully');
-        fetchPatients();
+        fetchPatients(); // Refresh the list from API
       } else {
         hasError.value = true;
         if (result is Map<String, dynamic> && result['message'] != null) {
