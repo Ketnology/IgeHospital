@@ -71,9 +71,6 @@ class NursesService extends GetxService {
   final RxString sortBy = 'created_at'.obs;
   final RxString sortDirection = 'desc'.obs;
 
-  // Define the endpoint for nurses APIs
-  final String nursesEndpoint = "${ApiEndpoints.baseUrl}/receptionist";
-
   @override
   void onInit() {
     super.onInit();
@@ -98,7 +95,7 @@ class NursesService extends GetxService {
         'per_page': perPage.value.toString(),
       };
 
-      final Uri uri = Uri.parse(nursesEndpoint).replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.nursesEndpoint).replace(queryParameters: queryParams);
 
       final dynamic result = await _httpClient.get(uri.toString());
 
@@ -140,7 +137,7 @@ class NursesService extends GetxService {
     errorMessage.value = '';
 
     try {
-      final dynamic result = await _httpClient.get('$nursesEndpoint/$id');
+      final dynamic result = await _httpClient.get('${ApiEndpoints.nursesEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -166,7 +163,7 @@ class NursesService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.post(
-        nursesEndpoint,
+        ApiEndpoints.nursesEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -198,7 +195,7 @@ class NursesService extends GetxService {
 
     try {
       final dynamic result = await _httpClient.put(
-        '$nursesEndpoint/$id',
+        '${ApiEndpoints.nursesEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -229,7 +226,7 @@ class NursesService extends GetxService {
     hasError.value = false;
 
     try {
-      final dynamic result = await _httpClient.delete('$nursesEndpoint/$id');
+      final dynamic result = await _httpClient.delete('${ApiEndpoints.nursesEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
