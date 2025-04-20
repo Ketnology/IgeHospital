@@ -72,7 +72,7 @@ class NursesService extends GetxService {
   final RxString sortDirection = 'desc'.obs;
 
   // Define the endpoint for nurses APIs
-  final String nursesEndpoint = "${ApiEndpoints.baseUrl}/nurses";
+  final String nursesEndpoint = "${ApiEndpoints.baseUrl}/receptionist";
 
   @override
   void onInit() {
@@ -104,7 +104,7 @@ class NursesService extends GetxService {
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
-          final List<dynamic> nursesList = result['data']['nurses'] ?? [];
+          final List<dynamic> nursesList = result['data']['receptionists'] ?? [];
           nurses.value = nursesList.map((json) => NurseModel.fromJson(json)).toList();
 
           // Save pagination info
