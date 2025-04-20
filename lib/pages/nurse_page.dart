@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:expandable_datatable/expandable_datatable.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:ige_hospital/provider/nurse_service.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/constants/static_data.dart';
-import 'package:ige_hospital/provider/nurse_service.dart';
 import 'package:ige_hospital/widgets/common_button.dart';
+import 'package:ige_hospital/widgets/nurse_components/add_nurse_dialog.dart';
+import 'package:ige_hospital/widgets/nurse_components/edit_nurse_dialog.dart';
+import 'package:ige_hospital/widgets/nurse_components/nurse_detail_dialog.dart';
+import 'package:ige_hospital/widgets/nurse_components/nurse_pagination.dart';
 import 'package:ige_hospital/widgets/text_field.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +28,7 @@ class _NursesPageState extends State<NursesPage> {
   final AppConst controller = Get.put(AppConst());
   ColourNotifier notifier = ColourNotifier();
 
+  // Initialize the NursesService
   final NursesService nursesService = Get.put(NursesService());
 
   late List<ExpandableColumn<dynamic>> headers;
@@ -33,7 +38,11 @@ class _NursesPageState extends State<NursesPage> {
   final int pageSize = 10;
 
   final TextEditingController searchController = TextEditingController();
+  final TextEditingController departmentController = TextEditingController();
   final TextEditingController specialtyController = TextEditingController();
+
+  // Key for the datatable to force rebuild when data changes
+  final tableKey = GlobalKey();
 
   @override
   void initState() {
@@ -41,29 +50,31 @@ class _NursesPageState extends State<NursesPage> {
     createDataSource();
     nursesService.fetchNurses();
 
+    // Add listener to update data source when nurses change
     ever(nursesService.nurses, (_) {
       createDataSource();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
   @override
   void dispose() {
     searchController.dispose();
+    departmentController.dispose();
     specialtyController.dispose();
     super.dispose();
   }
 
   void createDataSource() {
     headers = [
-      ExpandableColumn<String>(columnTitle: "Full Name", columnFlex: 2),
+      ExpandableColumn<String>(columnTitle: "Name", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Email", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Phone", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Department", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Specialty", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Gender", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Qualification", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "ID", columnFlex: 1),
-      ExpandableColumn<Widget>(columnTitle: "Profile Image", columnFlex: 1),
+      ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
       ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
     ];
 
@@ -76,51 +87,35 @@ class _NursesPageState extends State<NursesPage> {
     // Map the nurses to expandable rows
     rows = nursesService.nurses.map<ExpandableRow>((nurse) {
       return ExpandableRow(cells: [
-        ExpandableCell<String>(columnTitle: "Full Name", value: nurse.fullName),
+        ExpandableCell<String>(
+            columnTitle: "Name", value: nurse.fullName),
         ExpandableCell<String>(columnTitle: "Email", value: nurse.email),
         ExpandableCell<String>(columnTitle: "Phone", value: nurse.phone),
         ExpandableCell<String>(
             columnTitle: "Department", value: nurse.departmentName),
         ExpandableCell<String>(
-            columnTitle: "Specialty", value: nurse.specialty ?? 'N/A'),
-        ExpandableCell<String>(columnTitle: "Gender", value: nurse.gender),
-        ExpandableCell<String>(
-            columnTitle: "Qualification", value: nurse.qualification),
-        ExpandableCell<String>(columnTitle: "ID", value: nurse.id),
-        ExpandableCell<Widget>(
-          columnTitle: "Profile Image",
-          value: nurse.profileImage.isNotEmpty
-              ? Image.network(
-                  nurse.profileImage,
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.person,
-                    size: 40,
-                  ),
-                )
-              : const Icon(Icons.person, size: 40),
-        ),
+            columnTitle: "Specialty", value: nurse.specialty ?? 'Not specified'),
+        ExpandableCell<String>(columnTitle: "Status", value: nurse.status),
         ExpandableCell<Widget>(
           columnTitle: "Actions",
           value: Row(
             children: [
               IconButton(
-                icon: Icon(Icons.edit, color: notifier.getIconColor),
+                icon: Icon(Icons.visibility, color: notifier.getIconColor),
                 onPressed: () {
-                  // _showEditDialog(nurse);
+                  _showNurseDetail(nurse);
                 },
               ),
               IconButton(
-                icon: Icon(Icons.visibility, color: Colors.blue),
+                icon: Icon(Icons.edit, color: Colors.blue),
                 onPressed: () {
-                  // _showNurseDetail(nurse);
+                  _showEditDialog(nurse);
                 },
               ),
               IconButton(
                 icon: Icon(Icons.delete, color: Colors.red),
                 onPressed: () {
-                  // _showDeleteConfirmation(nurse);
+                  _showDeleteConfirmation(nurse);
                 },
               ),
             ],
@@ -128,9 +123,19 @@ class _NursesPageState extends State<NursesPage> {
         ),
       ]);
     }).toList();
+  }
 
-    // Force UI update
-    if (mounted) setState(() {});
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'blocked':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
   }
 
   @override
@@ -153,9 +158,10 @@ class _NursesPageState extends State<NursesPage> {
 
             return Column(
               children: [
-                const CommonTitle(title: 'Nurses', path: "Hospital Staff"),
+                const CommonTitle(
+                    title: 'Nurses', path: "Hospital Staff"),
                 _buildPageTopBar(),
-                _buildFilterSection(),
+                _buildFilters(),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -206,7 +212,7 @@ class _NursesPageState extends State<NursesPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.person_off_outlined,
+                                Icons.people_alt_outlined,
                                 color: notifier.getIconColor,
                                 size: 48,
                               ),
@@ -281,23 +287,16 @@ class _NursesPageState extends State<NursesPage> {
                               currentPage = page;
                             });
                           },
-                          renderExpansionContent: (row) {
-                            // Find the corresponding nurse
-                            int index = rows.indexOf(row);
-                            if (index == -1 ||
-                                index >= nursesService.nurses.length) {
-                              return const SizedBox(); // Fallback
-                            }
-
-                            // Get the nurse data
-                            final nurse = nursesService.nurses[index];
-
-                            return _buildExpandedContent(nurse);
-                          },
+                          renderExpansionContent: (row) => _buildExpandedContent(row),
                           renderCustomPagination:
                               (totalPages, currentPage, onPageChanged) =>
-                                  _buildCustomPagination(
-                                      totalPages, currentPage, onPageChanged),
+                              NursePagination(
+                                notifier: notifier,
+                                nursesService: nursesService,
+                                totalPages: totalPages,
+                                currentPage: currentPage,
+                                onPageChanged: onPageChanged,
+                              ),
                         ),
                       );
                     }),
@@ -306,312 +305,6 @@ class _NursesPageState extends State<NursesPage> {
               ],
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterSection() {
-    bool _isFilterExpanded = false;
-
-    return Obx(
-      () => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-        child: Card(
-          color: notifier.getContainer,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: notifier.getBorderColor),
-          ),
-          elevation: 0,
-          child: StatefulBuilder(builder: (context, setState) {
-            return Column(
-              children: [
-                // Header with toggle button
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      _isFilterExpanded = !_isFilterExpanded;
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Filters",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: notifier.getMainText,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            TextButton.icon(
-                              onPressed: () {
-                                nursesService.resetFilters();
-                              },
-                              icon: Icon(Icons.refresh,
-                                  size: 16, color: notifier.getIconColor),
-                              label: Text(
-                                "Reset Filters",
-                                style: TextStyle(color: notifier.getIconColor),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              _isFilterExpanded
-                                  ? Icons.expand_less
-                                  : Icons.expand_more,
-                              color: notifier.getIconColor,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Expandable filter section
-                AnimatedCrossFade(
-                  firstChild: const SizedBox(height: 0),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.fromLTRB(15.0, 0, 15.0, 15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: specialtyController,
-                                style: TextStyle(color: notifier.getMainText),
-                                decoration: InputDecoration(
-                                  labelText: "Specialty",
-                                  labelStyle:
-                                      TextStyle(color: notifier.getMainText),
-                                  hintText: "Enter specialty field",
-                                  hintStyle: mediumGreyTextStyle,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(Icons.search,
-                                        color: notifier.getIconColor),
-                                    onPressed: () {
-                                      nursesService.specialty.value =
-                                          specialtyController.text;
-                                      nursesService.fetchNurses();
-                                    },
-                                  ),
-                                ),
-                                onFieldSubmitted: (value) {
-                                  nursesService.specialty.value = value;
-                                  nursesService.fetchNurses();
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: "Sort By",
-                                  labelStyle:
-                                      TextStyle(color: notifier.getMainText),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                ),
-                                value: nursesService.sortBy.value,
-                                dropdownColor: notifier.getContainer,
-                                style: TextStyle(color: notifier.getMainText),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: 'created_at',
-                                    child: Text('Registration Date',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'first_name',
-                                    child: Text('First Name',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'last_name',
-                                    child: Text('Last Name',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'email',
-                                    child: Text('Email',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    nursesService.sortBy.value = value;
-                                    nursesService.fetchNurses();
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: "Department",
-                                  labelStyle:
-                                      TextStyle(color: notifier.getMainText),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                ),
-                                value: nursesService.departmentId.value.isEmpty
-                                    ? null
-                                    : nursesService.departmentId.value,
-                                dropdownColor: notifier.getContainer,
-                                style: TextStyle(color: notifier.getMainText),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: '',
-                                    child: Text('All Departments',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '1',
-                                    child: Text('Cardiology',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '2',
-                                    child: Text('Neurology',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '3',
-                                    child: Text('Orthopedics',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '4',
-                                    child: Text('Pediatrics',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    nursesService.departmentId.value = value;
-                                    nursesService.fetchNurses();
-                                  }
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            // Sort Direction Dropdown
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: "Sort Direction",
-                                  labelStyle:
-                                      TextStyle(color: notifier.getMainText),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                        color: notifier.getBorderColor),
-                                  ),
-                                ),
-                                value: nursesService.sortDirection.value,
-                                dropdownColor: notifier.getContainer,
-                                style: TextStyle(color: notifier.getMainText),
-                                items: [
-                                  DropdownMenuItem(
-                                    value: 'asc',
-                                    child: Text('Ascending',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'desc',
-                                    child: Text('Descending',
-                                        style: TextStyle(
-                                            color: notifier.getMainText)),
-                                  ),
-                                ],
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    nursesService.sortDirection.value = value;
-                                    nursesService.fetchNurses();
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  duration: const Duration(milliseconds: 300),
-                  crossFadeState: _isFilterExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                ),
-              ],
-            );
-          }),
         ),
       ),
     );
@@ -693,7 +386,7 @@ class _NursesPageState extends State<NursesPage> {
                     flex: isDesktop ? 1 : (isTablet ? 2 : 3),
                     child: ElevatedButton(
                       onPressed: () {
-                        // _showAddNurseDialog();
+                        _showAddNurseDialog();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: appMainColor,
@@ -734,13 +427,244 @@ class _NursesPageState extends State<NursesPage> {
     );
   }
 
-  Widget _buildExpandedContent(NurseModel nurse) {
+  Widget _buildFilters() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Card(
+        color: notifier.getContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: notifier.getBorderColor),
+        ),
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Filters",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: notifier.getMainText,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      specialtyController.clear();
+                      departmentController.clear();
+                      nursesService.resetFilters();
+                    },
+                    icon: Icon(Icons.refresh,
+                        size: 16, color: notifier.getIconColor),
+                    label: Text(
+                      "Reset Filters",
+                      style: TextStyle(color: notifier.getIconColor),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: departmentController,
+                      style: TextStyle(color: notifier.getMainText),
+                      decoration: InputDecoration(
+                        labelText: "Department",
+                        labelStyle: TextStyle(color: notifier.getMainText),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        prefixIcon: Icon(Icons.business,
+                            color: notifier.getIconColor),
+                      ),
+                      onSubmitted: (value) {
+                        nursesService.departmentId.value = value;
+                        nursesService.fetchNurses();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: TextField(
+                      controller: specialtyController,
+                      style: TextStyle(color: notifier.getMainText),
+                      decoration: InputDecoration(
+                        labelText: "Specialty",
+                        labelStyle: TextStyle(color: notifier.getMainText),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        prefixIcon: Icon(Icons.local_hospital,
+                            color: notifier.getIconColor),
+                      ),
+                      onSubmitted: (value) {
+                        nursesService.specialty.value = value;
+                        nursesService.fetchNurses();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: "Sort By",
+                        labelStyle: TextStyle(color: notifier.getMainText),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        prefixIcon:
+                        Icon(Icons.sort, color: notifier.getIconColor),
+                      ),
+                      dropdownColor: notifier.getContainer,
+                      style: TextStyle(color: notifier.getMainText),
+                      value: nursesService.sortDirection.value,
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'asc', child: Text('Oldest First')),
+                        DropdownMenuItem(
+                            value: 'desc', child: Text('Newest First')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          nursesService.sortDirection.value = value;
+                          nursesService.fetchNurses();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddNurseDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AddNurseDialog(
+        notifier: notifier,
+        nursesService: nursesService,
+      ),
+    ).then((_) {
+      // Refresh data after dialog is closed
+      nursesService.fetchNurses();
+    });
+  }
+
+  void _showEditDialog(NurseModel nurse) {
+    showDialog(
+      context: context,
+      builder: (context) => EditNurseDialog(
+        nurse: nurse,
+        notifier: notifier,
+        nursesService: nursesService,
+      ),
+    ).then((_) {
+      if (mounted) {
+        nursesService.fetchNurses();
+        // Trigger UI update
+        setState(() {});
+      }
+    });
+  }
+
+  void _showNurseDetail(NurseModel nurse) {
+    showDialog(
+      context: context,
+      builder: (context) => NurseDetailDialog(
+        nurse: nurse,
+        notifier: notifier,
+      ),
+    ).then((result) {
+      if (result == 'edit') {
+        _showEditDialog(nurse);
+      }
+    });
+  }
+
+  void _showDeleteConfirmation(NurseModel nurse) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: notifier.getContainer,
+        title: Text(
+          "Confirm Delete",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        content: Text(
+          "Are you sure you want to delete ${nurse.fullName}?",
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: notifier.getMainText),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              nursesService.deleteNurse(nurse.id);
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandedContent(ExpandableRow row) {
+    // Find the corresponding nurse
+    int index = rows.indexOf(row);
+    if (index == -1 || index >= nursesService.nurses.length) {
+      return const SizedBox(); // Fallback
+    }
+
+    // Get the nurse data
+    final nurse = nursesService.nurses[index];
+
+    // Format dates for display
+    String createdAtFormatted = 'N/A';
+    String updatedAtFormatted = 'N/A';
+
+    try {
+      if (nurse.createdAt.isNotEmpty) {
+        final createdDate = DateTime.parse(nurse.createdAt);
+        createdAtFormatted = DateFormat('MMM dd, yyyy').format(createdDate);
+      }
+      if (nurse.updatedAt.isNotEmpty) {
+        final updatedDate = DateTime.parse(nurse.updatedAt);
+        updatedAtFormatted = DateFormat('MMM dd, yyyy').format(updatedDate);
+      }
+    } catch (e) {
+      print("Error parsing dates: $e");
+    }
+
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nurse header with profile image
+          // Nurse header with profile image and status
           Row(
             children: [
               // Profile image
@@ -749,28 +673,28 @@ class _NursesPageState extends State<NursesPage> {
                 backgroundColor: Colors.grey.shade200,
                 child: nurse.profileImage.isNotEmpty
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: Image.network(
-                          nurse.profileImage,
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                            Icons.person,
-                            size: 40,
-                            color: notifier.getIconColor,
-                          ),
-                        ),
-                      )
+                  borderRadius: BorderRadius.circular(40),
+                  child: Image.network(
+                    nurse.profileImage,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.person,
+                      size: 40,
+                      color: notifier.getIconColor,
+                    ),
+                  ),
+                )
                     : Icon(
-                        Icons.person,
-                        size: 40,
-                        color: notifier.getIconColor,
-                      ),
+                  Icons.person,
+                  size: 40,
+                  color: notifier.getIconColor,
+                ),
               ),
               const SizedBox(width: 20),
 
-              // Nurse details
+              // Nurse name and status
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -786,30 +710,30 @@ class _NursesPageState extends State<NursesPage> {
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        Text(
-                          nurse.specialty ?? 'General Nursing',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: notifier.getMainText,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade100,
+                            color: _getStatusColor(nurse.status),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            nurse.departmentName,
-                            style: TextStyle(
-                              color: Colors.green.shade800,
+                            nurse.status.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          "ID: ${nurse.id}",
+                          style: TextStyle(
+                            color: notifier.getMainText,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -817,11 +741,34 @@ class _NursesPageState extends State<NursesPage> {
                   ],
                 ),
               ),
+
+              // Actions
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.visibility, color: notifier.getIconColor),
+                    onPressed: () => _showNurseDetail(nurse),
+                    tooltip: "View Details",
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () => _showEditDialog(nurse),
+                    tooltip: "Edit",
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _showDeleteConfirmation(nurse),
+                    tooltip: "Delete",
+                  ),
+                ],
+              ),
             ],
           ),
+
           const Divider(height: 30),
 
-          // Nurse details in grid layout
+          // Nurse details
           Wrap(
             spacing: 30,
             runSpacing: 15,
@@ -829,48 +776,15 @@ class _NursesPageState extends State<NursesPage> {
               _buildDetailItem("Email", nurse.email, Icons.email),
               _buildDetailItem("Phone", nurse.phone, Icons.phone),
               _buildDetailItem("Gender", nurse.gender, Icons.person),
-              _buildDetailItem(
-                  "Qualification", nurse.qualification, Icons.school),
-              _buildDetailItem(
-                  "Department", nurse.departmentName, Icons.business),
-              _buildDetailItem("Specialty",
-                  nurse.specialty ?? 'General Nursing', Icons.medical_services),
-              _buildDetailItem(
-                  "Blood Group", nurse.bloodGroup, Icons.bloodtype),
+              _buildDetailItem("Department", nurse.departmentName, Icons.business),
+              _buildDetailItem("Specialty", nurse.specialty ?? 'Not specified', Icons.local_hospital),
+              _buildDetailItem("Qualification", nurse.qualification, Icons.school),
+              _buildDetailItem("Created At", createdAtFormatted, Icons.calendar_today),
+              _buildDetailItem("Updated At", updatedAtFormatted, Icons.update),
             ],
           ),
 
           const SizedBox(height: 20),
-
-          // Action buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  // _showEditDialog(nurse);
-                },
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text("Edit"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.blue,
-                  side: const BorderSide(color: Colors.blue),
-                ),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: () {
-                  // _showDeleteConfirmation(nurse);
-                },
-                icon: const Icon(Icons.delete, size: 16),
-                label: const Text("Delete"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -909,71 +823,6 @@ class _NursesPageState extends State<NursesPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCustomPagination(
-      int totalPages, int currentPage, void Function(int) onPageChanged) {
-    return Obx(
-      () {
-        final calculatedTotalPages =
-            (nursesService.totalNurses.value / nursesService.perPage.value)
-                .ceil();
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // First page button
-              IconButton(
-                icon: Icon(Icons.first_page,
-                    color:
-                        currentPage == 0 ? Colors.grey : notifier.getMainText),
-                onPressed: currentPage > 0 ? () => onPageChanged(0) : null,
-              ),
-
-              // Previous page button
-              IconButton(
-                icon: Icon(Icons.chevron_left,
-                    color:
-                        currentPage > 0 ? notifier.getMainText : Colors.grey),
-                onPressed: currentPage > 0
-                    ? () => onPageChanged(currentPage - 1)
-                    : null,
-              ),
-
-              // Page counter
-              Text(
-                "Page ${currentPage + 1} of $totalPages",
-                style: TextStyle(fontSize: 14, color: notifier.getMainText),
-              ),
-
-              // Next page button
-              IconButton(
-                icon: Icon(Icons.chevron_right,
-                    color: currentPage < calculatedTotalPages - 1
-                        ? notifier.getMainText
-                        : Colors.grey),
-                onPressed: currentPage < totalPages - 1
-                    ? () => onPageChanged(currentPage + 1)
-                    : null,
-              ),
-
-              // Last page button
-              IconButton(
-                icon: Icon(Icons.last_page,
-                    color: currentPage < calculatedTotalPages - 1
-                        ? notifier.getMainText
-                        : Colors.grey),
-                onPressed: currentPage < calculatedTotalPages - 1
-                    ? () => onPageChanged(calculatedTotalPages - 1)
-                    : null,
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ige_hospital/pages/admin_page.dart';
 import 'package:ige_hospital/pages/patients_page.dart';
 import 'package:ige_hospital/pages/profile_page.dart';
 import 'package:ige_hospital/pages/appointments.dart';
@@ -6,9 +7,6 @@ import 'package:ige_hospital/pages/home.dart';
 import 'package:ige_hospital/pages/in_patient.dart';
 import 'package:ige_hospital/pages/doctor_page.dart';
 import 'package:ige_hospital/pages/nurse_page.dart';
-
-import 'admin_page.dart';
-import 'nurses_page.dart';
 
 final Map<String, Widget> pages = {
   '': const DefaultPage(),
@@ -18,7 +16,6 @@ final Map<String, Widget> pages = {
   'profile': const ProfilePage(),
   'patients': const PatientsPage(),
   'doctors': const DoctorsPage(),
-  // 'nurses': const NursesPage(),
-  'nurses': const NursesPageV2(),
+  'nurses': const NursesPage(),
   'admins': const AdminsPage(),
 };
