@@ -35,7 +35,7 @@ class _NursesPageState extends State<NursesPage> {
   late List<ExpandableRow> rows;
 
   int currentPage = 0;
-  final int pageSize = 10;
+  final int pageSize = 1;
 
   final TextEditingController searchController = TextEditingController();
   final TextEditingController specialtyController = TextEditingController();
