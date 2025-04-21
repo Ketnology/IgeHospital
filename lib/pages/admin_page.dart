@@ -26,7 +26,7 @@ class _AdminsPageState extends State<AdminsPage> {
   final AdminsService adminsService = Get.put(AdminsService());
 
   int currentPage = 0;
-  final int pageSize = 10;
+  final int pageSize = 1;
 
   final TextEditingController searchController = TextEditingController();
 
