@@ -69,6 +69,7 @@ class _NursesPageState extends State<NursesPage> {
       ExpandableColumn<String>(columnTitle: "Name", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Email", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Phone", columnFlex: 2),
+      ExpandableColumn<String>(columnTitle: "Gender", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
       ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
     ];
@@ -86,6 +87,7 @@ class _NursesPageState extends State<NursesPage> {
             columnTitle: "Name", value: nurse.fullName),
         ExpandableCell<String>(columnTitle: "Email", value: nurse.email),
         ExpandableCell<String>(columnTitle: "Phone", value: nurse.phone),
+        ExpandableCell<String>(columnTitle: "Gender", value: nurse.gender),
         ExpandableCell<String>(columnTitle: "Status", value: nurse.status),
         ExpandableCell<Widget>(
           columnTitle: "Actions",
@@ -591,14 +593,6 @@ class _NursesPageState extends State<NursesPage> {
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          "ID: ${nurse.id}",
-                          style: TextStyle(
-                            color: notifier.getMainText,
-                            fontSize: 14,
                           ),
                         ),
                       ],
