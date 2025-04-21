@@ -29,7 +29,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
   // Integrate the AppointmentsService
   final AppointmentsService appointmentsService =
-  Get.put(AppointmentsService());
+      Get.put(AppointmentsService());
 
   late List<ExpandableColumn<dynamic>> headers;
   late List<ExpandableRow> rows;
@@ -44,9 +44,15 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     super.initState();
     createDataSource();
 
+    // Fetch initial data
+    appointmentsService.fetchAppointments();
+
     // Add listener to update data source when appointments change
     ever(appointmentsService.appointments, (_) {
       createDataSource();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -61,7 +67,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       ExpandableColumn<String>(columnTitle: "Doctor Name", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Patient Name", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Appointment Date", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Appointment Time", columnFlex: 2),
+      ExpandableColumn<String>(columnTitle: "Appointment Time", columnFlex: 1),
       ExpandableColumn<String>(columnTitle: "Problem", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
       ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
@@ -118,9 +124,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         ),
       ]);
     }).toList();
-
-    // Force UI update
-    if (mounted) setState(() {});
   }
 
   @override
@@ -154,6 +157,12 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Obx(() {
+                      // Log for debugging
+                      Get.log(
+                          "Building appointments UI with ${appointmentsService.appointments.length} appointments");
+                      Get.log(
+                          "Total appointments: ${appointmentsService.totalAppointments.value}");
+
                       if (appointmentsService.isLoading.value) {
                         return Center(
                           child: CircularProgressIndicator(
@@ -279,23 +288,28 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           renderExpansionContent: (row) {
                             // Find the corresponding appointment
                             int index = rows.indexOf(row);
-                            if (index == -1 || index >= appointmentsService.appointments.length) {
+                            if (index == -1 ||
+                                index >=
+                                    appointmentsService.appointments.length) {
                               return const SizedBox(); // Fallback
                             }
 
-                            final appointment = appointmentsService.appointments[index];
+                            final appointment =
+                                appointmentsService.appointments[index];
 
                             // Show appointment detail in a dialog
                             return InkWell(
                               onTap: () => _showAppointmentDetail(appointment),
                               child: Container(
                                 padding: const EdgeInsets.all(16),
-                                color: notifier.getPrimaryColor.withOpacity(0.05),
+                                color:
+                                    notifier.getPrimaryColor.withOpacity(0.05),
                                 child: Row(
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             "Appointment Details",
@@ -328,13 +342,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           },
                           renderCustomPagination:
                               (totalPages, currentPage, onPageChanged) =>
-                              AppointmentPagination(
-                                notifier: notifier,
-                                appointmentsService: appointmentsService,
-                                totalPages: totalPages,
-                                currentPage: currentPage,
-                                onPageChanged: onPageChanged,
-                              ),
+                                  AppointmentPagination(
+                            notifier: notifier,
+                            appointmentsService: appointmentsService,
+                            totalPages: totalPages,
+                            currentPage: currentPage,
+                            onPageChanged: onPageChanged,
+                          ),
                         ),
                       );
                     }),
