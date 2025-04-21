@@ -358,38 +358,59 @@ class _DoctorsPageState extends State<DoctorsPage> {
               constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
           bool isDesktop = constraints.maxWidth >= 1024;
 
-          return ElevatedButton(
-            onPressed: () {
-              _showAddDoctorDialog();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: appMainColor,
-              fixedSize: const Size.fromHeight(40),
-              elevation: 0,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  "assets/plus-circle.svg",
-                  color: Colors.white,
-                  width: 18,
-                  height: 18,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "Add Doctor",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w200,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: isMobile
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: isDesktop ? 3 : 2, // More space for desktop
+                    child: Container(),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+                  SizedBox(width: 20),
+                  if (!isMobile) const SizedBox(width: 20),
+                  Expanded(
+                    flex: isDesktop ? 1 : (isTablet ? 2 : 3),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showAddDoctorDialog();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appMainColor,
+                        fixedSize: const Size.fromHeight(40),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            "assets/plus-circle.svg",
+                            color: Colors.white,
+                            width: 18,
+                            height: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Add Doctor",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w200,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           );
         },
       ),

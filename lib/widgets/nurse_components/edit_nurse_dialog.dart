@@ -313,49 +313,6 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Department & Specialty
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Obx(() {
-                                // Use the department service if available
-                                if (_departmentServiceInitialized && _departmentService.departments.isNotEmpty) {
-                                  return _buildDropdown(
-                                    label: "Department",
-                                    value: selectedDepartment,
-                                    items: _getDepartmentItems(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedDepartment = value!;
-                                      });
-                                    },
-                                  );
-                                } else {
-                                  // Show loading dropdown
-                                  return _buildDropdown(
-                                    label: "Department (Loading...)",
-                                    value: selectedDepartment,
-                                    items: [
-                                      DropdownMenuItem(value: selectedDepartment, child: const Text("Loading departments...")),
-                                    ],
-                                    onChanged: (value) {},
-                                  );
-                                }
-                              }),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: TextFormField(
-                                controller: specialtyController,
-                                style: TextStyle(color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("Specialty Area"),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Qualification & Blood Group
                         Row(
                           children: [
                             Expanded(
@@ -566,23 +523,5 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
       items: items,
       onChanged: onChanged,
     );
-  }
-
-  List<DropdownMenuItem<String>> _getDepartmentItems() {
-    if (!_departmentServiceInitialized) {
-      return [DropdownMenuItem(value: selectedDepartment, child: const Text("No departments available"))];
-    }
-
-    if (_departmentService.departments.isEmpty) {
-      return [DropdownMenuItem(value: selectedDepartment, child: const Text("No departments available"))];
-    }
-
-    return _departmentService.departments
-        .where((dept) => dept.status.toLowerCase() == 'active')
-        .map((dept) => DropdownMenuItem<String>(
-      value: dept.id,
-      child: Text(dept.title),
-    ))
-        .toList();
   }
 }

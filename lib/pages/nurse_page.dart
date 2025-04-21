@@ -38,10 +38,8 @@ class _NursesPageState extends State<NursesPage> {
   final int pageSize = 10;
 
   final TextEditingController searchController = TextEditingController();
-  final TextEditingController departmentController = TextEditingController();
   final TextEditingController specialtyController = TextEditingController();
 
-  // Key for the datatable to force rebuild when data changes
   final tableKey = GlobalKey();
 
   @override
@@ -62,7 +60,6 @@ class _NursesPageState extends State<NursesPage> {
   @override
   void dispose() {
     searchController.dispose();
-    departmentController.dispose();
     specialtyController.dispose();
     super.dispose();
   }
@@ -72,8 +69,6 @@ class _NursesPageState extends State<NursesPage> {
       ExpandableColumn<String>(columnTitle: "Name", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Email", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Phone", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Department", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Specialty", columnFlex: 2),
       ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
       ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
     ];
@@ -91,10 +86,6 @@ class _NursesPageState extends State<NursesPage> {
             columnTitle: "Name", value: nurse.fullName),
         ExpandableCell<String>(columnTitle: "Email", value: nurse.email),
         ExpandableCell<String>(columnTitle: "Phone", value: nurse.phone),
-        ExpandableCell<String>(
-            columnTitle: "Department", value: nurse.departmentName),
-        ExpandableCell<String>(
-            columnTitle: "Specialty", value: nurse.specialty ?? 'Not specified'),
         ExpandableCell<String>(columnTitle: "Status", value: nurse.status),
         ExpandableCell<Widget>(
           columnTitle: "Actions",
@@ -161,7 +152,6 @@ class _NursesPageState extends State<NursesPage> {
                 const CommonTitle(
                     title: 'Nurses', path: "Hospital Staff"),
                 _buildPageTopBar(),
-                _buildFilters(),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -427,131 +417,6 @@ class _NursesPageState extends State<NursesPage> {
     );
   }
 
-  Widget _buildFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-      child: Card(
-        color: notifier.getContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: notifier.getBorderColor),
-        ),
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Filters",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: notifier.getMainText,
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      specialtyController.clear();
-                      departmentController.clear();
-                      nursesService.resetFilters();
-                    },
-                    icon: Icon(Icons.refresh,
-                        size: 16, color: notifier.getIconColor),
-                    label: Text(
-                      "Reset Filters",
-                      style: TextStyle(color: notifier.getIconColor),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: departmentController,
-                      style: TextStyle(color: notifier.getMainText),
-                      decoration: InputDecoration(
-                        labelText: "Department",
-                        labelStyle: TextStyle(color: notifier.getMainText),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: Icon(Icons.business,
-                            color: notifier.getIconColor),
-                      ),
-                      onSubmitted: (value) {
-                        nursesService.departmentId.value = value;
-                        nursesService.fetchNurses();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: TextField(
-                      controller: specialtyController,
-                      style: TextStyle(color: notifier.getMainText),
-                      decoration: InputDecoration(
-                        labelText: "Specialty",
-                        labelStyle: TextStyle(color: notifier.getMainText),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: Icon(Icons.local_hospital,
-                            color: notifier.getIconColor),
-                      ),
-                      onSubmitted: (value) {
-                        nursesService.specialty.value = value;
-                        nursesService.fetchNurses();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: "Sort By",
-                        labelStyle: TextStyle(color: notifier.getMainText),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon:
-                        Icon(Icons.sort, color: notifier.getIconColor),
-                      ),
-                      dropdownColor: notifier.getContainer,
-                      style: TextStyle(color: notifier.getMainText),
-                      value: nursesService.sortDirection.value,
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'asc', child: Text('Oldest First')),
-                        DropdownMenuItem(
-                            value: 'desc', child: Text('Newest First')),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          nursesService.sortDirection.value = value;
-                          nursesService.fetchNurses();
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showAddNurseDialog() {
     showDialog(
       context: context,
@@ -776,8 +641,6 @@ class _NursesPageState extends State<NursesPage> {
               _buildDetailItem("Email", nurse.email, Icons.email),
               _buildDetailItem("Phone", nurse.phone, Icons.phone),
               _buildDetailItem("Gender", nurse.gender, Icons.person),
-              _buildDetailItem("Department", nurse.departmentName, Icons.business),
-              _buildDetailItem("Specialty", nurse.specialty ?? 'Not specified', Icons.local_hospital),
               _buildDetailItem("Qualification", nurse.qualification, Icons.school),
               _buildDetailItem("Created At", createdAtFormatted, Icons.calendar_today),
               _buildDetailItem("Updated At", updatedAtFormatted, Icons.update),

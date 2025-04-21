@@ -209,7 +209,9 @@ class _AdminsPageState extends State<AdminsPage> {
                   if (!isMobile) const SizedBox(width: 20),
                   Expanded(
                     flex: isDesktop ? 1 : (isTablet ? 2 : 3),
-                    child: ElevatedButton(
+                    child:
+
+                    ElevatedButton(
                       onPressed: () {
                         _showAddAdminDialog();
                       },
