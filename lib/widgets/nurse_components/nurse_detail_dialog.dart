@@ -168,11 +168,7 @@ class NurseDetailDialog extends StatelessWidget {
 
                     // Professional Information
                     _sectionTitle("Professional Information"),
-                    _detailRow("Department", nurse.departmentName),
-                    _detailRow("Specialty", nurse.specialty ?? 'Not Specified'),
                     _detailRow("Qualification", nurse.qualification),
-                    _detailRow("ID", nurse.id),
-                    _detailRow("User ID", nurse.userId),
                     _detailRow("Registration Date", createdAtFormatted),
                     _detailRow("Last Updated", updatedAtFormatted),
                   ],

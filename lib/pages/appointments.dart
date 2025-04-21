@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/provider/appointment_service.dart';
+import 'package:ige_hospital/widgets/appointment_filters.dart';
 import 'package:ige_hospital/widgets/common_button.dart';
 import 'package:ige_hospital/widgets/text_field.dart';
 import 'package:intl/intl.dart';
@@ -623,7 +624,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     flex: isDesktop ? 1 : (isTablet ? 2 : 3),
                     child: ElevatedButton(
                       onPressed: () {
-                        // _showCreateDialog();
+                        _showCreateDialog();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: appMainColor,

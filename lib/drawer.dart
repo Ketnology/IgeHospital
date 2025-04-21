@@ -103,6 +103,22 @@ class _DrawerCodeState extends State<DrawerCode> {
                                   controller.changePage('patients');
                                   Get.back();
                                 }),
+                            _buildSingleTile(
+                                header: "Doctors",
+                                iconPath: "assets/users33.svg",
+                                index: 'doctors',
+                                onTap: () {
+                                  controller.changePage('doctors');
+                                  Get.back();
+                                }),
+                            _buildSingleTile(
+                                header: "Nurses",
+                                iconPath: "assets/chat-info.svg",
+                                index: 'nurses',
+                                onTap: () {
+                                  controller.changePage('nurses');
+                                  Get.back();
+                                }),
                             // _buildSingleTile(
                             //     header: "Hospital Stay",
                             //     iconPath: "assets/home.svg",
@@ -111,23 +127,23 @@ class _DrawerCodeState extends State<DrawerCode> {
                             //       // controller.changePage('in-patient');
                             //       Get.back();
                             //     }),
-                            _buildDivider(title: 'Clinical Documentation'),
-                            _buildSingleTile(
-                                header: "Prescriptions",
-                                iconPath: "assets/clipboard-check.svg",
-                                index: 'prescriptions',
-                                onTap: () {
-                                  // controller.changePage(12);
-                                  Get.back();
-                                }),
-                            _buildSingleTile(
-                                header: "Reports",
-                                iconPath: "assets/file-text.svg",
-                                index: 'reports',
-                                onTap: () {
-                                  // controller.changePage(12);
-                                  Get.back();
-                                }),
+                            // _buildDivider(title: 'Clinical Documentation'),
+                            // _buildSingleTile(
+                            //     header: "Prescriptions",
+                            //     iconPath: "assets/clipboard-check.svg",
+                            //     index: 'prescriptions',
+                            //     onTap: () {
+                            //       // controller.changePage(12);
+                            //       Get.back();
+                            //     }),
+                            // _buildSingleTile(
+                            //     header: "Reports",
+                            //     iconPath: "assets/file-text.svg",
+                            //     index: 'reports',
+                            //     onTap: () {
+                            //       // controller.changePage(12);
+                            //       Get.back();
+                            //     }),
                             // _buildDivider(title: 'Treatment'),
                             // _buildSingleTile(
                             //     header: "Procedures",

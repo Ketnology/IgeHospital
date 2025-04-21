@@ -30,7 +30,6 @@ class _AddNurseDialogState extends State<AddNurseDialog> {
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
-  final specialtyController = TextEditingController();
   final qualificationController = TextEditingController();
   final dobController = TextEditingController();
 
@@ -62,7 +61,6 @@ class _AddNurseDialogState extends State<AddNurseDialog> {
     lastNameController.dispose();
     emailController.dispose();
     phoneController.dispose();
-    specialtyController.dispose();
     qualificationController.dispose();
     dobController.dispose();
     super.dispose();
@@ -299,61 +297,6 @@ class _AddNurseDialogState extends State<AddNurseDialog> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Department & Specialty
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Obx(() {
-                                // Use the department service if available
-                                if (_departmentServiceInitialized &&
-                                    _departmentService.departments.isNotEmpty) {
-                                  return _buildDropdown(
-                                    label: "Department",
-                                    value: selectedDepartment.isEmpty &&
-                                            _departmentService
-                                                .departments.isNotEmpty
-                                        ? _departmentService
-                                            .departments.first.id
-                                        : selectedDepartment,
-                                    items: _getDepartmentItems(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedDepartment = value!;
-                                      });
-                                    },
-                                  );
-                                } else {
-                                  // Show loading dropdown
-                                  return _buildDropdown(
-                                    label: "Department (Loading...)",
-                                    value: '',
-                                    items: const [
-                                      DropdownMenuItem(
-                                          value: '',
-                                          child:
-                                              Text("Loading departments...")),
-                                    ],
-                                    onChanged: (value) {},
-                                  );
-                                }
-                              }),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: TextFormField(
-                                controller: specialtyController,
-                                style: TextStyle(
-                                    color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("Specialty Area"),
-                                validator: (value) =>
-                                    value!.isEmpty ? "Required" : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Qualification & Blood Group
                         Row(
                           children: [
                             Expanded(
@@ -475,8 +418,6 @@ class _AddNurseDialogState extends State<AddNurseDialog> {
           "email": emailController.text,
           "phone": phoneController.text,
           "gender": selectedGender,
-          "department_id": selectedDepartment,
-          "specialty": specialtyController.text,
           "qualification": qualificationController.text,
           "blood_group": selectedBloodGroup,
           "status": "active",
