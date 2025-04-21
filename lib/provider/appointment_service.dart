@@ -20,14 +20,18 @@ class AppointmentResponse {
   });
 
   factory AppointmentResponse.fromJson(Map<String, dynamic> json) {
+    // Handle data from different response formats
+    final appointmentsData =
+        json['appointments'] ?? json['data']?['appointments'];
+    final appointmentsList =
+        appointmentsData is List ? appointmentsData : <dynamic>[];
+
     return AppointmentResponse(
-      total: json['total'] ?? 0,
-      page: json['page'] ?? 1,
-      perPage: json['per_page'] ?? 1000,
-      appointments: (json['appointments'] as List?)
-              ?.map((e) => AppointmentModel.fromJson(e))
-              .toList() ??
-          [],
+      total: json['total'] ?? json['data']?['total'] ?? appointmentsList.length,
+      page: json['page'] ?? json['data']?['page'] ?? 1,
+      perPage: json['per_page'] ?? json['data']?['per_page'] ?? 10,
+      appointments:
+          appointmentsList.map((e) => AppointmentModel.fromJson(e)).toList(),
     );
   }
 }
@@ -43,7 +47,8 @@ class AppointmentsService extends GetxService {
 
   final RxInt totalAppointments = 0.obs;
   final RxInt currentPage = 1.obs;
-  final RxInt perPage = 1000.obs;
+  final RxInt perPage =
+      10.obs; // Set default to 10 instead of 1000 for better pagination
 
   final RxString searchQuery = ''.obs;
   final RxString selectedDoctorId = ''.obs;
@@ -83,6 +88,8 @@ class AppointmentsService extends GetxService {
         'page': 1,
       };
 
+      Get.log("Fetching appointments with payload: $payload");
+
       final dynamic result = await _httpClient.post(
         ApiEndpoints.appointmentEndpoint,
         headers: {
@@ -96,7 +103,10 @@ class AppointmentsService extends GetxService {
           final responseData = AppointmentResponse.fromJson(result['data']);
           appointments.value = responseData.appointments;
           totalAppointments.value = responseData.total;
-          perPage.value = responseData.perPage;
+
+          // Log for debugging
+          Get.log(
+              "Loaded ${appointments.length} appointments. Total: ${totalAppointments.value}");
 
           // If we're on a page that doesn't exist anymore, go back to page 1
           if (appointments.isEmpty &&
@@ -114,6 +124,7 @@ class AppointmentsService extends GetxService {
     } catch (e) {
       hasError.value = true;
       errorMessage.value = 'Failed to connect to server: $e';
+      Get.log("Error fetching appointments: $e");
     } finally {
       isLoading.value = false;
     }
