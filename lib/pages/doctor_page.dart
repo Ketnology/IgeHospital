@@ -1,586 +1,253 @@
 import 'package:flutter/material.dart';
-import 'package:expandable_datatable/expandable_datatable.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:ige_hospital/provider/doctor_service.dart';
-import 'package:ige_hospital/static_data.dart';
-import 'package:ige_hospital/constants/static_data.dart';
-import 'package:ige_hospital/widgets/common_button.dart';
-import 'package:ige_hospital/widgets/doctor_detail_dialog.dart';
-import 'package:ige_hospital/widgets/doctor_filters.dart';
-import 'package:ige_hospital/widgets/doctor_pagination.dart';
-import 'package:ige_hospital/widgets/add_doctor_dialog.dart';
-import 'package:ige_hospital/widgets/edit_doctor_dialog.dart';
-import 'package:ige_hospital/widgets/text_field.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/widgets/common_title.dart';
-import 'dart:math';
+import 'package:ige_hospital/controllers/add_doctor_dialog.dart';
+import 'package:ige_hospital/controllers/doctor_card.dart';
+import 'package:ige_hospital/controllers/doctor_controller.dart';
+import 'package:ige_hospital/controllers/doctor_detail_dialog.dart';
+import 'package:ige_hospital/controllers/edit_doctor_dialog.dart';
 
-class DoctorsPage extends StatefulWidget {
+class DoctorsPage extends StatelessWidget {
+  // Make sure the controller is properly registered with GetX
+  // We use Get.put to ensure the controller is initialized and accessible globally
+  static final DoctorController controller = Get.put(DoctorController());
+
   const DoctorsPage({super.key});
 
   @override
-  State<DoctorsPage> createState() => _DoctorsPageState();
-}
-
-class _DoctorsPageState extends State<DoctorsPage> {
-  AppConst obj = AppConst();
-  final AppConst controller = Get.put(AppConst());
-  ColourNotifier notifier = ColourNotifier();
-
-  // Initialize the DoctorsService
-  final DoctorsService doctorsService = Get.put(DoctorsService());
-
-  late List<ExpandableColumn<dynamic>> headers;
-  late List<ExpandableRow> rows;
-
-  int currentPage = 0;
-  final int pageSize = 1;
-
-  final TextEditingController searchController = TextEditingController();
-  final TextEditingController departmentController = TextEditingController();
-  final TextEditingController specialistController = TextEditingController();
-
-  // Key for the datatable to force rebuild when data changes
-  final tableKey = GlobalKey();
-
-  @override
-  void initState() {
-    super.initState();
-    createDataSource();
-    doctorsService.fetchDoctors();
-
-    // Add listener to update data source when doctors change
-    ever(doctorsService.doctors, (_) {
-      createDataSource();
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    departmentController.dispose();
-    specialistController.dispose();
-    super.dispose();
-  }
-
-  void createDataSource() {
-    headers = [
-      ExpandableColumn<String>(columnTitle: "Doctor Name", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Email", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Phone", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Gender", columnFlex: 1),
-      ExpandableColumn<String>(columnTitle: "Department", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Specialist", columnFlex: 2),
-      ExpandableColumn<String>(columnTitle: "Status", columnFlex: 1),
-      ExpandableColumn<Widget>(columnTitle: "Profile Image", columnFlex: 2),
-      ExpandableColumn<Widget>(columnTitle: "Actions", columnFlex: 2),
-    ];
-
-    // Check if we have doctors to display
-    if (doctorsService.doctors.isEmpty) {
-      rows = [];
-      return;
-    }
-
-    // Map the doctors to expandable rows
-    rows = doctorsService.doctors.map<ExpandableRow>((doctor) {
-      return ExpandableRow(cells: [
-        ExpandableCell<String>(
-            columnTitle: "Doctor Name", value: doctor.fullName),
-        ExpandableCell<String>(columnTitle: "Email", value: doctor.email),
-        ExpandableCell<String>(columnTitle: "Phone", value: doctor.phone),
-        ExpandableCell<String>(columnTitle: "Gender", value: doctor.gender),
-        ExpandableCell<String>(
-            columnTitle: "Department", value: doctor.departmentName),
-        ExpandableCell<String>(
-            columnTitle: "Specialist", value: doctor.specialist),
-        ExpandableCell<String>(columnTitle: "Status", value: doctor.status),
-        ExpandableCell<Widget>(
-          columnTitle: "Profile Image",
-          value: doctor.profileImage.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    doctor.profileImage,
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.person,
-                      size: 40,
-                    ),
-                  ),
-                )
-              : const Icon(Icons.person, size: 40),
-        ),
-        ExpandableCell<Widget>(
-          columnTitle: "Actions",
-          value: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit, color: notifier.getIconColor),
-                onPressed: () {
-                  _showEditDialog(doctor);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.visibility, color: Colors.blue),
-                onPressed: () {
-                  _showDoctorDetail(doctor);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  _showDeleteConfirmation(doctor);
-                },
-              ),
-            ],
-          ),
-        ),
-      ]);
-    }).toList();
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'blocked':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.blue;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    notifier = Provider.of<ColourNotifier>(context, listen: true);
-
     return Scaffold(
-      backgroundColor: notifier.getBgColor,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            int visibleCount = 2;
-            if (constraints.maxWidth < 600) {
-              visibleCount = 2;
-            } else if (constraints.maxWidth < 800) {
-              visibleCount = 4;
-            } else {
-              visibleCount = 5;
-            }
-
-            return Column(
-              children: [
-                const CommonTitle(
-                    title: 'Doctors', path: "Hospital Operations"),
-                _buildPageTopBar(),
-                DoctorFilters(
-                  notifier: notifier,
-                  doctorsService: doctorsService,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Obx(() {
-                      if (doctorsService.isLoading.value) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: notifier.getIconColor,
-                          ),
-                        );
-                      }
-
-                      if (doctorsService.hasError.value) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: Colors.red,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                doctorsService.errorMessage.value,
-                                style: TextStyle(color: notifier.getMainText),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () => doctorsService.fetchDoctors(),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: notifier.getIconColor,
-                                ),
-                                child: const Text(
-                                  "Retry",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (doctorsService.doctors.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.medical_services_outlined,
-                                color: notifier.getIconColor,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "No doctors found",
-                                style: TextStyle(
-                                  color: notifier.getMainText,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Try adjusting your filters or add a new doctor",
-                                style: TextStyle(
-                                  color: notifier.getMaingey,
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return ExpandableTheme(
-                        data: ExpandableThemeData(
-                          context,
-                          contentPadding: const EdgeInsets.all(15),
-                          expandedBorderColor: notifier.getBorderColor,
-                          paginationSize: 48,
-                          headerHeight: 76,
-                          headerColor: notifier.getPrimaryColor,
-                          headerBorder: BorderSide(
-                            color: notifier.getBgColor,
-                            width: 8,
-                          ),
-                          evenRowColor: notifier.getContainer,
-                          oddRowColor: notifier.getBgColor,
-                          rowBorder: BorderSide(
-                            color: notifier.getBorderColor,
-                            width: 0.3,
-                          ),
-                          headerTextMaxLines: 4,
-                          headerSortIconColor: notifier.getMainText,
-                          headerTextStyle: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: notifier.getMainText,
-                          ),
-                          rowTextStyle: TextStyle(
-                            color: notifier.getMainText,
-                          ),
-                          expansionIcon: Icon(
-                            Icons.keyboard_arrow_down,
-                            color: notifier.getIconColor,
-                          ),
-                          editIcon: Icon(
-                            Icons.edit,
-                            color: notifier.getMainText,
-                          ),
-                        ),
-                        child: ExpandableDataTable(
-                          headers: headers,
-                          rows: rows,
-                          multipleExpansion: true,
-                          isEditable: false,
-                          visibleColumnCount: visibleCount,
-                          pageSize: pageSize,
-                          onPageChanged: (page) {
-                            setState(() {
-                              currentPage = page;
-                            });
-                          },
-                          renderExpansionContent: (row) {
-                            // Find the corresponding doctor
-                            int index = rows.indexOf(row);
-                            if (index == -1 ||
-                                index >= doctorsService.doctors.length) {
-                              return const SizedBox(); // Fallback
-                            }
-
-                            // Get the doctor data
-                            final doctor = doctorsService.doctors[index];
-
-                            return _buildExpandedContent(doctor);
-                          },
-                          renderCustomPagination:
-                              (totalPages, currentPage, onPageChanged) =>
-                                  DoctorPagination(
-                            notifier: notifier,
-                            doctorsService: doctorsService,
-                            totalPages: totalPages,
-                            currentPage: currentPage,
-                            onPageChanged: onPageChanged,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ],
-            );
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            _buildFilters(context),
+            _buildDoctorsList(),
+          ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
+        onPressed: () => _showAddDoctorDialog(context),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildPageTopBar() {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          bool isMobile = constraints.maxWidth < 600;
-          bool isTablet =
-              constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
-          bool isDesktop = constraints.maxWidth >= 1024;
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: isMobile
-                    ? MainAxisAlignment.center
-                    : MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: isDesktop ? 3 : 2, // More space for desktop
-                    child: Container(),
-                  ),
-                  SizedBox(width: 20),
-                  if (!isMobile) const SizedBox(width: 20),
-                  Expanded(
-                    flex: isDesktop ? 1 : (isTablet ? 2 : 3),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showAddDoctorDialog();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: appMainColor,
-                        fixedSize: const Size.fromHeight(40),
-                        elevation: 0,
+              Text(
+                'Doctors',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                'Manage hospital doctors',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          ElevatedButton.icon(
+            onPressed: () => _showAddDoctorDialog(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Doctor'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilters(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (value) => controller.searchQuery.value = value,
+                  decoration: InputDecoration(
+                    hintText: 'Search by name, email, specialty...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: Colors.grey.withOpacity(0.3),
                       ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                onPressed: () => controller.resetFilters(),
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Reset filters',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(() => DropdownButtonFormField<String>(
+                  value: controller.selectedDepartment.value.isEmpty ?
+                  'All Departments' : controller.selectedDepartment.value,
+                  decoration: InputDecoration(
+                    labelText: 'Department',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  items: controller.departments.map((department) {
+                    return DropdownMenuItem(
+                      value: department,
+                      child: Text(department),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.selectedDepartment.value =
+                      value == 'All Departments' ? '' : value;
+                    }
+                  },
+                )),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Obx(() => DropdownButtonFormField<String>(
+                  value: controller.selectedStatus.value.isEmpty ?
+                  'All' : controller.selectedStatus.value,
+                  decoration: InputDecoration(
+                    labelText: 'Status',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  items: ['All', 'Active', 'Pending', 'Blocked'].map((status) {
+                    return DropdownMenuItem(
+                      value: status,
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          SvgPicture.asset(
-                            "assets/plus-circle.svg",
-                            color: Colors.white,
-                            width: 18,
-                            height: 18,
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: status == 'All' ? Colors.grey :
+                              controller.getStatusColor(status),
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            "Add Doctor",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w200,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          Text(status),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.selectedStatus.value = value == 'All' ? '' : value;
+                    }
+                  },
+                )),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(() => DropdownButtonFormField<String>(
+                  value: controller.selectedSpecialty.value.isEmpty ?
+                  'All Specialties' : controller.selectedSpecialty.value,
+                  decoration: InputDecoration(
+                    labelText: 'Specialty',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  items: controller.specialties.map((specialty) {
+                    return DropdownMenuItem(
+                      value: specialty,
+                      child: Text(specialty),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.selectedSpecialty.value =
+                      value == 'All Specialties' ? '' : value;
+                    }
+                  },
+                )),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Obx(() => DropdownButtonFormField<String>(
+                  value: controller.sortDirection.value,
+                  decoration: InputDecoration(
+                    labelText: 'Sort By',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'desc',
+                      child: Row(
+                        children: const [
+                          Icon(Icons.arrow_downward, size: 16),
+                          SizedBox(width: 8),
+                          Text('Newest First'),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildExpandedContent(DoctorModel doctor) {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Doctor header with profile image and status
-          Row(
-            children: [
-              // Profile image
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.grey.shade200,
-                child: doctor.profileImage.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: Image.network(
-                          doctor.profileImage,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                            Icons.person,
-                            size: 30,
-                            color: notifier.getIconColor,
-                          ),
-                        ),
-                      )
-                    : Icon(
-                        Icons.person,
-                        size: 30,
-                        color: notifier.getIconColor,
-                      ),
-              ),
-
-              const SizedBox(width: 15),
-
-              // Doctor name and ID
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      doctor.fullName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: notifier.getMainText,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      "Doctor ID: ${doctor.id}",
-                      style: TextStyle(
-                        color: notifier.getMaingey,
-                        fontSize: 14,
+                    DropdownMenuItem(
+                      value: 'asc',
+                      child: Row(
+                        children: const [
+                          Icon(Icons.arrow_upward, size: 16),
+                          SizedBox(width: 8),
+                          Text('Oldest First'),
+                        ],
                       ),
                     ),
                   ],
-                ),
-              ),
-
-              // Status badge
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(doctor.status),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  doctor.status.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const Divider(height: 30),
-
-          // Doctor details in a grid layout
-          Wrap(
-            spacing: 30,
-            runSpacing: 15,
-            children: [
-              _detailItem("Email", doctor.email, Icons.email),
-              _detailItem("Phone", doctor.phone, Icons.phone),
-              _detailItem("Gender", doctor.gender, Icons.person),
-              _detailItem("Department", doctor.departmentName, Icons.business),
-              _detailItem(
-                  "Specialist", doctor.specialist, Icons.local_hospital),
-              _detailItem("Qualification", doctor.qualification, Icons.school),
-              _detailItem("Created At", doctor.createdAt, Icons.calendar_today),
-              _detailItem("Updated At", doctor.updatedAt, Icons.update),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // Doctor description
-          Text(
-            "Description",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: notifier.getMainText,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            doctor.description,
-            style: TextStyle(
-              color: notifier.getMainText,
-              fontSize: 14,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Action buttons at the bottom
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Navigate to detailed doctor view or open in a new tab
-                  _showDoctorDetail(doctor);
-                },
-                icon: const Icon(Icons.visibility, size: 16),
-                label: const Text("View Details"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: notifier.getIconColor,
-                  side: BorderSide(color: notifier.getIconColor),
-                ),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Show edit dialog
-                  _showEditDialog(doctor);
-                },
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text("Edit"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.blue,
-                  side: const BorderSide(color: Colors.blue),
-                ),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Show delete confirmation
-                  _showDeleteConfirmation(doctor);
-                },
-                icon: const Icon(Icons.delete, size: 16),
-                label: const Text("Delete"),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                ),
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.sortDirection.value = value;
+                    }
+                  },
+                )),
               ),
             ],
           ),
@@ -589,116 +256,111 @@ class _DoctorsPageState extends State<DoctorsPage> {
     );
   }
 
-  Widget _detailItem(String label, String value, IconData icon) {
-    return SizedBox(
-      width: 200,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: notifier.getIconColor,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
+  Widget _buildDoctorsList() {
+    return Expanded(
+      child: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.filteredDoctors.isEmpty) {
+          return Center(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
                 Text(
-                  label,
+                  'No doctors found',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: notifier.getMaingey,
+                    fontSize: 18,
+                    color: Colors.grey[600],
                   ),
                 ),
+                const SizedBox(height: 8),
                 Text(
-                  value,
-                  style: TextStyle(color: notifier.getMainText),
+                  'Try adjusting your filters or add a new doctor',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                  ),
                 ),
               ],
             ),
+          );
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(20),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 380,
+            childAspectRatio: 0.85,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
           ),
-        ],
-      ),
+          itemCount: controller.filteredDoctors.length,
+          itemBuilder: (context, index) {
+            final doctor = controller.filteredDoctors[index];
+            return DoctorCard(
+              doctor: doctor,
+              onView: () => _showDoctorDetail(context, doctor),
+              onEdit: () => _showEditDoctorDialog(context, doctor),
+              onDelete: () => _showDeleteConfirmation(context, doctor),
+            );
+          },
+        );
+      }),
     );
   }
 
-  void _showAddDoctorDialog() {
+  void _showDoctorDetail(BuildContext context, Doctor doctor) {
     showDialog(
       context: context,
-      builder: (context) => AddDoctorDialog(
-        notifier: notifier,
-        doctorsService: doctorsService,
-      ),
-    ).then((_) {
-      // Refresh data after dialog is closed
-      doctorsService.fetchDoctors();
-    });
+      builder: (context) => DoctorDetailDialog(doctor: doctor),
+    );
   }
 
-  void _showEditDialog(DoctorModel doctor) {
-    // showDialog(
-    //   context: context,
-    //   builder: (context) => EditDoctorDialog(
-    //     doctor: doctor,
-    //     notifier: notifier,
-    //     doctorsService: doctorsService,
-    //   ),
-    // ).then((_) {
-    //   if (mounted) {
-    //     doctorsService.fetchDoctors();
-    //     // Trigger UI update
-    //     setState(() {});
-    //   }
-    // });
-  }
-
-  void _showDoctorDetail(DoctorModel doctor) {
+  void _showAddDoctorDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => DoctorDetailDialog(
-        doctor: doctor,
-        notifier: notifier,
-      ),
-    ).then((result) {
-      if (result == 'edit') {
-        _showEditDialog(doctor);
-      }
-    });
+      builder: (context) => AddDoctorDialog(),
+    );
   }
 
-  void _showDeleteConfirmation(DoctorModel doctor) {
+  void _showEditDoctorDialog(BuildContext context, Doctor doctor) {
+    showDialog(
+      context: context,
+      builder: (context) => EditDoctorDialog(doctor: doctor),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, Doctor doctor) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: notifier.getContainer,
-        title: Text(
-          "Confirm Delete",
-          style: TextStyle(color: notifier.getMainText),
-        ),
-        content: Text(
-          "Are you sure you want to delete Dr. ${doctor.fullName}?",
-          style: TextStyle(color: notifier.getMainText),
-        ),
+        title: Text('Delete Doctor'),
+        content: Text('Are you sure you want to delete Dr. ${doctor.fullName}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: TextStyle(color: notifier.getMainText),
-            ),
+            child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
-              doctorsService.deleteDoctor(doctor.id);
+              controller.deleteDoctor(doctor.id);
               Navigator.pop(context);
+              Get.snackbar(
+                'Success',
+                'Doctor deleted successfully',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+              );
             },
-            child: Text(
-              "Delete",
-              style: TextStyle(color: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),
