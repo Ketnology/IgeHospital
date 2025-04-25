@@ -15,7 +15,7 @@ final Map<String, Widget> pages = {
   'appointments': const AppointmentsPage(),
   'profile': const ProfilePage(),
   'patients': const PatientsPage(),
-  'doctors': const DoctorsPage(),
+  'doctors': DoctorsPage(),
   'nurses': const NursesPage(),
   'admins': const AdminsPage(),
 };
