@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ige_hospital/controllers/add_doctor_dialog.dart';
-import 'package:ige_hospital/controllers/doctor_card.dart';
+import 'package:ige_hospital/widgets/doctor_component/add_doctor_dialog.dart';
+import 'package:ige_hospital/widgets/doctor_component/doctor_card.dart';
 import 'package:ige_hospital/controllers/doctor_controller.dart';
-import 'package:ige_hospital/controllers/doctor_detail_dialog.dart';
-import 'package:ige_hospital/controllers/edit_doctor_dialog.dart';
+import 'package:ige_hospital/widgets/doctor_component/doctor_detail_dialog.dart';
+import 'package:ige_hospital/widgets/doctor_component/edit_doctor_dialog.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
