@@ -1,9 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
-import 'doctor_controller.dart';
+import 'package:ige_hospital/controllers/doctor_controller.dart';
 
 class DoctorCard extends StatelessWidget {
   final Doctor doctor;
@@ -23,6 +22,10 @@ class DoctorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final notifier = Provider.of<ColourNotifier>(context);
 
+    // Generate a default image URL if none provided
+    final defaultImage = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(doctor.fullName)}&background=random';
+    final imageUrl = doctor.profileImage.isNotEmpty ? doctor.profileImage : defaultImage;
+
     return Card(
       elevation: 3,
       color: notifier.getContainer,
@@ -41,51 +44,22 @@ class DoctorCard extends StatelessWidget {
               // Doctor Image and Status
               Stack(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: doctor.profileImage,
-                    imageBuilder: (context, imageProvider) => Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        ),
-                        image: DecorationImage(
-                          image: imageProvider,
-                          fit: BoxFit.cover,
-                        ),
+                  Container(
+                    height: 140,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
                       ),
-                    ),
-                    placeholder: (context, url) => Container(
-                      height: 140,
-                      width: double.infinity,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
+                      image: DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
+                        onError: (exception, stackTrace) => const Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Colors.white,
                         ),
-                        color: notifier.getContainer,
-                      ),
-                      child: CircularProgressIndicator(
-                        color: notifier.getIconColor,
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      height: 140,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        ),
-                        color: notifier.getContainer,
-                      ),
-                      child: Icon(
-                        Icons.error,
-                        size: 50, // Larger error icon
-                        color: const Color(
-                            0xfff73164), // Using the existing error color from app
                       ),
                     ),
                   ),
@@ -165,6 +139,29 @@ class DoctorCard extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
+                    // Stats
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildStatDisplay(
+                          context,
+                          'Appointments',
+                          doctor.stats['appointments_count']?.toString() ?? '0',
+                          Icons.calendar_month_outlined,
+                          notifier,
+                        ),
+                        _buildStatDisplay(
+                          context,
+                          'Schedules',
+                          doctor.stats['schedules_count']?.toString() ?? '0',
+                          Icons.schedule_outlined,
+                          notifier,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
                     // Action Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -227,13 +224,54 @@ class DoctorCard extends StatelessWidget {
     );
   }
 
+  Widget _buildStatDisplay(
+      BuildContext context,
+      String label,
+      String value,
+      IconData icon,
+      ColourNotifier notifier,
+      ) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: notifier.getIconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Icon(
+            icon,
+            color: notifier.getIconColor,
+            size: 20,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: notifier.getMainText,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: notifier.getMaingey,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildActionButton(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
+      BuildContext context, {
+        required String label,
+        required IconData icon,
+        required Color color,
+        required VoidCallback onPressed,
+      }) {
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),

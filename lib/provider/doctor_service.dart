@@ -1,65 +1,14 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/constants/api_endpoints.dart';
-import 'package:ige_hospital/provider/department_service.dart';
 import 'package:ige_hospital/utils/http_client.dart';
 import 'package:ige_hospital/utils/snack_bar_utils.dart';
+import 'package:ige_hospital/models/doctor_model.dart';
 
-class DoctorModel {
-  final String id;
-  final String userId;
-  final String doctorDepartmentId;
-  final String specialist;
-  final String description;
-  final String createdAt;
-  final String updatedAt;
-  final Map<String, dynamic> user;
-  final Map<String, dynamic> department;
-
-  DoctorModel({
-    required this.id,
-    required this.userId,
-    required this.doctorDepartmentId,
-    required this.specialist,
-    required this.description,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.user,
-    required this.department,
-  });
-
-  factory DoctorModel.fromJson(Map<String, dynamic> json) {
-    return DoctorModel(
-      id: json['id'] ?? '',
-      userId: json['user_id'] ?? '',
-      doctorDepartmentId: json['doctor_department_id'] ?? '',
-      specialist: json['specialist'] ?? '',
-      description: json['description'] ?? '',
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
-      user: json['user'] ?? {},
-      department: json['department'] ?? {},
-    );
-  }
-
-  // Getters for convenience
-  String get fullName => "${user['first_name'] ?? ''} ${user['last_name'] ?? ''}";
-  String get email => user['email'] ?? '';
-  String get phone => user['phone'] ?? '';
-  String get gender => user['gender'] ?? '';
-  String get bloodGroup => user['blood_group'] ?? '';
-  String get qualification => user['qualification'] ?? '';
-  String get status => user['status'] ?? '';
-  String get profileImage => user['profile_image'] ?? '';
-  String get departmentName => department['title'] ?? '';
-}
-
-class DoctorsService extends GetxService {
+class DoctorService extends GetxService {
   final HttpClient _httpClient = HttpClient();
-
-  // Try to find DepartmentService
-  late DepartmentService _departmentService;
-  bool _departmentServiceInitialized = false;
 
   // Reactive variables
   final RxList<DoctorModel> doctors = <DoctorModel>[].obs;
@@ -76,41 +25,14 @@ class DoctorsService extends GetxService {
   final RxString searchQuery = ''.obs;
   final RxString departmentId = ''.obs;
   final RxString specialist = ''.obs;
+  final RxString status = ''.obs;
   final RxString sortBy = 'created_at'.obs;
   final RxString sortDirection = 'desc'.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _initDepartmentService();
     fetchDoctors();
-  }
-
-  void _initDepartmentService() {
-    try {
-      _departmentService = Get.find<DepartmentService>();
-      _departmentServiceInitialized = true;
-    } catch (e) {
-      // Service not found, it will be initialized later
-      _departmentServiceInitialized = false;
-      Get.log("DepartmentService not found, will try again later: $e");
-    }
-  }
-
-  String getDepartmentName(String departmentId) {
-    if (_departmentServiceInitialized) {
-      return _departmentService.getDepartmentTitle(departmentId);
-    }
-
-    // If department service is not initialized, try to find it
-    try {
-      _departmentService = Get.find<DepartmentService>();
-      _departmentServiceInitialized = true;
-      return _departmentService.getDepartmentTitle(departmentId);
-    } catch (e) {
-      // Return default value if service not found
-      return "Unknown Department";
-    }
   }
 
   Future<void> fetchDoctors() async {
@@ -125,6 +47,7 @@ class DoctorsService extends GetxService {
         if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
         if (departmentId.value.isNotEmpty) 'department_id': departmentId.value,
         if (specialist.value.isNotEmpty) 'specialist': specialist.value,
+        if (status.value.isNotEmpty) 'status': status.value,
         'sort_by': sortBy.value,
         'sort_direction': sortDirection.value,
         'page': currentPage.value.toString(),
@@ -198,8 +121,6 @@ class DoctorsService extends GetxService {
     hasError.value = false;
 
     try {
-      Get.log("Creating doctor with data: $doctorData");
-
       final dynamic result = await _httpClient.post(
         ApiEndpoints.doctorEndpoint,
         headers: {
@@ -291,6 +212,7 @@ class DoctorsService extends GetxService {
     searchQuery.value = '';
     departmentId.value = '';
     specialist.value = '';
+    status.value = '';
     sortBy.value = 'created_at';
     sortDirection.value = 'desc';
     currentPage.value = 1;
@@ -317,6 +239,19 @@ class DoctorsService extends GetxService {
     if (currentPage.value > 1) {
       currentPage.value--;
       fetchDoctors();
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'blocked':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blue;
     }
   }
 }
