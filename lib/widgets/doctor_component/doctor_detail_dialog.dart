@@ -486,14 +486,7 @@ class DoctorDetailDialog extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              Get.snackbar(
-                'Feature Coming Soon',
-                'Schedule management will be available in the next update',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
+            onPressed: () {},
             icon: Icon(Icons.calendar_today, color: notifier.getIconColor),
             label: Text('Manage Schedule', style: TextStyle(color: notifier.getIconColor)),
             style: OutlinedButton.styleFrom(
