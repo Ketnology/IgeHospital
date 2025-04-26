@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/constants/static_data.dart';
+import 'package:provider/provider.dart';
 import 'doctor_controller.dart';
 
 class EditDoctorDialog extends StatefulWidget {
@@ -46,8 +48,10 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
     emailController = TextEditingController(text: widget.doctor.email);
     phoneController = TextEditingController(text: widget.doctor.phone);
     specialtyController = TextEditingController(text: widget.doctor.specialty);
-    qualificationController = TextEditingController(text: widget.doctor.qualification);
-    descriptionController = TextEditingController(text: widget.doctor.description);
+    qualificationController =
+        TextEditingController(text: widget.doctor.qualification);
+    descriptionController =
+        TextEditingController(text: widget.doctor.description);
 
     // Initialize selected values
     selectedGender = widget.doctor.gender;
@@ -70,20 +74,28 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final notifier = Provider.of<ColourNotifier>(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      backgroundColor: notifier.getContainer,
       child: Container(
         width: 600,
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
+        decoration: BoxDecoration(
+          color: notifier.getContainer,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: notifier.getBorderColor),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header
-            _buildHeader(context),
+            _buildHeader(context, notifier),
 
             // Form content
             Expanded(
@@ -95,7 +107,8 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Personal Information
-                      _buildSectionTitle(context, 'Personal Information'),
+                      _buildSectionTitle(
+                          context, 'Personal Information', notifier),
                       const SizedBox(height: 16),
 
                       // First & Last Name
@@ -104,16 +117,22 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: firstNameController,
-                              decoration: _inputDecoration(context, 'First Name'),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration(
+                                  context, 'First Name', notifier),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: lastNameController,
-                              decoration: _inputDecoration(context, 'Last Name'),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration(
+                                  context, 'Last Name', notifier),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                         ],
@@ -126,20 +145,28 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: emailController,
-                              decoration: _inputDecoration(context, 'Email', prefixIcon: Icons.email),
+                              decoration: _inputDecoration(
+                                  context, 'Email', notifier,
+                                  prefixIcon: Icons.email),
                               validator: (value) {
                                 if (value!.isEmpty) return 'Required';
-                                if (!GetUtils.isEmail(value)) return 'Invalid email';
+                                if (!GetUtils.isEmail(value))
+                                  return 'Invalid email';
                                 return null;
                               },
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: phoneController,
-                              decoration: _inputDecoration(context, 'Phone', prefixIcon: Icons.phone),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration(
+                                  context, 'Phone', notifier,
+                                  prefixIcon: Icons.phone),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                         ],
@@ -152,11 +179,15 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: selectedGender,
-                              decoration: _inputDecoration(context, 'Gender', prefixIcon: Icons.person),
+                              decoration: _inputDecoration(
+                                  context, 'Gender', notifier,
+                                  prefixIcon: Icons.person),
                               items: ['Male', 'Female'].map((gender) {
                                 return DropdownMenuItem(
                                   value: gender,
-                                  child: Text(gender),
+                                  child: Text(gender,
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
                                 );
                               }).toList(),
                               onChanged: (value) {
@@ -166,34 +197,43 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                   });
                                 }
                               },
-                              validator: (value) => value == null ? 'Required' : null,
+                              validator: (value) =>
+                                  value == null ? 'Required' : null,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: selectedStatus,
-                              decoration: _inputDecoration(context, 'Status', prefixIcon: Icons.verified_user),
-                              items: ['Active', 'Pending', 'Blocked'].map((status) {
+                              decoration: _inputDecoration(
+                                  context, 'Status', notifier,
+                                  prefixIcon: Icons.verified_user),
+                              items: ['Active', 'Pending', 'Blocked']
+                                  .map((status) {
                                 return DropdownMenuItem(
                                   value: status,
                                   child: SizedBox(
-                                    width: 100, // Fixed width
+                                    width: 100,
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.min, // Minimize width
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Container(
                                           width: 8,
                                           height: 8,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: _getStatusColor(status),
+                                            color: _getStatusColor(
+                                                status, notifier),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         Flexible(
                                           child: Text(
                                             status,
+                                            style: TextStyle(
+                                                color: notifier.getMainText),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -209,7 +249,10 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                   });
                                 }
                               },
-                              validator: (value) => value == null ? 'Required' : null,
+                              validator: (value) =>
+                                  value == null ? 'Required' : null,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                         ],
@@ -217,7 +260,8 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                       const SizedBox(height: 24),
 
                       // Professional Information
-                      _buildSectionTitle(context, 'Professional Information'),
+                      _buildSectionTitle(
+                          context, 'Professional Information', notifier),
                       const SizedBox(height: 16),
 
                       // Department & Specialty
@@ -226,7 +270,9 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: selectedDepartment,
-                              decoration: _inputDecoration(context, 'Department', prefixIcon: Icons.business),
+                              decoration: _inputDecoration(
+                                  context, 'Department', notifier,
+                                  prefixIcon: Icons.business),
                               items: [
                                 'Cardiology',
                                 'Neurology',
@@ -238,51 +284,66 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                               ].map((department) {
                                 return DropdownMenuItem(
                                   value: department,
-                                  child: Text(department),
+                                  child: Text(department,
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
                                 );
                               }).toList(),
                               onChanged: (value) {
                                 if (value != null) {
                                   setState(() {
                                     selectedDepartment = value;
-                                    // Update specialty based on department, if specialty is not already set
                                     if (specialtyController.text.isEmpty) {
                                       switch (value) {
                                         case 'Cardiology':
-                                          specialtyController.text = 'Cardiologist';
+                                          specialtyController.text =
+                                              'Cardiologist';
                                           break;
                                         case 'Neurology':
-                                          specialtyController.text = 'Neurologist';
+                                          specialtyController.text =
+                                              'Neurologist';
                                           break;
                                         case 'Orthopedics':
-                                          specialtyController.text = 'Orthopedic Surgeon';
+                                          specialtyController.text =
+                                              'Orthopedic Surgeon';
                                           break;
                                         case 'Pediatrics':
-                                          specialtyController.text = 'Pediatrician';
+                                          specialtyController.text =
+                                              'Pediatrician';
                                           break;
                                         case 'Dermatology':
-                                          specialtyController.text = 'Dermatologist';
+                                          specialtyController.text =
+                                              'Dermatologist';
                                           break;
                                         case 'Ophthalmology':
-                                          specialtyController.text = 'Ophthalmologist';
+                                          specialtyController.text =
+                                              'Ophthalmologist';
                                           break;
                                         case 'Gynecology':
-                                          specialtyController.text = 'Gynecologist';
+                                          specialtyController.text =
+                                              'Gynecologist';
                                           break;
                                       }
                                     }
                                   });
                                 }
                               },
-                              validator: (value) => value == null ? 'Required' : null,
+                              validator: (value) =>
+                                  value == null ? 'Required' : null,
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: specialtyController,
-                              decoration: _inputDecoration(context, 'Specialty', prefixIcon: Icons.local_hospital),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration(
+                                  context, 'Specialty', notifier,
+                                  prefixIcon: Icons.local_hospital),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                         ],
@@ -295,19 +356,36 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: qualificationController,
-                              decoration: _inputDecoration(context, 'Qualification', prefixIcon: Icons.school),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration(
+                                  context, 'Qualification', notifier,
+                                  prefixIcon: Icons.school),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               value: selectedBloodGroup,
-                              decoration: _inputDecoration(context, 'Blood Group', prefixIcon: Icons.bloodtype),
-                              items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) {
+                              decoration: _inputDecoration(
+                                  context, 'Blood Group', notifier,
+                                  prefixIcon: Icons.bloodtype),
+                              items: [
+                                'A+',
+                                'A-',
+                                'B+',
+                                'B-',
+                                'AB+',
+                                'AB-',
+                                'O+',
+                                'O-'
+                              ].map((group) {
                                 return DropdownMenuItem(
                                   value: group,
-                                  child: Text(group),
+                                  child: Text(group,
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
                                 );
                               }).toList(),
                               onChanged: (value) {
@@ -317,6 +395,8 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                   });
                                 }
                               },
+                              dropdownColor: notifier.getContainer,
+                              style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                         ],
@@ -329,10 +409,13 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                         decoration: _inputDecoration(
                           context,
                           'Professional Description',
+                          notifier,
                           prefixIcon: Icons.description,
                         ),
                         maxLines: 3,
-                        validator: (value) => value!.isEmpty ? 'Required' : null,
+                        validator: (value) =>
+                            value!.isEmpty ? 'Required' : null,
+                        style: TextStyle(color: notifier.getMainText),
                       ),
                     ],
                   ),
@@ -341,18 +424,18 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
             ),
 
             // Footer with actions
-            _buildFooter(context),
+            _buildFooter(context, notifier),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
+        color: notifier.getIconColor.withOpacity(0.2),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
@@ -360,17 +443,17 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.edit,
-            color: Colors.white,
+            color: notifier.getIconColor,
             size: 24,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Edit Doctor: Dr. ${widget.doctor.fullName}',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: notifier.getMainText,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -378,7 +461,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: Icon(Icons.close, color: notifier.getMainText),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -386,13 +469,13 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
     );
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter(BuildContext context, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.05),
+        color: notifier.getContainer,
         border: Border(
-          top: BorderSide(color: Colors.grey.withOpacity(0.2)),
+          top: BorderSide(color: notifier.getBorderColor),
         ),
       ),
       child: Row(
@@ -402,26 +485,28 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              foregroundColor: notifier.getMainText,
             ),
-            child: const Text('Cancel'),
+            child:
+                Text('Cancel', style: TextStyle(color: notifier.getMainText)),
           ),
           const SizedBox(width: 12),
           ElevatedButton(
             onPressed: isLoading ? null : _updateDoctor,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: appMainColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             child: isLoading
-                ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.0,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
+                ? SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
                 : const Text('Update Doctor'),
           ),
         ],
@@ -441,7 +526,6 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
         try {
           controller = Get.find<DoctorController>();
         } catch (e) {
-          // If controller is not found, create a new instance
           controller = Get.put(DoctorController());
         }
 
@@ -491,7 +575,8 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
     }
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
+  Widget _buildSectionTitle(
+      BuildContext context, String title, ColourNotifier notifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -500,56 +585,63 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
+            color: notifier.getIconColor,
           ),
         ),
         const SizedBox(height: 5),
-        Divider(color: Colors.grey.withOpacity(0.3)),
+        Divider(color: notifier.getBorderColor),
       ],
     );
   }
 
   InputDecoration _inputDecoration(
-      BuildContext context,
-      String label, {
-        IconData? prefixIcon,
-      }) {
+    BuildContext context,
+    String label,
+    ColourNotifier notifier, {
+    IconData? prefixIcon,
+  }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+      labelStyle: TextStyle(color: notifier.getMaingey),
+      prefixIcon: prefixIcon != null
+          ? Icon(prefixIcon, color: notifier.getIconColor)
+          : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: notifier.getBorderColor),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+        borderSide: BorderSide(color: notifier.getBorderColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Theme.of(context).primaryColor),
+        borderSide: BorderSide(color: notifier.getIconColor),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: Color(0xfff73164)),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        borderSide: const BorderSide(color: Color(0xfff73164), width: 1.5),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      fillColor: notifier.getPrimaryColor,
+      filled: true,
     );
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, ColourNotifier notifier) {
     switch (status.toLowerCase()) {
       case 'active':
         return Colors.green;
       case 'blocked':
-        return Colors.red;
+        return const Color(0xfff73164); // Using existing error color
       case 'pending':
         return Colors.orange;
       default:
-        return Colors.blue;
+        return appMainColor; // Using main app color
     }
   }
 }
