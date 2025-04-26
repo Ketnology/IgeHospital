@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
-import 'doctor_controller.dart';
+import 'package:ige_hospital/controllers/doctor_controller.dart';
+import 'package:ige_hospital/provider/department_service.dart';
 
 class AddDoctorDialog extends StatefulWidget {
   const AddDoctorDialog({super.key});
@@ -24,10 +25,11 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
   final specialtyController = TextEditingController();
   final qualificationController = TextEditingController();
   final descriptionController = TextEditingController();
+  final passwordController = TextEditingController();
 
   // Selected values
-  String selectedGender = 'Male';
-  String selectedDepartment = 'Cardiology';
+  String selectedGender = 'male';
+  String selectedDepartment = '';
   String selectedBloodGroup = 'O+';
 
   // Selected date
@@ -36,6 +38,25 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
 
   // Loading state
   bool isLoading = false;
+
+  // Services
+  late DoctorController doctorController;
+  late DepartmentService departmentService;
+
+  @override
+  void initState() {
+    super.initState();
+    doctorController = Get.find<DoctorController>();
+    try {
+      departmentService = Get.find<DepartmentService>();
+      // Initialize selectedDepartment with the first department if available
+      if (departmentService.departments.isNotEmpty) {
+        selectedDepartment = departmentService.departments.first.id;
+      }
+    } catch (e) {
+      Get.log("Department service not initialized: $e");
+    }
+  }
 
   @override
   void dispose() {
@@ -46,6 +67,7 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
     specialtyController.dispose();
     qualificationController.dispose();
     descriptionController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -168,10 +190,11 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
                               decoration: _inputDecoration(
                                   context, 'Gender', notifier,
                                   prefixIcon: Icons.person),
-                              items: ['Male', 'Female'].map((gender) {
+                              items: ['male', 'female'].map((gender) {
                                 return DropdownMenuItem(
                                   value: gender,
-                                  child: Text(gender, style: TextStyle(
+                                  child: Text(
+                                      gender.capitalizeFirst!, style: TextStyle(
                                       color: notifier.getMainText)),
                                 );
                               }).toList(),
@@ -228,7 +251,7 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
                                     prefixIcon: Icons.calendar_today,
                                   ),
                                   controller: TextEditingController(
-                                    text: DateFormat('MMM dd, yyyy').format(
+                                    text: DateFormat('yyyy-MM-dd').format(
                                         selectedDate),
                                   ),
                                   style: TextStyle(color: notifier.getMainText),
@@ -237,6 +260,21 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Password for account
+                      TextFormField(
+                        controller: passwordController,
+                        decoration: _inputDecoration(
+                            context, 'Password', notifier,
+                            prefixIcon: Icons.lock),
+                        obscureText: true,
+                        validator: (value) =>
+                        value!.isEmpty
+                            ? 'Required'
+                            : null,
+                        style: TextStyle(color: notifier.getMainText),
                       ),
                       const SizedBox(height: 24),
 
@@ -250,23 +288,21 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: selectedDepartment,
+                              value: selectedDepartment.isEmpty &&
+                                  departmentService.departments.isNotEmpty
+                                  ? departmentService.departments.first.id
+                                  : selectedDepartment,
                               decoration: _inputDecoration(
                                   context, 'Department',
                                   notifier,
                                   prefixIcon: Icons.business),
-                              items: [
-                                'Cardiology',
-                                'Neurology',
-                                'Orthopedics',
-                                'Pediatrics',
-                                'Dermatology',
-                                'Ophthalmology',
-                                'Gynecology',
-                              ].map((department) {
+                              items: departmentService.departments
+                                  .where((dept) =>
+                              dept.status.toLowerCase() == 'active')
+                                  .map((dept) {
                                 return DropdownMenuItem(
-                                  value: department,
-                                  child: Text(department, style: TextStyle(
+                                  value: dept.id,
+                                  child: Text(dept.title, style: TextStyle(
                                       color: notifier.getMainText)),
                                 );
                               }).toList(),
@@ -274,42 +310,11 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
                                 if (value != null) {
                                   setState(() {
                                     selectedDepartment = value;
-                                    // Update specialty based on department
-                                    switch (value) {
-                                      case 'Cardiology':
-                                        specialtyController.text =
-                                        'Cardiologist';
-                                        break;
-                                      case 'Neurology':
-                                        specialtyController.text =
-                                        'Neurologist';
-                                        break;
-                                      case 'Orthopedics':
-                                        specialtyController.text =
-                                        'Orthopedic Surgeon';
-                                        break;
-                                      case 'Pediatrics':
-                                        specialtyController.text =
-                                        'Pediatrician';
-                                        break;
-                                      case 'Dermatology':
-                                        specialtyController.text =
-                                        'Dermatologist';
-                                        break;
-                                      case 'Ophthalmology':
-                                        specialtyController.text =
-                                        'Ophthalmologist';
-                                        break;
-                                      case 'Gynecology':
-                                        specialtyController.text =
-                                        'Gynecologist';
-                                        break;
-                                    }
                                   });
                                 }
                               },
                               validator: (value) =>
-                              value == null
+                              value == null || value.isEmpty
                                   ? 'Required'
                                   : null,
                               dropdownColor: notifier.getContainer,
@@ -498,49 +503,36 @@ class _AddDoctorDialogState extends State<AddDoctorDialog> {
     );
   }
 
-  void _saveDoctor() {
+  void _saveDoctor() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         isLoading = true;
       });
 
       try {
-        // Make sure the controller is available
-        DoctorController controller;
-        try {
-          controller = Get.find<DoctorController>();
-        } catch (e) {
-          // If controller is not found, create a new instance
-          controller = Get.put(DoctorController());
-        }
+        // Prepare doctor data for API
+        final Map<String, dynamic> doctorData = {
+          "first_name": firstNameController.text,
+          "last_name": lastNameController.text,
+          "email": emailController.text,
+          "phone": phoneController.text,
+          "password": passwordController.text,
+          "password_confirmation": passwordController.text,
+          "gender": selectedGender,
+          "dob": DateFormat('yyyy-MM-dd').format(selectedDate),
+          "blood_group": selectedBloodGroup,
+          "qualification": qualificationController.text,
+          "doctor_department_id": selectedDepartment,
+          "specialist": specialtyController.text,
+          "description": descriptionController.text,
+        };
 
-        // Add the doctor using the controller method
-        controller.addDoctor(
-          firstName: firstNameController.text,
-          lastName: lastNameController.text,
-          email: emailController.text,
-          phone: phoneController.text,
-          gender: selectedGender,
-          department: selectedDepartment,
-          specialty: specialtyController.text,
-          qualification: qualificationController.text,
-          description: descriptionController.text,
-          bloodGroup: selectedBloodGroup,
-        );
+        // Call the controller method to add doctor
+        await doctorController.addDoctor(doctorData);
 
         // Close the dialog
         Navigator.pop(context);
-
-        // Show success message
-        Get.snackbar(
-          'Success',
-          'Doctor added successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
       } catch (e) {
-        // Show error message
         Get.snackbar(
           'Error',
           'Failed to add doctor: $e',

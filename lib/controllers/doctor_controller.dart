@@ -1,14 +1,21 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:ige_hospital/constants/api_endpoints.dart';
+import 'package:ige_hospital/provider/department_service.dart';
+import 'package:ige_hospital/utils/http_client.dart';
+import 'package:ige_hospital/utils/snack_bar_utils.dart';
 
 class Doctor {
   final String id;
+  final String userId;
   final String firstName;
   final String lastName;
   final String email;
   final String phone;
   final String gender;
   final String department;
+  final String departmentId;
   final String specialty;
   final String status;
   final String profileImage;
@@ -17,15 +24,22 @@ class Doctor {
   final String bloodGroup;
   final String createdAt;
   final String updatedAt;
+  final Map<String, dynamic> user;
+  final Map<String, dynamic> departmentData;
+  final List<dynamic> appointments;
+  final List<dynamic> schedules;
+  final Map<String, dynamic> stats;
 
   Doctor({
     required this.id,
+    required this.userId,
     required this.firstName,
     required this.lastName,
     required this.email,
     required this.phone,
     required this.gender,
     required this.department,
+    required this.departmentId,
     required this.specialty,
     required this.status,
     required this.profileImage,
@@ -34,50 +48,79 @@ class Doctor {
     required this.bloodGroup,
     required this.createdAt,
     required this.updatedAt,
+    required this.user,
+    required this.departmentData,
+    required this.appointments,
+    required this.schedules,
+    required this.stats,
   });
 
   String get fullName => "$firstName $lastName";
+
+  factory Doctor.fromJson(Map<String, dynamic> json) {
+    final user = json['user'] ?? {};
+    final department = json['department'] ?? {};
+
+    return Doctor(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      firstName: user['first_name'] ?? '',
+      lastName: user['last_name'] ?? '',
+      email: user['email'] ?? '',
+      phone: user['phone'] ?? '',
+      gender: user['gender'] ?? '',
+      department: department['title'] ?? '',
+      departmentId: json['department_id'] ?? '',
+      specialty: json['specialist'] ?? '',
+      status: user['status'] ?? 'active',
+      profileImage: user['profile_image'] ?? '',
+      qualification: user['qualification'] ?? '',
+      description: json['description'] ?? '',
+      bloodGroup: user['blood_group'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
+      user: user,
+      departmentData: department,
+      appointments: json['appointments'] ?? [],
+      schedules: json['schedules'] ?? [],
+      stats: json['stats'] ?? {'appointments_count': 0, 'schedules_count': 0},
+    );
+  }
 }
 
-class DoctorController extends GetxController {
+class DoctorController extends GetxService {
+  final HttpClient _httpClient = HttpClient();
+  DepartmentService? _departmentService;
+  bool _departmentServiceInitialized = false;
+
+  // Reactive variables
   var isLoading = false.obs;
   var doctors = <Doctor>[].obs;
   var filteredDoctors = <Doctor>[].obs;
+
+  // Pagination
+  final RxInt totalDoctors = 0.obs;
+  final RxInt currentPage = 1.obs;
+  final RxInt perPage = 20.obs;
 
   // Filter variables
   var searchQuery = ''.obs;
   var selectedDepartment = ''.obs;
   var selectedSpecialty = ''.obs;
   var selectedStatus = ''.obs;
+  var sortBy = 'created_at'.obs;
   var sortDirection = 'desc'.obs;
 
   // Department list for filter dropdown
-  var departments = <String>[
-    'All Departments',
-    'Cardiology',
-    'Neurology',
-    'Orthopedics',
-    'Pediatrics',
-    'Dermatology',
-    'Ophthalmology',
-    'Gynecology',
-  ].obs;
+  var departments = <String>['All Departments'].obs;
 
-  // Specialties list
-  var specialties = <String>[
-    'All Specialties',
-    'Cardiologist',
-    'Neurologist',
-    'Orthopedic Surgeon',
-    'Pediatrician',
-    'Dermatologist',
-    'Ophthalmologist',
-    'Gynecologist',
-  ].obs;
+  // Specialties set from actual doctor data
+  var specialties = <String>['All Specialties'].obs;
 
   @override
   void onInit() {
     super.onInit();
+    _initDepartmentService();
     loadDoctors();
 
     // Initialize filter listeners
@@ -88,135 +131,95 @@ class DoctorController extends GetxController {
     ever(sortDirection, (_) => applyFilters());
   }
 
-  void loadDoctors() {
+  void _initDepartmentService() {
+    try {
+      _departmentService = Get.find<DepartmentService>();
+      _departmentServiceInitialized = true;
+      // Update department list after finding the service
+      _updateDepartmentList();
+    } catch (e) {
+      // Service not found, it will be initialized later
+      _departmentServiceInitialized = false;
+      Get.log("DepartmentService not found, will try again later: $e");
+    }
+  }
+
+  void _updateDepartmentList() {
+    if (_departmentServiceInitialized && _departmentService != null) {
+      // Start with 'All Departments'
+      List<String> deptList = ['All Departments'];
+
+      // Add departments from the service
+      for (var dept in _departmentService!.departments) {
+        if (dept.status.toLowerCase() == 'active') {
+          deptList.add(dept.title);
+        }
+      }
+
+      // Update the observable list
+      departments.value = deptList;
+    }
+  }
+
+  Future<void> loadDoctors() async {
     isLoading.value = true;
 
-    // Demo data
-    doctors.value = [
-      Doctor(
-        id: '1',
-        firstName: 'John',
-        lastName: 'Smith',
-        email: 'john.smith@hospital.com',
-        phone: '+1 (555) 123-4567',
-        gender: 'Male',
-        department: 'Cardiology',
-        specialty: 'Cardiologist',
-        status: 'Active',
-        profileImage: 'https://randomuser.me/api/portraits/men/1.jpg',
-        qualification: 'MD, FACC',
-        description: 'Dr. Smith is a board-certified cardiologist with over 15 years of experience in treating heart conditions. He specializes in interventional cardiology and coronary artery disease.',
-        bloodGroup: 'O+',
-        createdAt: '2023-01-15',
-        updatedAt: '2023-10-05',
-      ),
-      Doctor(
-        id: '2',
-        firstName: 'Emma',
-        lastName: 'Johnson',
-        email: 'emma.johnson@hospital.com',
-        phone: '+1 (555) 234-5678',
-        gender: 'Female',
-        department: 'Neurology',
-        specialty: 'Neurologist',
-        status: 'Active',
-        profileImage: 'https://randomuser.me/api/portraits/women/2.jpg',
-        qualification: 'MD, PhD',
-        description: 'Dr. Johnson is a neurologist specializing in the diagnosis and treatment of disorders of the nervous system. She has particular expertise in headache disorders and multiple sclerosis.',
-        bloodGroup: 'A+',
-        createdAt: '2022-11-10',
-        updatedAt: '2023-09-22',
-      ),
-      Doctor(
-        id: '3',
-        firstName: 'David',
-        lastName: 'Wilson',
-        email: 'david.wilson@hospital.com',
-        phone: '+1 (555) 345-6789',
-        gender: 'Male',
-        department: 'Orthopedics',
-        specialty: 'Orthopedic Surgeon',
-        status: 'Active',
-        profileImage: 'https://randomuser.me/api/portraits/men/3.jpg',
-        qualification: 'MD, FAAOS',
-        description: 'Dr. Wilson is an orthopedic surgeon who specializes in joint replacement surgery. He has performed over 2,000 joint replacements and is an expert in minimally invasive techniques.',
-        bloodGroup: 'B+',
-        createdAt: '2022-03-20',
-        updatedAt: '2023-08-15',
-      ),
-      Doctor(
-        id: '4',
-        firstName: 'Sophia',
-        lastName: 'Martinez',
-        email: 'sophia.martinez@hospital.com',
-        phone: '+1 (555) 456-7890',
-        gender: 'Female',
-        department: 'Pediatrics',
-        specialty: 'Pediatrician',
-        status: 'Pending',
-        profileImage: 'https://randomuser.me/api/portraits/women/4.jpg',
-        qualification: 'MD, FAAP',
-        description: 'Dr. Martinez is a pediatrician with a focus on developmental pediatrics. She works closely with families to ensure the healthy growth and development of children from birth through adolescence.',
-        bloodGroup: 'O-',
-        createdAt: '2023-02-05',
-        updatedAt: '2023-07-30',
-      ),
-      Doctor(
-        id: '5',
-        firstName: 'Michael',
-        lastName: 'Brown',
-        email: 'michael.brown@hospital.com',
-        phone: '+1 (555) 567-8901',
-        gender: 'Male',
-        department: 'Dermatology',
-        specialty: 'Dermatologist',
-        status: 'Blocked',
-        profileImage: 'https://randomuser.me/api/portraits/men/5.jpg',
-        qualification: 'MD, FAAD',
-        description: 'Dr. Brown is a dermatologist who specializes in skin cancer detection and treatment. He is also skilled in cosmetic dermatology procedures.',
-        bloodGroup: 'AB+',
-        createdAt: '2021-11-12',
-        updatedAt: '2023-06-18',
-      ),
-      Doctor(
-        id: '6',
-        firstName: 'Olivia',
-        lastName: 'Garcia',
-        email: 'olivia.garcia@hospital.com',
-        phone: '+1 (555) 678-9012',
-        gender: 'Female',
-        department: 'Ophthalmology',
-        specialty: 'Ophthalmologist',
-        status: 'Active',
-        profileImage: 'https://randomuser.me/api/portraits/women/6.jpg',
-        qualification: 'MD, FACS',
-        description: 'Dr. Garcia is an ophthalmologist who specializes in cataract and refractive surgery. She is passionate about helping patients improve their vision and quality of life.',
-        bloodGroup: 'A-',
-        createdAt: '2022-05-18',
-        updatedAt: '2023-09-03',
-      ),
-      Doctor(
-        id: '7',
-        firstName: 'William',
-        lastName: 'Taylor',
-        email: 'william.taylor@hospital.com',
-        phone: '+1 (555) 789-0123',
-        gender: 'Male',
-        department: 'Gynecology',
-        specialty: 'Gynecologist',
-        status: 'Active',
-        profileImage: 'https://randomuser.me/api/portraits/men/7.jpg',
-        qualification: 'MD, FACOG',
-        description: 'Dr. Taylor is a gynecologist with expertise in minimally invasive gynecologic surgery. He is committed to providing compassionate and comprehensive care to women of all ages.',
-        bloodGroup: 'B-',
-        createdAt: '2022-08-30',
-        updatedAt: '2023-07-12',
-      ),
-    ];
+    try {
+      final Map<String, String> queryParams = {
+        if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
+        if (selectedDepartment.value.isNotEmpty && selectedDepartment.value != 'All Departments')
+          'department_id': _getDepartmentId(selectedDepartment.value),
+        if (selectedSpecialty.value.isNotEmpty && selectedSpecialty.value != 'All Specialties')
+          'specialist': selectedSpecialty.value,
+        'sort_by': sortBy.value,
+        'sort_direction': sortDirection.value,
+        'page': currentPage.value.toString(),
+        'per_page': perPage.value.toString(),
+      };
 
-    // Initialize filtered list with all doctors
-    filteredDoctors.value = List.from(doctors);
-    isLoading.value = false;
+      final Uri uri = Uri.parse(ApiEndpoints.doctorEndpoint).replace(queryParameters: queryParams);
+
+      final dynamic result = await _httpClient.get(uri.toString());
+
+      if (result is Map<String, dynamic> && result['status'] == 200) {
+        final List<dynamic> doctorsList = result['data']['doctors'] ?? [];
+        doctors.value = doctorsList.map((json) => Doctor.fromJson(json)).toList();
+
+        // Extract unique specialties from doctors
+        Set<String> specialtySet = {'All Specialties'};
+        for (var doctor in doctors) {
+          if (doctor.specialty.isNotEmpty) {
+            specialtySet.add(doctor.specialty);
+          }
+        }
+        specialties.value = specialtySet.toList();
+
+        // Save pagination info
+        totalDoctors.value = result['data']['total'] is int
+            ? result['data']['total']
+            : int.tryParse(result['data']['total'].toString()) ?? 0;
+
+        // Apply filters to update filteredDoctors
+        applyFilters();
+      } else {
+        SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to load doctors');
+      }
+    } catch (e) {
+      Get.log("Error loading doctors: $e");
+      SnackBarUtils.showErrorSnackBar('Failed to load doctors: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  String _getDepartmentId(String departmentName) {
+    if (_departmentServiceInitialized && _departmentService != null) {
+      var dept = _departmentService!.departments.firstWhereOrNull(
+              (dept) => dept.title == departmentName
+      );
+      return dept?.id ?? '';
+    }
+    return '';
   }
 
   void applyFilters() {
@@ -279,95 +282,80 @@ class DoctorController extends GetxController {
     }
   }
 
-  void addDoctor({
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String phone,
-    required String gender,
-    required String department,
-    required String specialty,
-    required String qualification,
-    required String description,
-    required String bloodGroup,
-  }) {
-    // Generate a new ID (in a real app, this would come from the backend)
-    final newId = (doctors.length + 1).toString();
+  Future<void> addDoctor(Map<String, dynamic> doctorData) async {
+    isLoading.value = true;
 
-    // Create a new doctor object
-    final newDoctor = Doctor(
-      id: newId,
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      phone: phone,
-      gender: gender,
-      department: department,
-      specialty: specialty,
-      status: 'Active', // Default to active
-      profileImage: 'https://randomuser.me/api/portraits/${gender.toLowerCase() == 'male' ? 'men' : 'women'}/${doctors.length + 1}.jpg',
-      qualification: qualification,
-      description: description,
-      bloodGroup: bloodGroup,
-      createdAt: DateTime.now().toString().split(' ')[0], // Current date
-      updatedAt: DateTime.now().toString().split(' ')[0], // Current date
-    );
-
-    // Add to the list
-    doctors.add(newDoctor);
-
-    // Re-apply filters to update the filtered list
-    applyFilters();
-  }
-
-  void updateDoctor({
-    required String id,
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String phone,
-    required String gender,
-    required String department,
-    required String specialty,
-    required String status,
-    required String qualification,
-    required String description,
-    required String bloodGroup,
-  }) {
-    // Find the index of the doctor to update
-    final index = doctors.indexWhere((doctor) => doctor.id == id);
-
-    if (index != -1) {
-      // Create an updated doctor object (preserving the original profile image and dates)
-      final originalDoctor = doctors[index];
-      final updatedDoctor = Doctor(
-        id: id,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        phone: phone,
-        gender: gender,
-        department: department,
-        specialty: specialty,
-        status: status,
-        profileImage: originalDoctor.profileImage,
-        qualification: qualification,
-        description: description,
-        bloodGroup: bloodGroup,
-        createdAt: originalDoctor.createdAt,
-        updatedAt: DateTime.now().toString().split(' ')[0], // Update the updatedAt date
+    try {
+      final dynamic result = await _httpClient.post(
+        ApiEndpoints.doctorEndpoint,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(doctorData),
       );
 
-      // Replace the old doctor with the updated one
-      doctors[index] = updatedDoctor;
-
-      // Re-apply filters to update the filtered list
-      applyFilters();
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 201 || result['status'] == 200) {
+          SnackBarUtils.showSuccessSnackBar('Doctor created successfully');
+          loadDoctors();
+        } else {
+          SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to create doctor');
+        }
+      }
+    } catch (e) {
+      SnackBarUtils.showErrorSnackBar('Failed to connect to server: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  void deleteDoctor(String id) {
-    doctors.removeWhere((doctor) => doctor.id == id);
-    applyFilters(); // Re-apply filters to update filtered list
+  Future<void> updateDoctor(String id, Map<String, dynamic> doctorData) async {
+    isLoading.value = true;
+
+    try {
+      final dynamic result = await _httpClient.put(
+        '${ApiEndpoints.doctorEndpoint}/$id',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(doctorData),
+      );
+
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 200) {
+          SnackBarUtils.showSuccessSnackBar('Doctor updated successfully');
+          loadDoctors();
+        } else {
+          SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to update doctor');
+        }
+      }
+    } catch (e) {
+      SnackBarUtils.showErrorSnackBar('Failed to connect to server: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> deleteDoctor(String id) async {
+    isLoading.value = true;
+
+    try {
+      final dynamic result = await _httpClient.delete(
+        '${ApiEndpoints.doctorEndpoint}/$id',
+      );
+
+      if (result is Map<String, dynamic>) {
+        if (result['status'] == 200) {
+          SnackBarUtils.showSuccessSnackBar('Doctor deleted successfully');
+          loadDoctors();
+        } else {
+          SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to delete doctor');
+        }
+      }
+    } catch (e) {
+      SnackBarUtils.showErrorSnackBar('Failed to connect to server: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

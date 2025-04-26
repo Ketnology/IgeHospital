@@ -4,6 +4,7 @@ import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/controllers/doctor_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class DoctorDetailDialog extends StatelessWidget {
   final Doctor doctor;
@@ -79,6 +80,9 @@ class DoctorDetailDialog extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, ColourNotifier notifier) {
+    final defaultImage = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(doctor.fullName)}&background=random';
+    final imageUrl = doctor.profileImage.isNotEmpty ? doctor.profileImage : defaultImage;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -94,7 +98,9 @@ class DoctorDetailDialog extends StatelessWidget {
           // Profile image
           CircleAvatar(
             radius: 40,
-            backgroundImage: NetworkImage(doctor.profileImage),
+            backgroundImage: NetworkImage(imageUrl),
+            onBackgroundImageError: (exception, stackTrace) =>
+            const Icon(Icons.person, size: 40, color: Colors.white),
           ),
           const SizedBox(width: 20),
 
@@ -144,7 +150,7 @@ class DoctorDetailDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        doctor.status,
+                        doctor.status.capitalizeFirst!,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -191,15 +197,16 @@ class DoctorDetailDialog extends StatelessWidget {
           const SizedBox(height: 20),
 
           _buildSectionHeader(context, 'Personal Details', notifier),
-          _buildInfoItem(context, 'Gender', doctor.gender, Icons.person, notifier),
+          _buildInfoItem(context, 'Gender', doctor.gender.capitalizeFirst!, Icons.person, notifier),
           _buildInfoItem(context, 'Blood Group', doctor.bloodGroup, Icons.bloodtype, notifier),
+          _buildInfoItem(context, 'Date of Birth', doctor.user['dob'] ?? 'Not provided', Icons.cake, notifier),
 
           const SizedBox(height: 20),
 
           _buildSectionHeader(context, 'System Information', notifier),
           _buildInfoItem(context, 'Doctor ID', doctor.id, Icons.badge, notifier),
-          _buildInfoItem(context, 'Created At', doctor.createdAt, Icons.event, notifier),
-          _buildInfoItem(context, 'Last Updated', doctor.updatedAt, Icons.update, notifier),
+          _buildInfoItem(context, 'Created At', _formatDate(doctor.createdAt), Icons.event, notifier),
+          _buildInfoItem(context, 'Last Updated', _formatDate(doctor.updatedAt), Icons.update, notifier),
         ],
       ),
     );
@@ -233,60 +240,66 @@ class DoctorDetailDialog extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          _buildSectionHeader(context, 'Achievements & Awards', notifier),
-          _buildAchievement(
-            context,
-            title: 'Best Doctor Award',
-            organization: 'IGE Hospital',
-            year: '2023',
-            notifier: notifier,
+          _buildSectionHeader(context, 'Appointments Statistics', notifier),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                    context,
+                    'Total Appointments',
+                    doctor.stats['appointments_count']?.toString() ?? '0',
+                    Icons.calendar_today,
+                    notifier
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatCard(
+                    context,
+                    'Active Schedules',
+                    doctor.stats['schedules_count']?.toString() ?? '0',
+                    Icons.schedule,
+                    notifier
+                ),
+              ),
+            ],
           ),
-          _buildAchievement(
-            context,
-            title: 'Research Publication',
-            organization: 'Medical Journal of Research',
-            year: '2022',
-            notifier: notifier,
-          ),
+
+          if (doctor.appointments.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            _buildSectionHeader(context, 'Recent Appointments', notifier),
+            ...doctor.appointments.take(3).map((app) => _buildAppointmentItem(context, app, notifier)).toList(),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildScheduleTab(BuildContext context, ColourNotifier notifier) {
-    // Dummy schedule data
-    List<Map<String, dynamic>> schedule = [
-      {
-        'day': 'Monday',
-        'start': '09:00 AM',
-        'end': '04:00 PM',
-        'patients': 12,
-      },
-      {
-        'day': 'Tuesday',
-        'start': '10:00 AM',
-        'end': '06:00 PM',
-        'patients': 15,
-      },
-      {
-        'day': 'Wednesday',
-        'start': '09:00 AM',
-        'end': '05:00 PM',
-        'patients': 10,
-      },
-      {
-        'day': 'Thursday',
-        'start': '09:00 AM',
-        'end': '04:00 PM',
-        'patients': 14,
-      },
-      {
-        'day': 'Friday',
-        'start': '10:00 AM',
-        'end': '03:00 PM',
-        'patients': 8,
-      },
-    ];
+    final schedules = doctor.schedules;
+
+    if (schedules.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.event_busy,
+              size: 64,
+              color: notifier.getMaingey,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No schedules available',
+              style: TextStyle(
+                fontSize: 18,
+                color: notifier.getMainText,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -341,7 +354,7 @@ class DoctorDetailDialog extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          'Patients',
+                          'Per Patient',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: notifier.getIconColor,
@@ -353,57 +366,67 @@ class DoctorDetailDialog extends StatelessWidget {
                   ),
                 ),
 
-                // Table rows
-                ...schedule.map((item) => Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: notifier.getBorderColor),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          item['day'],
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: notifier.getMainText,
+                // Schedule rows
+                ...schedules.map((schedule) {
+                  // Extract schedule days
+                  final scheduleDays = schedule['schedule_days'] as List<dynamic>? ?? [];
+                  if (scheduleDays.isEmpty) return const SizedBox.shrink();
+
+                  return Column(
+                    children: scheduleDays.map((day) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(color: notifier.getBorderColor),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          '${item['start']} - ${item['end']}',
-                          style: TextStyle(
-                            color: notifier.getMainText,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: notifier.getIconColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '${item['patients']} patients',
-                            style: TextStyle(
-                              color: notifier.getIconColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                day['available_on'] ?? '',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: notifier.getMainText,
+                                ),
+                              ),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                '${_formatTime(day['available_from'] ?? '')} - ${_formatTime(day['available_to'] ?? '')}',
+                                style: TextStyle(
+                                  color: notifier.getMainText,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: notifier.getIconColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _formatTime(schedule['per_patient_time'] ?? ''),
+                                  style: TextStyle(
+                                    color: notifier.getIconColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                )).toList(),
+                      );
+                    }).toList(),
+                  );
+                }).toList(),
               ],
             ),
           ),
@@ -412,31 +435,40 @@ class DoctorDetailDialog extends StatelessWidget {
 
           _buildSectionHeader(context, 'Upcoming Appointments', notifier),
 
-          // A message if no upcoming appointments
-          Container(
-            padding: const EdgeInsets.all(20),
-            margin: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              color: notifier.getBgColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: notifier.getBorderColor),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: notifier.getMaingey,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'No upcoming appointments scheduled for today',
-                    style: TextStyle(color: notifier.getMaingey),
+          // Show recent appointments
+          if (doctor.appointments.isNotEmpty) ...[
+            ...doctor.appointments
+                .where((app) => app['is_completed'] == false)
+                .take(5)
+                .map((app) => _buildAppointmentItem(context, app, notifier))
+                .toList(),
+          ] else ...[
+            // A message if no upcoming appointments
+            Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.only(top: 10),
+              decoration: BoxDecoration(
+                color: notifier.getBgColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: notifier.getBorderColor),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: notifier.getMaingey,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'No upcoming appointments scheduled',
+                      style: TextStyle(color: notifier.getMaingey),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -472,13 +504,7 @@ class DoctorDetailDialog extends StatelessWidget {
           const SizedBox(width: 12),
           ElevatedButton.icon(
             onPressed: () {
-              Navigator.pop(context);
-              // This would typically navigate to the edit screen
-              Get.snackbar(
-                'Edit Doctor',
-                'Editing Dr. ${doctor.fullName}',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              Navigator.pop(context, 'edit');
             },
             icon: const Icon(Icons.edit, color: Colors.white),
             label: const Text('Edit Profile', style: TextStyle(color: Colors.white)),
@@ -546,71 +572,166 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildAchievement(
-      BuildContext context, {
-        required String title,
-        required String organization,
-        required String year,
-        required ColourNotifier notifier,
-      }) {
+  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, ColourNotifier notifier) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: notifier.getBgColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: notifier.getBorderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: notifier.getIconColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: notifier.getMaingey,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: notifier.getMainText,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppointmentItem(BuildContext context, Map<String, dynamic> appointment, ColourNotifier notifier) {
+    final isCompleted = appointment['is_completed'] == true;
+    final patientName = appointment['patient_name'] ?? 'Unknown Patient';
+    final date = appointment['appointment_date'] ?? appointment['date'] ?? 'No date';
+    final time = appointment['appointment_time'] ?? appointment['time'] ?? 'No time';
+    final problem = appointment['problem'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: notifier.getBgColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: notifier.getBorderColor),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: notifier.getIconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.emoji_events,
-              color: notifier.getIconColor,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  patientName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
                     color: notifier.getMainText,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  organization,
-                  style: TextStyle(
-                    color: notifier.getMainText,
-                    fontSize: 14,
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isCompleted ? Colors.green : Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isCompleted ? 'COMPLETED' : 'PENDING',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  year,
-                  style: TextStyle(
-                    color: notifier.getMaingey,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 14, color: notifier.getMaingey),
+              const SizedBox(width: 4),
+              Text(
+                date,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: notifier.getMaingey,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Icon(Icons.access_time, size: 14, color: notifier.getMaingey),
+              const SizedBox(width: 4),
+              Text(
+                time,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: notifier.getMaingey,
+                ),
+              ),
+            ],
+          ),
+          if (problem.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Problem: $problem',
+              style: TextStyle(
+                fontSize: 14,
+                color: notifier.getMainText,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('MMM dd, yyyy').format(date);
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  String _formatTime(String timeString) {
+    if (timeString.isEmpty) return '';
+
+    try {
+      // Check if it's a full datetime or just time
+      if (timeString.contains('T')) {
+        final date = DateTime.parse(timeString);
+        return DateFormat('hh:mm a').format(date);
+      } else {
+        // Handle time format like "15:30:00"
+        final parts = timeString.split(':');
+        if (parts.length >= 2) {
+          final hour = int.tryParse(parts[0]) ?? 0;
+          final minute = int.tryParse(parts[1]) ?? 0;
+
+          return DateFormat('hh:mm a').format(
+              DateTime(2022, 1, 1, hour, minute)
+          );
+        }
+        return timeString;
+      }
+    } catch (e) {
+      return timeString;
+    }
   }
 
   Color _getStatusColor(String status) {

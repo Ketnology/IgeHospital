@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
-import 'doctor_controller.dart';
+import 'package:ige_hospital/controllers/doctor_controller.dart';
+import 'package:ige_hospital/provider/department_service.dart';
+import 'package:intl/intl.dart';
 
 class EditDoctorDialog extends StatefulWidget {
   final Doctor doctor;
@@ -35,12 +37,20 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
   late String selectedBloodGroup;
   late String selectedStatus;
 
+  // Selected date
+  late DateTime selectedDate;
+
   // Loading state
   bool isLoading = false;
+
+  // Services
+  late DoctorController doctorController;
+  late DepartmentService departmentService;
 
   @override
   void initState() {
     super.initState();
+    doctorController = Get.find<DoctorController>();
 
     // Initialize controllers with doctor data
     firstNameController = TextEditingController(text: widget.doctor.firstName);
@@ -55,9 +65,28 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
 
     // Initialize selected values
     selectedGender = widget.doctor.gender;
-    selectedDepartment = widget.doctor.department;
+    selectedDepartment = widget.doctor.departmentId;
     selectedBloodGroup = widget.doctor.bloodGroup;
     selectedStatus = widget.doctor.status;
+
+    // Parse date of birth if available
+    try {
+      if (widget.doctor.user['dob'] != null && widget.doctor.user['dob'].toString().isNotEmpty) {
+        selectedDate = DateTime.parse(widget.doctor.user['dob']);
+      } else {
+        selectedDate = DateTime.now().subtract(const Duration(days: 365 * 30));
+      }
+    } catch (e) {
+      selectedDate = DateTime.now().subtract(const Duration(days: 365 * 30));
+      Get.log("Error parsing date: $e");
+    }
+
+    // Initialize department service
+    try {
+      departmentService = Get.find<DepartmentService>();
+    } catch (e) {
+      Get.log("Department service not initialized: $e");
+    }
   }
 
   @override
@@ -120,7 +149,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                               decoration: _inputDecoration(
                                   context, 'First Name', notifier),
                               validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -131,7 +160,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                               decoration: _inputDecoration(
                                   context, 'Last Name', notifier),
                               validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -165,7 +194,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                   context, 'Phone', notifier,
                                   prefixIcon: Icons.phone),
                               validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -182,10 +211,10 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                               decoration: _inputDecoration(
                                   context, 'Gender', notifier,
                                   prefixIcon: Icons.person),
-                              items: ['Male', 'Female'].map((gender) {
+                              items: ['male', 'female'].map((gender) {
                                 return DropdownMenuItem(
                                   value: gender,
-                                  child: Text(gender,
+                                  child: Text(gender.capitalizeFirst!,
                                       style: TextStyle(
                                           color: notifier.getMainText)),
                                 );
@@ -198,7 +227,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                 }
                               },
                               validator: (value) =>
-                                  value == null ? 'Required' : null,
+                              value == null ? 'Required' : null,
                               dropdownColor: notifier.getContainer,
                               style: TextStyle(color: notifier.getMainText),
                             ),
@@ -210,35 +239,28 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                               decoration: _inputDecoration(
                                   context, 'Status', notifier,
                                   prefixIcon: Icons.verified_user),
-                              items: ['Active', 'Pending', 'Blocked']
+                              items: ['active', 'pending', 'blocked']
                                   .map((status) {
                                 return DropdownMenuItem(
                                   value: status,
-                                  child: SizedBox(
-                                    width: 100,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: 8,
-                                          height: 8,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: _getStatusColor(
-                                                status, notifier),
-                                          ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: _getStatusColor(
+                                              status, notifier),
                                         ),
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          child: Text(
-                                            status,
-                                            style: TextStyle(
-                                                color: notifier.getMainText),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        status.capitalizeFirst!,
+                                        style: TextStyle(
+                                            color: notifier.getMainText),
+                                      ),
+                                    ],
                                   ),
                                 );
                               }).toList(),
@@ -250,12 +272,56 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                 }
                               },
                               validator: (value) =>
-                                  value == null ? 'Required' : null,
+                              value == null ? 'Required' : null,
                               dropdownColor: notifier.getContainer,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Date of Birth
+                      GestureDetector(
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate,
+                            firstDate: DateTime(1940),
+                            lastDate: DateTime.now(),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: ColorScheme.light(
+                                    primary: notifier.getIconColor,
+                                  ),
+                                  dialogBackgroundColor: notifier.getContainer,
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
+
+                          if (date != null) {
+                            setState(() {
+                              selectedDate = date;
+                            });
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            decoration: _inputDecoration(
+                              context,
+                              'Date of Birth',
+                              notifier,
+                              prefixIcon: Icons.calendar_today,
+                            ),
+                            controller: TextEditingController(
+                              text: DateFormat('yyyy-MM-dd').format(selectedDate),
+                            ),
+                            style: TextStyle(color: notifier.getMainText),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 24),
 
@@ -273,18 +339,12 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                               decoration: _inputDecoration(
                                   context, 'Department', notifier,
                                   prefixIcon: Icons.business),
-                              items: [
-                                'Cardiology',
-                                'Neurology',
-                                'Orthopedics',
-                                'Pediatrics',
-                                'Dermatology',
-                                'Ophthalmology',
-                                'Gynecology',
-                              ].map((department) {
+                              items: departmentService.departments
+                                  .where((dept) => dept.status.toLowerCase() == 'active')
+                                  .map((dept) {
                                 return DropdownMenuItem(
-                                  value: department,
-                                  child: Text(department,
+                                  value: dept.id,
+                                  child: Text(dept.title,
                                       style: TextStyle(
                                           color: notifier.getMainText)),
                                 );
@@ -293,43 +353,11 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                 if (value != null) {
                                   setState(() {
                                     selectedDepartment = value;
-                                    if (specialtyController.text.isEmpty) {
-                                      switch (value) {
-                                        case 'Cardiology':
-                                          specialtyController.text =
-                                              'Cardiologist';
-                                          break;
-                                        case 'Neurology':
-                                          specialtyController.text =
-                                              'Neurologist';
-                                          break;
-                                        case 'Orthopedics':
-                                          specialtyController.text =
-                                              'Orthopedic Surgeon';
-                                          break;
-                                        case 'Pediatrics':
-                                          specialtyController.text =
-                                              'Pediatrician';
-                                          break;
-                                        case 'Dermatology':
-                                          specialtyController.text =
-                                              'Dermatologist';
-                                          break;
-                                        case 'Ophthalmology':
-                                          specialtyController.text =
-                                              'Ophthalmologist';
-                                          break;
-                                        case 'Gynecology':
-                                          specialtyController.text =
-                                              'Gynecologist';
-                                          break;
-                                      }
-                                    }
                                   });
                                 }
                               },
                               validator: (value) =>
-                                  value == null ? 'Required' : null,
+                              value == null ? 'Required' : null,
                               dropdownColor: notifier.getContainer,
                               style: TextStyle(color: notifier.getMainText),
                             ),
@@ -342,7 +370,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                   context, 'Specialty', notifier,
                                   prefixIcon: Icons.local_hospital),
                               validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -360,7 +388,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                                   context, 'Qualification', notifier,
                                   prefixIcon: Icons.school),
                               validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -414,7 +442,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
                         ),
                         maxLines: 3,
                         validator: (value) =>
-                            value!.isEmpty ? 'Required' : null,
+                        value!.isEmpty ? 'Required' : null,
                         style: TextStyle(color: notifier.getMainText),
                       ),
                     ],
@@ -488,7 +516,7 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
               foregroundColor: notifier.getMainText,
             ),
             child:
-                Text('Cancel', style: TextStyle(color: notifier.getMainText)),
+            Text('Cancel', style: TextStyle(color: notifier.getMainText)),
           ),
           const SizedBox(width: 12),
           ElevatedButton(
@@ -500,13 +528,13 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
             ),
             child: isLoading
                 ? SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.0,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
                 : const Text('Update Doctor'),
           ),
         ],
@@ -514,50 +542,35 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
     );
   }
 
-  void _updateDoctor() {
+  void _updateDoctor() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         isLoading = true;
       });
 
       try {
-        // Make sure the controller is available
-        DoctorController controller;
-        try {
-          controller = Get.find<DoctorController>();
-        } catch (e) {
-          controller = Get.put(DoctorController());
-        }
+        // Prepare updated doctor data
+        final Map<String, dynamic> doctorData = {
+          "first_name": firstNameController.text,
+          "last_name": lastNameController.text,
+          "email": emailController.text,
+          "phone": phoneController.text,
+          "gender": selectedGender,
+          "dob": DateFormat('yyyy-MM-dd').format(selectedDate),
+          "blood_group": selectedBloodGroup,
+          "qualification": qualificationController.text,
+          "doctor_department_id": selectedDepartment,
+          "specialist": specialtyController.text,
+          "description": descriptionController.text,
+          "status": selectedStatus,
+        };
 
-        // Update the doctor using the controller method
-        controller.updateDoctor(
-          id: widget.doctor.id,
-          firstName: firstNameController.text,
-          lastName: lastNameController.text,
-          email: emailController.text,
-          phone: phoneController.text,
-          gender: selectedGender,
-          department: selectedDepartment,
-          specialty: specialtyController.text,
-          status: selectedStatus,
-          qualification: qualificationController.text,
-          description: descriptionController.text,
-          bloodGroup: selectedBloodGroup,
-        );
+        // Call controller to update
+        await doctorController.updateDoctor(widget.doctor.id, doctorData);
 
         // Close the dialog
         Navigator.pop(context);
-
-        // Show success message
-        Get.snackbar(
-          'Success',
-          'Doctor updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
       } catch (e) {
-        // Show error message
         Get.snackbar(
           'Error',
           'Failed to update doctor: $e',
@@ -595,11 +608,11 @@ class _EditDoctorDialogState extends State<EditDoctorDialog> {
   }
 
   InputDecoration _inputDecoration(
-    BuildContext context,
-    String label,
-    ColourNotifier notifier, {
-    IconData? prefixIcon,
-  }) {
+      BuildContext context,
+      String label,
+      ColourNotifier notifier, {
+        IconData? prefixIcon,
+      }) {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: notifier.getMaingey),
