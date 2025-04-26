@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'doctor_controller.dart';
+import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/controllers/doctor_controller.dart';
+import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:provider/provider.dart';
 
 class DoctorDetailDialog extends StatelessWidget {
   final Doctor doctor;
@@ -12,28 +15,31 @@ class DoctorDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifier = Provider.of<ColourNotifier>(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       elevation: 0,
       backgroundColor: Colors.transparent,
-      child: contentBox(context),
+      child: contentBox(context, notifier),
     );
   }
 
-  Widget contentBox(BuildContext context) {
+  Widget contentBox(BuildContext context, ColourNotifier notifier) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.8,
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: notifier.getContainer,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: notifier.getBorderColor),
       ),
       child: Column(
         children: [
           // Header with image and basic info
-          _buildHeader(context),
+          _buildHeader(context, notifier),
 
           // Detailed information in tabs
           Expanded(
@@ -42,9 +48,9 @@ class DoctorDetailDialog extends StatelessWidget {
               child: Column(
                 children: [
                   TabBar(
-                    labelColor: Theme.of(context).primaryColor,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: Theme.of(context).primaryColor,
+                    labelColor: notifier.getIconColor,
+                    unselectedLabelColor: notifier.getMaingey,
+                    indicatorColor: notifier.getIconColor,
                     tabs: const [
                       Tab(text: 'Personal Info'),
                       Tab(text: 'Professional'),
@@ -54,9 +60,9 @@ class DoctorDetailDialog extends StatelessWidget {
                   Expanded(
                     child: TabBarView(
                       children: [
-                        _buildPersonalInfoTab(context),
-                        _buildProfessionalTab(context),
-                        _buildScheduleTab(context),
+                        _buildPersonalInfoTab(context, notifier),
+                        _buildProfessionalTab(context, notifier),
+                        _buildScheduleTab(context, notifier),
                       ],
                     ),
                   ),
@@ -66,17 +72,17 @@ class DoctorDetailDialog extends StatelessWidget {
           ),
 
           // Footer with actions
-          _buildFooter(context),
+          _buildFooter(context, notifier),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        color: notifier.getIconColor.withOpacity(0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
@@ -103,16 +109,17 @@ class DoctorDetailDialog extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Dr. ${doctor.fullName}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: notifier.getMainText,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close, color: notifier.getMainText),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -122,7 +129,7 @@ class DoctorDetailDialog extends StatelessWidget {
                   '${doctor.specialty} • ${doctor.department}',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[600],
+                    color: notifier.getMaingey,
                   ),
                 ),
 
@@ -149,13 +156,13 @@ class DoctorDetailDialog extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.2),
+                        color: notifier.getIconColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         doctor.qualification,
                         style: TextStyle(
-                          color: Theme.of(context).primaryColor,
+                          color: notifier.getIconColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -171,46 +178,46 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildPersonalInfoTab(BuildContext context) {
+  Widget _buildPersonalInfoTab(BuildContext context, ColourNotifier notifier) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(context, 'Contact Information'),
-          _buildInfoItem(context, 'Email', doctor.email, Icons.email),
-          _buildInfoItem(context, 'Phone', doctor.phone, Icons.phone),
+          _buildSectionHeader(context, 'Contact Information', notifier),
+          _buildInfoItem(context, 'Email', doctor.email, Icons.email, notifier),
+          _buildInfoItem(context, 'Phone', doctor.phone, Icons.phone, notifier),
 
           const SizedBox(height: 20),
 
-          _buildSectionHeader(context, 'Personal Details'),
-          _buildInfoItem(context, 'Gender', doctor.gender, Icons.person),
-          _buildInfoItem(context, 'Blood Group', doctor.bloodGroup, Icons.bloodtype),
+          _buildSectionHeader(context, 'Personal Details', notifier),
+          _buildInfoItem(context, 'Gender', doctor.gender, Icons.person, notifier),
+          _buildInfoItem(context, 'Blood Group', doctor.bloodGroup, Icons.bloodtype, notifier),
 
           const SizedBox(height: 20),
 
-          _buildSectionHeader(context, 'System Information'),
-          _buildInfoItem(context, 'Doctor ID', doctor.id, Icons.badge),
-          _buildInfoItem(context, 'Created At', doctor.createdAt, Icons.event),
-          _buildInfoItem(context, 'Last Updated', doctor.updatedAt, Icons.update),
+          _buildSectionHeader(context, 'System Information', notifier),
+          _buildInfoItem(context, 'Doctor ID', doctor.id, Icons.badge, notifier),
+          _buildInfoItem(context, 'Created At', doctor.createdAt, Icons.event, notifier),
+          _buildInfoItem(context, 'Last Updated', doctor.updatedAt, Icons.update, notifier),
         ],
       ),
     );
   }
 
-  Widget _buildProfessionalTab(BuildContext context) {
+  Widget _buildProfessionalTab(BuildContext context, ColourNotifier notifier) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(context, 'Professional Summary'),
+          _buildSectionHeader(context, 'Professional Summary', notifier),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(
               doctor.description,
               style: TextStyle(
-                color: Colors.grey[800],
+                color: notifier.getMainText,
                 fontSize: 15,
                 height: 1.6,
               ),
@@ -219,32 +226,34 @@ class DoctorDetailDialog extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          _buildSectionHeader(context, 'Specialization'),
-          _buildInfoItem(context, 'Department', doctor.department, Icons.business),
-          _buildInfoItem(context, 'Specialty', doctor.specialty, Icons.local_hospital),
-          _buildInfoItem(context, 'Qualification', doctor.qualification, Icons.school),
+          _buildSectionHeader(context, 'Specialization', notifier),
+          _buildInfoItem(context, 'Department', doctor.department, Icons.business, notifier),
+          _buildInfoItem(context, 'Specialty', doctor.specialty, Icons.local_hospital, notifier),
+          _buildInfoItem(context, 'Qualification', doctor.qualification, Icons.school, notifier),
 
           const SizedBox(height: 20),
 
-          _buildSectionHeader(context, 'Achievements & Awards'),
+          _buildSectionHeader(context, 'Achievements & Awards', notifier),
           _buildAchievement(
             context,
             title: 'Best Doctor Award',
             organization: 'IGE Hospital',
             year: '2023',
+            notifier: notifier,
           ),
           _buildAchievement(
             context,
             title: 'Research Publication',
             organization: 'Medical Journal of Research',
             year: '2022',
+            notifier: notifier,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildScheduleTab(BuildContext context) {
+  Widget _buildScheduleTab(BuildContext context, ColourNotifier notifier) {
     // Dummy schedule data
     List<Map<String, dynamic>> schedule = [
       {
@@ -284,14 +293,14 @@ class DoctorDetailDialog extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(context, 'Weekly Schedule'),
+          _buildSectionHeader(context, 'Weekly Schedule', notifier),
 
           const SizedBox(height: 10),
 
           // Schedule table
           Container(
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              border: Border.all(color: notifier.getBorderColor),
               borderRadius: BorderRadius.circular(8),
             ),
             margin: const EdgeInsets.only(top: 10),
@@ -301,7 +310,7 @@ class DoctorDetailDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: notifier.getIconColor.withOpacity(0.1),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(8),
                       topRight: Radius.circular(8),
@@ -315,7 +324,7 @@ class DoctorDetailDialog extends StatelessWidget {
                           'Day',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: notifier.getIconColor,
                           ),
                         ),
                       ),
@@ -325,7 +334,7 @@ class DoctorDetailDialog extends StatelessWidget {
                           'Hours',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: notifier.getIconColor,
                           ),
                         ),
                       ),
@@ -335,7 +344,7 @@ class DoctorDetailDialog extends StatelessWidget {
                           'Patients',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: notifier.getIconColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -349,7 +358,7 @@ class DoctorDetailDialog extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
                     border: Border(
-                      top: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                      top: BorderSide(color: notifier.getBorderColor),
                     ),
                   ),
                   child: Row(
@@ -360,7 +369,7 @@ class DoctorDetailDialog extends StatelessWidget {
                           item['day'],
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey[800],
+                            color: notifier.getMainText,
                           ),
                         ),
                       ),
@@ -369,7 +378,7 @@ class DoctorDetailDialog extends StatelessWidget {
                         child: Text(
                           '${item['start']} - ${item['end']}',
                           style: TextStyle(
-                            color: Colors.grey[800],
+                            color: notifier.getMainText,
                           ),
                         ),
                       ),
@@ -378,13 +387,13 @@ class DoctorDetailDialog extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            color: notifier.getIconColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             '${item['patients']} patients',
                             style: TextStyle(
-                              color: Theme.of(context).primaryColor,
+                              color: notifier.getIconColor,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -401,28 +410,28 @@ class DoctorDetailDialog extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          _buildSectionHeader(context, 'Upcoming Appointments'),
+          _buildSectionHeader(context, 'Upcoming Appointments', notifier),
 
           // A message if no upcoming appointments
           Container(
             padding: const EdgeInsets.all(20),
             margin: const EdgeInsets.only(top: 10),
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.1),
+              color: notifier.getBgColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              border: Border.all(color: notifier.getBorderColor),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: Colors.grey[600],
+                  color: notifier.getMaingey,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'No upcoming appointments scheduled for today',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: notifier.getMaingey),
                   ),
                 ),
               ],
@@ -433,12 +442,12 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter(BuildContext context, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: Colors.grey.withOpacity(0.2)),
+          top: BorderSide(color: notifier.getBorderColor),
         ),
       ),
       child: Row(
@@ -453,10 +462,11 @@ class DoctorDetailDialog extends StatelessWidget {
                 snackPosition: SnackPosition.BOTTOM,
               );
             },
-            icon: const Icon(Icons.calendar_today),
-            label: const Text('Manage Schedule'),
+            icon: Icon(Icons.calendar_today, color: notifier.getIconColor),
+            label: Text('Manage Schedule', style: TextStyle(color: notifier.getIconColor)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              side: BorderSide(color: notifier.getIconColor),
             ),
           ),
           const SizedBox(width: 12),
@@ -470,10 +480,10 @@ class DoctorDetailDialog extends StatelessWidget {
                 snackPosition: SnackPosition.BOTTOM,
               );
             },
-            icon: const Icon(Icons.edit),
-            label: const Text('Edit Profile'),
+            icon: const Icon(Icons.edit, color: Colors.white),
+            label: const Text('Edit Profile', style: TextStyle(color: Colors.white)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: appMainColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
@@ -483,7 +493,7 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildSectionHeader(BuildContext context, String title, ColourNotifier notifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -492,16 +502,16 @@ class DoctorDetailDialog extends StatelessWidget {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
+            color: notifier.getIconColor,
           ),
         ),
         const SizedBox(height: 5),
-        Divider(color: Colors.grey.withOpacity(0.3)),
+        Divider(color: notifier.getBorderColor),
       ],
     );
   }
 
-  Widget _buildInfoItem(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildInfoItem(BuildContext context, String label, String value, IconData icon, ColourNotifier notifier) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -510,7 +520,7 @@ class DoctorDetailDialog extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color: Colors.grey[600],
+            color: notifier.getMaingey,
           ),
           const SizedBox(width: 12),
           SizedBox(
@@ -519,7 +529,7 @@ class DoctorDetailDialog extends StatelessWidget {
               label,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: notifier.getMainText,
               ),
             ),
           ),
@@ -527,7 +537,7 @@ class DoctorDetailDialog extends StatelessWidget {
             child: Text(
               value,
               style: TextStyle(
-                color: Colors.grey[700],
+                color: notifier.getMainText,
               ),
             ),
           ),
@@ -541,14 +551,15 @@ class DoctorDetailDialog extends StatelessWidget {
         required String title,
         required String organization,
         required String year,
+        required ColourNotifier notifier,
       }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
+        color: notifier.getBgColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        border: Border.all(color: notifier.getBorderColor),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -556,12 +567,12 @@ class DoctorDetailDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: notifier.getIconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.emoji_events,
-              color: Theme.of(context).primaryColor,
+              color: notifier.getIconColor,
               size: 20,
             ),
           ),
@@ -572,16 +583,17 @@ class DoctorDetailDialog extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
+                    color: notifier.getMainText,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   organization,
                   style: TextStyle(
-                    color: Colors.grey[700],
+                    color: notifier.getMainText,
                     fontSize: 14,
                   ),
                 ),
@@ -589,7 +601,7 @@ class DoctorDetailDialog extends StatelessWidget {
                 Text(
                   year,
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: notifier.getMaingey,
                     fontSize: 13,
                   ),
                 ),

@@ -1,5 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/constants/static_data.dart';
+import 'package:provider/provider.dart';
 import 'doctor_controller.dart';
 
 class DoctorCard extends StatelessWidget {
@@ -18,182 +21,202 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifier = Provider.of<ColourNotifier>(context);
+
     return Card(
       elevation: 3,
+      color: notifier.getContainer,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: notifier.getBorderColor),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Doctor Image and Status
-          Stack(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: 400, // Set a minimum height that works for your layout
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CachedNetworkImage(
-                imageUrl: doctor.profileImage,
-                imageBuilder: (context, imageProvider) => Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
+              // Doctor Image and Status
+              Stack(
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: doctor.profileImage,
+                    imageBuilder: (context, imageProvider) => Container(
+                      height: 140,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
-                    image: DecorationImage(
-                      image: imageProvider,
-                      fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 140,
+                      width: double.infinity,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                        color: notifier.getContainer,
+                      ),
+                      child: CircularProgressIndicator(
+                        color: notifier.getIconColor,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                        color: notifier.getContainer,
+                      ),
+                      child: Icon(
+                        Icons.error,
+                        size: 50, // Larger error icon
+                        color: const Color(
+                            0xfff73164), // Using the existing error color from app
+                      ),
                     ),
                   ),
-                ),
-                placeholder: (context, url) => Container(
-                  height: 140,
-                  width: double.infinity,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(doctor.status),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        doctor.status,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                    color: Colors.grey[200], // Background color while loading
                   ),
-                  child: CircularProgressIndicator(), // Loading indicator centered
-                ),
-                errorWidget: (context, url, error) => Container(
-                  height: 140,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                    color: Colors.grey[200], // Fallback background color
-                  ),
-                  child: Icon(
-                    Icons.error,
-                    size: 50, // Larger error icon
-                    color: Colors.red,
-                  ),
-                ),
+                ],
               ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(doctor.status),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    doctor.status,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+
+              // Doctor Information
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name and Department
+                    Text(
+                      'Dr. ${doctor.fullName}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: notifier.getMainText,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${doctor.specialty} • ${doctor.department}',
+                            style: TextStyle(
+                              color: notifier.getMaingey,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    // Contact Information
+                    _buildContactItem(
+                      context,
+                      Icons.email_outlined,
+                      doctor.email,
+                      notifier,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildContactItem(
+                      context,
+                      Icons.phone_outlined,
+                      doctor.phone,
+                      notifier,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildActionButton(
+                          context,
+                          label: 'View',
+                          icon: Icons.visibility_outlined,
+                          color: notifier.getIconColor,
+                          onPressed: onView,
+                        ),
+                        _buildActionButton(
+                          context,
+                          label: 'Edit',
+                          icon: Icons.edit_outlined,
+                          color: Colors.blue,
+                          onPressed: onEdit,
+                        ),
+                        _buildActionButton(
+                          context,
+                          label: 'Delete',
+                          icon: Icons.delete_outline,
+                          color: const Color(0xfff73164), // Error color
+                          onPressed: onDelete,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-
-          // Doctor Information
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Name and Department
-                Text(
-                  'Dr. ${doctor.fullName}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${doctor.specialty} • ${doctor.department}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 15),
-
-                // Contact Information
-                _buildContactItem(
-                  context,
-                  Icons.email_outlined,
-                  doctor.email,
-                ),
-                const SizedBox(height: 8),
-                _buildContactItem(
-                  context,
-                  Icons.phone_outlined,
-                  doctor.phone,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Action Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildActionButton(
-                      context,
-                      label: 'View',
-                      icon: Icons.visibility_outlined,
-                      color: Theme.of(context).primaryColor,
-                      onPressed: onView,
-                    ),
-                    _buildActionButton(
-                      context,
-                      label: 'Edit',
-                      icon: Icons.edit_outlined,
-                      color: Colors.blue,
-                      onPressed: onEdit,
-                    ),
-                    _buildActionButton(
-                      context,
-                      label: 'Delete',
-                      icon: Icons.delete_outline,
-                      color: Colors.red,
-                      onPressed: onDelete,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildContactItem(BuildContext context, IconData icon, String text) {
+  Widget _buildContactItem(BuildContext context, IconData icon, String text,
+      ColourNotifier notifier) {
     return Row(
       children: [
         Icon(
           icon,
           size: 16,
-          color: Colors.grey[600],
+          color: notifier.getMaingey,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.grey[800],
+              color: notifier.getMainText,
               fontSize: 14,
             ),
             maxLines: 1,
@@ -205,12 +228,12 @@ class DoctorCard extends StatelessWidget {
   }
 
   Widget _buildActionButton(
-      BuildContext context, {
-        required String label,
-        required IconData icon,
-        required Color color,
-        required VoidCallback onPressed,
-      }) {
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),
@@ -243,11 +266,11 @@ class DoctorCard extends StatelessWidget {
       case 'active':
         return Colors.green;
       case 'blocked':
-        return Colors.red;
+        return const Color(0xfff73164); // Using existing error color
       case 'pending':
         return Colors.orange;
       default:
-        return Colors.blue;
+        return appMainColor; // Using main app color
     }
   }
 }
