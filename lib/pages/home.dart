@@ -1,602 +1,233 @@
+
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/static_data.dart';
-import 'package:ige_hospital/widgets/bottom_bar.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
-import 'package:ige_hospital/widgets/size_box.dart';
-import 'package:intl/intl.dart';
+import 'package:ige_hospital/widgets/dashboard_data_card.dart';
 import 'package:provider/provider.dart';
 
 class DefaultPage extends StatefulWidget {
-  const DefaultPage({super.key});
+  const DefaultPage({Key? key}) : super(key: key);
 
   @override
-  State<DefaultPage> createState() => _DefaultPage();
+  State<DefaultPage> createState() => _DefaultPageState();
 }
 
-class _DefaultPage extends State<DefaultPage> {
-  final AppConst controller = Get.find<AppConst>();
-  final DashboardService dashboardService = Get.put(DashboardService());
+class _DefaultPageState extends State<DefaultPage> {
+  late DashboardService dashboardService;
 
   @override
   void initState() {
     super.initState();
-    dashboardService.fetchDashboardData();
-  }
+    dashboardService = Get.find<DashboardService>();
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  List<Map<String, dynamic>> get dashboardData => [
-        {
-          "title": "Admins",
-          "iconPath": "assets/user29.svg",
-          "price": dashboardService.adminCount.toString(),
-          "mainColour": const Color(0xffF7931A),
-        },
-        {
-          "title": "Doctors",
-          "iconPath": "assets/users33.svg",
-          "price": dashboardService.doctorCount.toString(),
-          "mainColour": const Color(0xffF7931A),
-        },
-        {
-          "title": "Patients",
-          "iconPath": "assets/box-check33.svg",
-          "price": dashboardService.patientCount.toString(),
-          "mainColour": const Color(0xffF7931A),
-        },
-        {
-          "title": "Nurses",
-          "iconPath": "assets/chat-info.svg",
-          "price": dashboardService.receptionistCount.toString(),
-          "mainColour": const Color(0xffF7931A),
-        },
-
-        // {
-        //   "title": "Nurses",
-        //   "iconPath": "assets/heartfill.svg",
-        //   "price": "95",
-        //   "mainColour": const Color(0xffF7931A),
-        // },
-        // {
-        //   "title": "Available Beds",
-        //   "iconPath": "assets/home.svg",
-        //   "price": "235",
-        //   "mainColour": const Color(0xffF7931A),
-        // },
-        // {
-        //   "title": "Accountants",
-        //   "iconPath": "assets/receipt-list29.svg",
-        //   "price": "5",
-        //   "mainColour": const Color(0xffF7931A),
-        // },
-        // {
-        //   "title": "Bills",
-        //   "iconPath": "assets/dollar-circle33.svg",
-        //   "price": "\$5,295,295",
-        //   "mainColour": const Color(0xffF7931A),
-        // },
-      ];
-
-  ColourNotifier notifier = ColourNotifier();
-
-  @override
-  Widget build(BuildContext context) {
-    notifier = Provider.of<ColourNotifier>(context, listen: true);
-    return DefaultTabController(
-      length: 3,
-      initialIndex: 0,
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        color: notifier.getBgColor,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < 600) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: [
-                    const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    _buildRefreshButton(),
-                    _buildDashboardStatus(),
-                    _buildComp1Grid(count: 1),
-                    _buildComp3(width: constraints.maxWidth),
-                    _recentAppointments(),
-                    const MySizeBox(),
-                    const BottomBar(),
-                  ],
-                ),
-              );
-            } else if (constraints.maxWidth < 1000) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: [
-                    const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    _buildRefreshButton(),
-                    _buildDashboardStatus(),
-                    Row(
-                      children: [
-                        Expanded(child: _buildComp1Grid(count: 2)),
-                      ],
-                    ),
-                    _buildComp3(width: constraints.maxWidth),
-                    _recentAppointments(),
-                    const MySizeBox(),
-                    const BottomBar(),
-                  ],
-                ),
-              );
-            } else {
-              return SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  children: [
-                    const CommonTitle(title: 'Overview', path: "Dashboards"),
-                    _buildRefreshButton(),
-                    _buildDashboardStatus(),
-                    Row(
-                      children: [
-                        Expanded(child: _buildComp1Grid(count: 4)),
-                      ],
-                    ),
-                    // Row(
-                    //   children: [
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: _buildComp1(
-                    //         title: "Conversion rate",
-                    //         iconPath: "assets/ranking29.svg",
-                    //         price: "\$ 5,295",
-                    //         mainColour: const Color(0xff267DFF),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    // Expanded(child: _buildComp1Grid(count: 4)),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: _buildComp3(width: constraints.maxWidth),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: _recentAppointments(),
-                        ),
-                      ],
-                    ),
-                    const MySizeBox(),
-                    const BottomBar(),
-                  ],
-                ),
-              );
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRefreshButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Obx(() => dashboardService.isLoading.value
-            ? const CircularProgressIndicator()
-            : IconButton(
-                icon: Icon(Icons.refresh, color: notifier.getMainText),
-                onPressed: () => dashboardService.refreshDashboardData(),
-                tooltip: "Refresh dashboard data",
-              )),
-      ),
-    );
-  }
-
-  Widget _buildDashboardStatus() {
-    return Obx(() {
-      if (dashboardService.hasError.value) {
-        return Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.red.shade300),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.error, color: Colors.red),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    dashboardService.errorMessage.value,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.refresh, color: Colors.red),
-                  onPressed: () => dashboardService.refreshDashboardData(),
-                )
-              ],
-            ),
-          ),
-        );
-      }
-      return const SizedBox.shrink();
+    // Refresh dashboard data when page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      dashboardService.fetchDashboardData();
     });
   }
 
-  Widget _buildComp1Grid({required int count}) {
-    return Obx(() => GridView.builder(
-      itemCount: dashboardData.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: count,
-        mainAxisExtent: 150,
-      ),
-      itemBuilder: (context, index) {
-        final data = dashboardData[index];
-        return InkWell(
-          onTap: () => _navigateToPage(data["title"]),
-          borderRadius: BorderRadius.circular(12),
-          child: _buildComp1(
-            title: data["title"],
-            iconPath: data["iconPath"],
-            price: data["price"],
-            mainColour: data["mainColour"],
-          ),
-        );
-      },
-    ));
-  }
+  @override
+  Widget build(BuildContext context) {
+    final notifier = Provider.of<ColourNotifier>(context);
 
-  void _navigateToPage(String title) {
-    switch (title.toLowerCase()) {
-      case 'admins':
-        controller.changePage('admins');
-        break;
-      case 'doctors':
-        controller.changePage('doctors');
-        break;
-      case 'patients':
-        controller.changePage('patients');
-        break;
-      case 'nurses':
-        controller.changePage('nurses');
-        break;
-      default:
-        break;
-    }
-  }
+    return Scaffold(
+      backgroundColor: notifier.getBgColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const CommonTitle(title: 'Dashboard', path: "Overview"),
 
-  Widget _buildComp1({
-    required String title,
-    required String iconPath,
-    required String price,
-    required Color mainColour,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: Container(
-        height: 100,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          color: notifier.getContainer,
-          boxShadow: boxShadow,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ListTile(
-              dense: true,
-              leading: Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: mainColour.withOpacity(0.2),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    iconPath,
-                    height: 25,
-                    width: 25,
-                  ),
-                ),
-              ),
-              title: Text(
-                title,
-                style: mediumGreyTextStyle,
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              // Dashboard Summary Cards
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      price,
-                      style:
-                          mainTextStyle.copyWith(color: notifier.getMainText),
-                    ),
-                    const SizedBox(width: 10),
-                    const SizedBox(width: 5),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildComp3({required double width}) {
-    return Padding(
-      padding: const EdgeInsets.all(padding),
-      child: Container(
-        // height: 400,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          color: Colors.blueAccent.withOpacity(0.2),
-          boxShadow: boxShadow,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: SizedBox(
-                height: 450,
-                child: Padding(
-                  padding: const EdgeInsets.all(padding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 30,
-                        width: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: const Color(0xffffc107),
-                        ),
-                        child: Center(
-                            child:
-                                Text("Chart box", style: mediumBlackTextStyle)),
+                      "Hospital Overview",
+                      style: TextStyle(
+                        color: notifier.getMainText,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _recentAppointments() {
-    return Padding(
-      padding: const EdgeInsets.all(padding),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          color: notifier.getContainer,
-          boxShadow: boxShadow,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(padding),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Text(
-                    "Recent Appointments",
-                    style: mediumBlackTextStyle.copyWith(
-                        color: notifier.getMainText),
-                  ),
-                ],
-              ),
-              // const SizedBox(height: 16),
-
-              Obx(() {
-                if (dashboardService.isLoading.value &&
-                    dashboardService.recentAppointments.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: CircularProgressIndicator(),
                     ),
-                  );
-                }
+                    const SizedBox(height: 16),
 
-                if (dashboardService.recentAppointments.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 40,
+                    // Dashboard Cards - Updated as requested
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Responsive layout
+                        final crossAxisCount = constraints.maxWidth < 600
+                            ? 1
+                            : constraints.maxWidth < 900
+                            ? 2
+                            : 4;
+
+                        return GridView(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 3.0, // Higher ratio for shorter height
+                          ),
+                          children: [
+                            // Doctors Card
+                            Obx(() => DashboardDataCard(
+                              title: "Doctors",
+                              count: dashboardService.doctorCount.toString(),
+                              icon: Icons.medical_services,
+                              iconColor: Colors.blue,
+                              onTap: () => Get.find<AppConst>().changePage('doctors'),
+                            )),
+
+                            // Patients Card
+                            Obx(() => DashboardDataCard(
+                              title: "Patients",
+                              count: dashboardService.patientCount.toString(),
+                              icon: Icons.people,
+                              iconColor: appMainColor,
+                              onTap: () => Get.find<AppConst>().changePage('patients'),
+                            )),
+
+                            // Receptionists Card
+                            Obx(() => DashboardDataCard(
+                              title: "Receptionists",
+                              count: dashboardService.receptionistCount.toString(),
+                              icon: Icons.support_agent,
+                              iconColor: Colors.orange,
+                              onTap: () => Get.find<AppConst>().changePage('nurses'),
+                            )),
+
+                            // Admins Card
+                            Obx(() => DashboardDataCard(
+                              title: "Administrators",
+                              count: dashboardService.adminCount.toString(),
+                              icon: Icons.admin_panel_settings,
+                              iconColor: Colors.purple,
+                              onTap: () => Get.find<AppConst>().changePage('admins'),
+                            )),
+                          ],
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Recent Appointments Section
+                    Text(
+                      "Recent Appointments",
+                      style: TextStyle(
+                        color: notifier.getMainText,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Recent Appointments List
+                    Obx(() {
+                      if (dashboardService.isLoading.value) {
+                        return Center(
+                          child: CircularProgressIndicator(
                             color: notifier.getIconColor,
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "No recent appointments found",
-                            style: mediumGreyTextStyle,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: dashboardService.recentAppointments.length > 5
-                      ? 5
-                      : dashboardService.recentAppointments.length,
-                  itemBuilder: (context, index) {
-                    final appointment =
-                        dashboardService.recentAppointments[index];
-
-                    String time = '';
-                    String date = '';
-
-                    try {
-                      if (appointment.dateTime['formatted'] != null) {
-                        DateTime parsedDate = DateTime.parse(
-                            "${appointment.dateTime['date']} ${appointment.dateTime['time']}");
-                        time = DateFormat('hh:mm a').format(parsedDate);
-                        date = DateFormat('dd/MM/yyyy').format(parsedDate);
-                      } else {
-                        date = appointment.dateTime['date'] ?? 'N/A';
-                        time = appointment.dateTime['time'] ?? 'N/A';
+                        );
                       }
-                    } catch (e) {
-                      print("Error parsing date: $e");
-                      date = appointment.dateTime['date'] ?? 'N/A';
-                      time = appointment.dateTime['time'] ?? 'N/A';
-                    }
 
-                    return Column(
-                      children: [
-                        // const SizedBox(height: 10),
-                        ListTile(
-                          leading: Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: Colors.transparent,
-                                child: appointment.doctor['image'] != null
-                                    ? (appointment.doctor['image']
-                                            .toString()
-                                            .contains('http')
-                                        ? Image.network(
-                                            appointment.doctor['image'],
-                                            width: 40,
-                                            height: 40,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    const Icon(Icons.person,
-                                                        size: 40),
-                                          )
-                                        : SvgPicture.asset(
-                                            "assets/icons8-figma.svg",
-                                            width: 40,
-                                            height: 40,
-                                          ))
-                                    : const Icon(Icons.person, size: 40),
-                              ),
-                              Container(
-                                height: 12,
-                                width: 12,
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(appointment.status),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: notifier.getContainer,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                            ],
+                      if (dashboardService.recentAppointments.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: notifier.getContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: notifier.getBorderColor),
                           ),
-                          title: Text(
-                            appointment.doctor['name'] ?? 'Unknown Doctor',
-                            style: mediumBlackTextStyle.copyWith(
-                              color: notifier.getMainText,
+                          child: Center(
+                            child: Text(
+                              "No recent appointments",
+                              style: TextStyle(color: notifier.getMaingey),
                             ),
                           ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                time,
-                                style: mediumBlackTextStyle.copyWith(
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: dashboardService.recentAppointments.length,
+                        itemBuilder: (context, index) {
+                          final appointment = dashboardService.recentAppointments[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            color: notifier.getContainer,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: notifier.getBorderColor),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(12),
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.blue.withOpacity(0.1),
+                                child: const Icon(Icons.calendar_today, color: Colors.blue),
+                              ),
+                              title: Text(
+                                appointment.doctor['name'] ?? 'Unknown Doctor',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
                                   color: notifier.getMainText,
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                date,
-                                style: mediumGreyTextStyle,
+                              subtitle: Text(
+                                "Patient: ${appointment.patient['name'] ?? 'Unknown Patient'}",
+                                style: TextStyle(
+                                  color: notifier.getMaingey,
+                                ),
                               ),
-                            ],
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              "Patient: ${appointment.patient['name'] ?? 'Unknown Patient'}",
-                              style: mediumGreyTextStyle,
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: appointment.status == 'pending' ? Colors.orange : Colors.green,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  appointment.status.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                          );
+                        },
+                      );
+                    }),
+
+                    const SizedBox(height: 24),
+
+                    // Call to action button to see all appointments
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () => Get.find<AppConst>().changePage('appointments'),
+                        icon: const Icon(Icons.calendar_month),
+                        label: const Text("View All Appointments"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: appMainColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         ),
-                        if (index <
-                            dashboardService.recentAppointments.length - 1)
-                          Divider(color: notifier.getBorderColor),
-                      ],
-                    );
-                  },
-                );
-              }),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  controller.changePage('appointments');
-                  Get.back();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: notifier.getPrimaryColor,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: notifier.getBorderColor),
-                  ),
-                ),
-                child: Text(
-                  "View All Appointments",
-                  style: TextStyle(
-                    color: notifier.getMainText,
-                    fontWeight: FontWeight.w500,
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -604,18 +235,5 @@ class _DefaultPage extends State<DefaultPage> {
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.blue;
-    }
   }
 }
