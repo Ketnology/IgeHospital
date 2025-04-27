@@ -167,9 +167,11 @@ class DoctorController extends GetxService {
     try {
       final Map<String, String> queryParams = {
         if (searchQuery.value.isNotEmpty) 'search': searchQuery.value,
-        if (selectedDepartment.value.isNotEmpty && selectedDepartment.value != 'All Departments')
+        if (selectedDepartment.value.isNotEmpty &&
+            selectedDepartment.value != 'All Departments')
           'department_id': _getDepartmentId(selectedDepartment.value),
-        if (selectedSpecialty.value.isNotEmpty && selectedSpecialty.value != 'All Specialties')
+        if (selectedSpecialty.value.isNotEmpty &&
+            selectedSpecialty.value != 'All Specialties')
           'specialist': selectedSpecialty.value,
         'sort_by': sortBy.value,
         'sort_direction': sortDirection.value,
@@ -177,13 +179,15 @@ class DoctorController extends GetxService {
         'per_page': perPage.value.toString(),
       };
 
-      final Uri uri = Uri.parse(ApiEndpoints.doctorEndpoint).replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.doctorEndpoint)
+          .replace(queryParameters: queryParams);
 
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         final List<dynamic> doctorsList = result['data']['doctors'] ?? [];
-        doctors.value = doctorsList.map((json) => Doctor.fromJson(json)).toList();
+        doctors.value =
+            doctorsList.map((json) => Doctor.fromJson(json)).toList();
 
         // Extract unique specialties from doctors
         Set<String> specialtySet = {'All Specialties'};
@@ -202,7 +206,8 @@ class DoctorController extends GetxService {
         // Apply filters to update filteredDoctors
         applyFilters();
       } else {
-        SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to load doctors');
+        SnackBarUtils.showErrorSnackBar(
+            result['message'] ?? 'Failed to load doctors');
       }
     } catch (e) {
       Get.log("Error loading doctors: $e");
@@ -214,9 +219,8 @@ class DoctorController extends GetxService {
 
   String _getDepartmentId(String departmentName) {
     if (_departmentServiceInitialized && _departmentService != null) {
-      var dept = _departmentService!.departments.firstWhereOrNull(
-              (dept) => dept.title == departmentName
-      );
+      var dept = _departmentService!.departments
+          .firstWhereOrNull((dept) => dept.title == departmentName);
       return dept?.id ?? '';
     }
     return '';
@@ -227,30 +231,42 @@ class DoctorController extends GetxService {
       // Search by name, email, or specialty
       bool matchesSearch = true;
       if (searchQuery.value.isNotEmpty) {
-        matchesSearch = doctor.fullName.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-            doctor.email.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-            doctor.specialty.toLowerCase().contains(searchQuery.value.toLowerCase());
+        matchesSearch = doctor.fullName
+                .toLowerCase()
+                .contains(searchQuery.value.toLowerCase()) ||
+            doctor.email
+                .toLowerCase()
+                .contains(searchQuery.value.toLowerCase()) ||
+            doctor.specialty
+                .toLowerCase()
+                .contains(searchQuery.value.toLowerCase());
       }
 
       // Filter by department
       bool matchesDepartment = true;
-      if (selectedDepartment.value.isNotEmpty && selectedDepartment.value != 'All Departments') {
+      if (selectedDepartment.value.isNotEmpty &&
+          selectedDepartment.value != 'All Departments') {
         matchesDepartment = doctor.department == selectedDepartment.value;
       }
 
       // Filter by specialty
       bool matchesSpecialty = true;
-      if (selectedSpecialty.value.isNotEmpty && selectedSpecialty.value != 'All Specialties') {
+      if (selectedSpecialty.value.isNotEmpty &&
+          selectedSpecialty.value != 'All Specialties') {
         matchesSpecialty = doctor.specialty == selectedSpecialty.value;
       }
 
       // Filter by status
       bool matchesStatus = true;
       if (selectedStatus.value.isNotEmpty && selectedStatus.value != 'All') {
-        matchesStatus = doctor.status.toLowerCase() == selectedStatus.value.toLowerCase();
+        matchesStatus =
+            doctor.status.toLowerCase() == selectedStatus.value.toLowerCase();
       }
 
-      return matchesSearch && matchesDepartment && matchesSpecialty && matchesStatus;
+      return matchesSearch &&
+          matchesDepartment &&
+          matchesSpecialty &&
+          matchesStatus;
     }).toList();
 
     // Sort the list
@@ -267,6 +283,12 @@ class DoctorController extends GetxService {
     selectedSpecialty.value = '';
     selectedStatus.value = '';
     sortDirection.value = 'desc';
+
+    // Reset pagination to first page
+    currentPage.value = 1;
+
+    // Reload doctors from API with reset filters
+    loadDoctors();
   }
 
   Color getStatusColor(String status) {
@@ -299,7 +321,8 @@ class DoctorController extends GetxService {
           SnackBarUtils.showSuccessSnackBar('Doctor created successfully');
           loadDoctors();
         } else {
-          SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to create doctor');
+          SnackBarUtils.showErrorSnackBar(
+              result['message'] ?? 'Failed to create doctor');
         }
       }
     } catch (e) {
@@ -326,7 +349,8 @@ class DoctorController extends GetxService {
           SnackBarUtils.showSuccessSnackBar('Doctor updated successfully');
           loadDoctors();
         } else {
-          SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to update doctor');
+          SnackBarUtils.showErrorSnackBar(
+              result['message'] ?? 'Failed to update doctor');
         }
       }
     } catch (e) {
@@ -349,7 +373,8 @@ class DoctorController extends GetxService {
           SnackBarUtils.showSuccessSnackBar('Doctor deleted successfully');
           loadDoctors();
         } else {
-          SnackBarUtils.showErrorSnackBar(result['message'] ?? 'Failed to delete doctor');
+          SnackBarUtils.showErrorSnackBar(
+              result['message'] ?? 'Failed to delete doctor');
         }
       }
     } catch (e) {

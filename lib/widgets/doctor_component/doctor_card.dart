@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ige_hospital/controllers/doctor_controller.dart';
-import 'package:ige_hospital/models/doctor_model.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/widgets/ui/status_badge.dart';
 import 'package:provider/provider.dart';
@@ -23,12 +22,6 @@ class DoctorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final notifier = Provider.of<ColourNotifier>(context);
 
-    // Generate a default image URL if none provided
-    final defaultImage =
-        'https://ui-avatars.com/api/?name=${Uri.encodeComponent(doctor.fullName)}&background=random';
-    final imageUrl =
-        doctor.profileImage.isNotEmpty ? doctor.profileImage : defaultImage;
-
     return Card(
       elevation: 3,
       color: notifier.getContainer,
@@ -38,40 +31,39 @@ class DoctorCard extends StatelessWidget {
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          minHeight: 400, // Set a minimum height that works for your layout
+          minHeight: 300, // Reduced height since we removed the image
         ),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Doctor Image and Status
-              Stack(
-                children: [
-                  Container(
-                    height: 140,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                      image: DecorationImage(
-                        image: NetworkImage(imageUrl),
-                        fit: BoxFit.cover,
-                        onError: (exception, stackTrace) => const Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.white,
+              // Header with name and status badge
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: notifier.getIconColor.withOpacity(0.1),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Dr. ${doctor.fullName}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: notifier.getMainText,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: StatusBadge(status: doctor.status),
-                  ),
-                ],
+                    StatusBadge(status: doctor.status),
+                  ],
+                ),
               ),
 
               Padding(
@@ -79,18 +71,7 @@ class DoctorCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name and Department
-                    Text(
-                      'Dr. ${doctor.fullName}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: notifier.getMainText,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 5),
+                    // Specialty and Department
                     Row(
                       children: [
                         Expanded(

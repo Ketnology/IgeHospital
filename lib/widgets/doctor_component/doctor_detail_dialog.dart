@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/controllers/doctor_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:provider/provider.dart';
@@ -80,8 +79,10 @@ class DoctorDetailDialog extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, ColourNotifier notifier) {
-    final defaultImage = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(doctor.fullName)}&background=random';
-    final imageUrl = doctor.profileImage.isNotEmpty ? doctor.profileImage : defaultImage;
+    final defaultImage =
+        'https://ui-avatars.com/api/?name=${Uri.encodeComponent(doctor.fullName)}&background=random';
+    final imageUrl =
+        doctor.profileImage.isNotEmpty ? doctor.profileImage : defaultImage;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -100,7 +101,7 @@ class DoctorDetailDialog extends StatelessWidget {
             radius: 40,
             backgroundImage: NetworkImage(imageUrl),
             onBackgroundImageError: (exception, stackTrace) =>
-            const Icon(Icons.person, size: 40, color: Colors.white),
+                const Icon(Icons.person, size: 40, color: Colors.white),
           ),
           const SizedBox(width: 20),
 
@@ -130,7 +131,6 @@ class DoctorDetailDialog extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 Text(
                   '${doctor.specialty} • ${doctor.department}',
                   style: TextStyle(
@@ -138,13 +138,14 @@ class DoctorDetailDialog extends StatelessWidget {
                     color: notifier.getMaingey,
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
-                Row(
+                Wrap(
+                  spacing: 10, // Horizontal space between items
+                  runSpacing: 5, // Vertical space between lines
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: _getStatusColor(doctor.status),
                         borderRadius: BorderRadius.circular(20),
@@ -158,9 +159,9 @@ class DoctorDetailDialog extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: notifier.getIconColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -193,20 +194,22 @@ class DoctorDetailDialog extends StatelessWidget {
           _buildSectionHeader(context, 'Contact Information', notifier),
           _buildInfoItem(context, 'Email', doctor.email, Icons.email, notifier),
           _buildInfoItem(context, 'Phone', doctor.phone, Icons.phone, notifier),
-
           const SizedBox(height: 20),
-
           _buildSectionHeader(context, 'Personal Details', notifier),
-          _buildInfoItem(context, 'Gender', doctor.gender.capitalizeFirst!, Icons.person, notifier),
-          _buildInfoItem(context, 'Blood Group', doctor.bloodGroup, Icons.bloodtype, notifier),
-          _buildInfoItem(context, 'Date of Birth', doctor.user['dob'] ?? 'Not provided', Icons.cake, notifier),
-
+          _buildInfoItem(context, 'Gender', doctor.gender.capitalizeFirst!,
+              Icons.person, notifier),
+          _buildInfoItem(context, 'Blood Group', doctor.bloodGroup,
+              Icons.bloodtype, notifier),
+          _buildInfoItem(context, 'Date of Birth',
+              doctor.user['dob'] ?? 'Not provided', Icons.cake, notifier),
           const SizedBox(height: 20),
-
           _buildSectionHeader(context, 'System Information', notifier),
-          _buildInfoItem(context, 'Doctor ID', doctor.id, Icons.badge, notifier),
-          _buildInfoItem(context, 'Created At', _formatDate(doctor.createdAt), Icons.event, notifier),
-          _buildInfoItem(context, 'Last Updated', _formatDate(doctor.updatedAt), Icons.update, notifier),
+          _buildInfoItem(
+              context, 'Doctor ID', doctor.id, Icons.badge, notifier),
+          _buildInfoItem(context, 'Created At', _formatDate(doctor.createdAt),
+              Icons.event, notifier),
+          _buildInfoItem(context, 'Last Updated', _formatDate(doctor.updatedAt),
+              Icons.update, notifier),
         ],
       ),
     );
@@ -230,16 +233,15 @@ class DoctorDetailDialog extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
           _buildSectionHeader(context, 'Specialization', notifier),
-          _buildInfoItem(context, 'Department', doctor.department, Icons.business, notifier),
-          _buildInfoItem(context, 'Specialty', doctor.specialty, Icons.local_hospital, notifier),
-          _buildInfoItem(context, 'Qualification', doctor.qualification, Icons.school, notifier),
-
+          _buildInfoItem(context, 'Department', doctor.department,
+              Icons.business, notifier),
+          _buildInfoItem(context, 'Specialty', doctor.specialty,
+              Icons.local_hospital, notifier),
+          _buildInfoItem(context, 'Qualification', doctor.qualification,
+              Icons.school, notifier),
           const SizedBox(height: 20),
-
           _buildSectionHeader(context, 'Appointments Statistics', notifier),
           Row(
             children: [
@@ -249,8 +251,7 @@ class DoctorDetailDialog extends StatelessWidget {
                     'Total Appointments',
                     doctor.stats['appointments_count']?.toString() ?? '0',
                     Icons.calendar_today,
-                    notifier
-                ),
+                    notifier),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -259,16 +260,17 @@ class DoctorDetailDialog extends StatelessWidget {
                     'Active Schedules',
                     doctor.stats['schedules_count']?.toString() ?? '0',
                     Icons.schedule,
-                    notifier
-                ),
+                    notifier),
               ),
             ],
           ),
-
           if (doctor.appointments.isNotEmpty) ...[
             const SizedBox(height: 20),
             _buildSectionHeader(context, 'Recent Appointments', notifier),
-            ...doctor.appointments.take(3).map((app) => _buildAppointmentItem(context, app, notifier)).toList(),
+            ...doctor.appointments
+                .take(3)
+                .map((app) => _buildAppointmentItem(context, app, notifier))
+                .toList(),
           ],
         ],
       ),
@@ -321,7 +323,8 @@ class DoctorDetailDialog extends StatelessWidget {
               children: [
                 // Table header
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
                     color: notifier.getIconColor.withOpacity(0.1),
                     borderRadius: const BorderRadius.only(
@@ -369,13 +372,15 @@ class DoctorDetailDialog extends StatelessWidget {
                 // Schedule rows
                 ...schedules.map((schedule) {
                   // Extract schedule days
-                  final scheduleDays = schedule['schedule_days'] as List<dynamic>? ?? [];
+                  final scheduleDays =
+                      schedule['schedule_days'] as List<dynamic>? ?? [];
                   if (scheduleDays.isEmpty) return const SizedBox.shrink();
 
                   return Column(
                     children: scheduleDays.map((day) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 16),
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(color: notifier.getBorderColor),
@@ -405,13 +410,15 @@ class DoctorDetailDialog extends StatelessWidget {
                             Expanded(
                               flex: 2,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: notifier.getIconColor.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  _formatTime(schedule['per_patient_time'] ?? ''),
+                                  _formatTime(
+                                      schedule['per_patient_time'] ?? ''),
                                   style: TextStyle(
                                     color: notifier.getIconColor,
                                     fontSize: 12,
@@ -488,31 +495,33 @@ class DoctorDetailDialog extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () {},
             icon: Icon(Icons.calendar_today, color: notifier.getIconColor),
-            label: Text('Manage Schedule', style: TextStyle(color: notifier.getIconColor)),
+            label: Text('Manage Schedule',
+                style: TextStyle(color: notifier.getIconColor)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               side: BorderSide(color: notifier.getIconColor),
             ),
           ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context, 'edit');
-            },
-            icon: const Icon(Icons.edit, color: Colors.white),
-            label: const Text('Edit Profile', style: TextStyle(color: Colors.white)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: appMainColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
+          // const SizedBox(width: 12),
+          // ElevatedButton.icon(
+          //   onPressed: () {
+          //     Navigator.pop(context, 'edit');
+          //   },
+          //   icon: const Icon(Icons.edit, color: Colors.white),
+          //   label: const Text('Edit Profile', style: TextStyle(color: Colors.white)),
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: appMainColor,
+          //     foregroundColor: Colors.white,
+          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          //   ),
+          // ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, ColourNotifier notifier) {
+  Widget _buildSectionHeader(
+      BuildContext context, String title, ColourNotifier notifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -530,7 +539,8 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem(BuildContext context, String label, String value, IconData icon, ColourNotifier notifier) {
+  Widget _buildInfoItem(BuildContext context, String label, String value,
+      IconData icon, ColourNotifier notifier) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -565,7 +575,8 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, ColourNotifier notifier) {
+  Widget _buildStatCard(BuildContext context, String title, String value,
+      IconData icon, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -580,11 +591,14 @@ class DoctorDetailDialog extends StatelessWidget {
             children: [
               Icon(icon, color: notifier.getIconColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  color: notifier.getMaingey,
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: notifier.getMaingey,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -603,11 +617,14 @@ class DoctorDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildAppointmentItem(BuildContext context, Map<String, dynamic> appointment, ColourNotifier notifier) {
+  Widget _buildAppointmentItem(BuildContext context,
+      Map<String, dynamic> appointment, ColourNotifier notifier) {
     final isCompleted = appointment['is_completed'] == true;
     final patientName = appointment['patient_name'] ?? 'Unknown Patient';
-    final date = appointment['appointment_date'] ?? appointment['date'] ?? 'No date';
-    final time = appointment['appointment_time'] ?? appointment['time'] ?? 'No time';
+    final date =
+        appointment['appointment_date'] ?? appointment['date'] ?? 'No date';
+    final time =
+        appointment['appointment_time'] ?? appointment['time'] ?? 'No time';
     final problem = appointment['problem'] ?? '';
 
     return Container(
@@ -652,26 +669,37 @@ class DoctorDetailDialog extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          Wrap(
+            spacing: 16,
             children: [
-              Icon(Icons.calendar_today, size: 14, color: notifier.getMaingey),
-              const SizedBox(width: 4),
-              Text(
-                date,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: notifier.getMaingey,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_today,
+                      size: 14, color: notifier.getMaingey),
+                  const SizedBox(width: 4),
+                  Text(
+                    date,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: notifier.getMaingey,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Icon(Icons.access_time, size: 14, color: notifier.getMaingey),
-              const SizedBox(width: 4),
-              Text(
-                time,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: notifier.getMaingey,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.access_time, size: 14, color: notifier.getMaingey),
+                  const SizedBox(width: 4),
+                  Text(
+                    time,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: notifier.getMaingey,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -716,9 +744,8 @@ class DoctorDetailDialog extends StatelessWidget {
           final hour = int.tryParse(parts[0]) ?? 0;
           final minute = int.tryParse(parts[1]) ?? 0;
 
-          return DateFormat('hh:mm a').format(
-              DateTime(2022, 1, 1, hour, minute)
-          );
+          return DateFormat('hh:mm a')
+              .format(DateTime(2022, 1, 1, hour, minute));
         }
         return timeString;
       }
