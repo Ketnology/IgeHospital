@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
@@ -252,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           );
-        }).toList(),
+        }),
 
         // Social Media Links
         if (user!.additionalData!.containsKey('facebook_url') ||

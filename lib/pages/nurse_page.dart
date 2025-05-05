@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/nurse_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/nurse_components/add_nurse_dialog.dart';
@@ -236,7 +235,8 @@ class _NursesPageState extends State<NursesPage> {
     });
   }
 
-  void _showDeleteConfirmation(BuildContext context, Nurse nurse, ColourNotifier notifier) {
+  void _showDeleteConfirmation(
+      BuildContext context, Nurse nurse, ColourNotifier notifier) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

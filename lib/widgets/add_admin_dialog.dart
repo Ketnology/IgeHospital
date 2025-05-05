@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/admin_service.dart';
@@ -76,7 +75,8 @@ class _AddAdminDialogState extends State<AddAdminDialog> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: widget.notifier.getIconColor),
+                    icon:
+                        Icon(Icons.close, color: widget.notifier.getIconColor),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -155,7 +155,7 @@ class _AddAdminDialogState extends State<AddAdminDialog> {
                                 borderSide: BorderSide(
                                     color: Colors.grey.withOpacity(0.3)),
                                 borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
+                                    const BorderRadius.all(Radius.circular(10)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -168,7 +168,8 @@ class _AddAdminDialogState extends State<AddAdminDialog> {
                                   horizontal: 15, vertical: 12),
                             ),
                             dropdownColor: widget.notifier.getContainer,
-                            style: TextStyle(color: widget.notifier.getMainText),
+                            style:
+                                TextStyle(color: widget.notifier.getMainText),
                             items: [
                               DropdownMenuItem(
                                 value: "male",

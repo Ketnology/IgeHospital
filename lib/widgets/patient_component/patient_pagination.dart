@@ -18,10 +18,10 @@ class PatientPagination extends StatelessWidget {
     final isMobile = MediaQuery.of(context).size.width < 768;
     final isTablet = MediaQuery.of(context).size.width >= 768 &&
         MediaQuery.of(context).size.width < 1024;
-    final isDesktop = MediaQuery.of(context).size.width >= 1024;
 
     return Obx(() {
-      final totalPages = (controller.totalPatients.value / controller.perPage.value).ceil();
+      final totalPages =
+          (controller.totalPatients.value / controller.perPage.value).ceil();
 
       if (totalPages <= 1) return const SizedBox.shrink();
 
@@ -67,7 +67,8 @@ class PatientPagination extends StatelessWidget {
               // Current page number
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 decoration: BoxDecoration(
                   color: notifier.getIconColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -258,9 +259,7 @@ class PatientPagination extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isEnabled
-                  ? notifier.getMainText
-                  : notifier.getMaingey,
+              color: isEnabled ? notifier.getMainText : notifier.getMaingey,
               size: isMobile ? 20 : 18,
             ),
             if (label != null) ...[
@@ -268,9 +267,7 @@ class PatientPagination extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: isEnabled
-                      ? notifier.getMainText
-                      : notifier.getMaingey,
+                  color: isEnabled ? notifier.getMainText : notifier.getMaingey,
                   fontSize: 14,
                 ),
               ),
@@ -289,7 +286,8 @@ class PatientPagination extends StatelessWidget {
     VoidCallback? onPressed,
     required ColourNotifier notifier,
   }) {
-    final onTap = onPressed ?? (pageNumber != null ? () => controller.setPage(pageNumber) : null);
+    final onTap = onPressed ??
+        (pageNumber != null ? () => controller.setPage(pageNumber) : null);
 
     return InkWell(
       onTap: isEnabled && !isSelected ? onTap : null,
@@ -298,36 +296,36 @@ class PatientPagination extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 3),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? notifier.getIconColor
-              : notifier.getContainer,
+          color: isSelected ? notifier.getIconColor : notifier.getContainer,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: isSelected
                 ? notifier.getIconColor
                 : isEnabled
-                ? notifier.getBorderColor
-                : notifier.getBorderColor.withOpacity(0.3),
+                    ? notifier.getBorderColor
+                    : notifier.getBorderColor.withOpacity(0.3),
           ),
         ),
         child: icon != null
             ? Icon(
-          icon,
-          color: isEnabled
-              ? (isSelected ? Colors.white : notifier.getMainText)
-              : notifier.getMaingey,
-          size: 18,
-        )
+                icon,
+                color: isEnabled
+                    ? (isSelected ? Colors.white : notifier.getMainText)
+                    : notifier.getMaingey,
+                size: 18,
+              )
             : Text(
-          "$pageNumber",
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : (isEnabled ? notifier.getMainText : notifier.getMaingey),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
-          ),
-        ),
+                "$pageNumber",
+                style: TextStyle(
+                  color: isSelected
+                      ? Colors.white
+                      : (isEnabled
+                          ? notifier.getMainText
+                          : notifier.getMaingey),
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
       ),
     );
   }

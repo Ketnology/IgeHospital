@@ -67,7 +67,7 @@ class NurseDetailDialog extends StatelessWidget {
     final defaultImage =
         'https://ui-avatars.com/api/?name=${Uri.encodeComponent(nurse.fullName)}&background=random';
     final imageUrl =
-    nurse.profileImage.isNotEmpty ? nurse.profileImage : defaultImage;
+        nurse.profileImage.isNotEmpty ? nurse.profileImage : defaultImage;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -86,7 +86,7 @@ class NurseDetailDialog extends StatelessWidget {
             radius: 40,
             backgroundImage: NetworkImage(imageUrl),
             onBackgroundImageError: (exception, stackTrace) =>
-            const Icon(Icons.person, size: 40, color: Colors.white),
+                const Icon(Icons.person, size: 40, color: Colors.white),
           ),
           const SizedBox(width: 20),
 
@@ -118,19 +118,19 @@ class NurseDetailDialog extends StatelessWidget {
                 ),
                 nurse.specialty.isNotEmpty
                     ? Text(
-                  '${nurse.specialty} • ${nurse.department}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: notifier.getMaingey,
-                  ),
-                )
+                        '${nurse.specialty} • ${nurse.department}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: notifier.getMaingey,
+                        ),
+                      )
                     : Text(
-                  nurse.department,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: notifier.getMaingey,
-                  ),
-                ),
+                        nurse.department,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: notifier.getMaingey,
+                        ),
+                      ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10, // Horizontal space between items
@@ -197,8 +197,7 @@ class NurseDetailDialog extends StatelessWidget {
               nurse.user['dob'] ?? 'Not provided', Icons.cake, notifier),
           const SizedBox(height: 20),
           _buildSectionHeader(context, 'System Information', notifier),
-          _buildInfoItem(
-              context, 'Nurse ID', nurse.id, Icons.badge, notifier),
+          _buildInfoItem(context, 'Nurse ID', nurse.id, Icons.badge, notifier),
           _buildInfoItem(context, 'Created At', _formatDate(nurse.createdAt),
               Icons.event, notifier),
           _buildInfoItem(context, 'Last Updated', _formatDate(nurse.updatedAt),
@@ -258,151 +257,6 @@ class NurseDetailDialog extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(BuildContext context, String title, String value,
-      IconData icon, ColourNotifier notifier) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: notifier.getBgColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: notifier.getBorderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: notifier.getIconColor, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: notifier.getMaingey,
-                    fontSize: 14,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: notifier.getMainText,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppointmentItem(BuildContext context,
-      Map<String, dynamic> appointment, ColourNotifier notifier) {
-    final isCompleted = appointment['is_completed'] == true;
-    final patientName = appointment['patient_name'] ?? 'Unknown Patient';
-    final date =
-        appointment['appointment_date'] ?? appointment['date'] ?? 'No date';
-    final time =
-        appointment['appointment_time'] ?? appointment['time'] ?? 'No time';
-    final problem = appointment['problem'] ?? '';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: notifier.getBgColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: notifier.getBorderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  patientName,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: notifier.getMainText,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isCompleted ? Colors.green : Colors.orange,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isCompleted ? 'COMPLETED' : 'PENDING',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 16,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.calendar_today,
-                      size: 14, color: notifier.getMaingey),
-                  const SizedBox(width: 4),
-                  Text(
-                    date,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: notifier.getMaingey,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.access_time, size: 14, color: notifier.getMaingey),
-                  const SizedBox(width: 4),
-                  Text(
-                    time,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: notifier.getMaingey,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          if (problem.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Problem: $problem',
-              style: TextStyle(
-                fontSize: 14,
-                color: notifier.getMainText,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
         ],
       ),
     );

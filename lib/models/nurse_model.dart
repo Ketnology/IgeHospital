@@ -37,7 +37,6 @@ class Nurse {
 
   factory Nurse.fromJson(Map<String, dynamic> json) {
     final user = json['user'] ?? {};
-    final department = json['department'] ?? {};
 
     return Nurse(
       id: json['id'] ?? '',
