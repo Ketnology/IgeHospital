@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
@@ -99,24 +98,24 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Obx(() => Text(
-                  authController.userName.value,
-                  style: mainTextStyle.copyWith(
-                    fontSize: 24,
-                    color: notifier.getMainText,
-                  ),
-                )),
+                      authController.userName.value,
+                      style: mainTextStyle.copyWith(
+                        fontSize: 24,
+                        color: notifier.getMainText,
+                      ),
+                    )),
                 const SizedBox(height: 5),
                 Obx(() => Text(
-                  authController.userRole.value,
-                  style: mediumGreyTextStyle.copyWith(
-                    fontSize: 16,
-                  ),
-                )),
+                      authController.userRole.value,
+                      style: mediumGreyTextStyle.copyWith(
+                        fontSize: 16,
+                      ),
+                    )),
                 const SizedBox(height: 5),
                 Obx(() => Text(
-                  authController.userEmail.value,
-                  style: mediumGreyTextStyle,
-                )),
+                      authController.userEmail.value,
+                      style: mediumGreyTextStyle,
+                    )),
               ],
             ),
           ),
@@ -252,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           );
-        }).toList(),
+        }),
 
         // Social Media Links
         if (user!.additionalData!.containsKey('facebook_url') ||
@@ -271,31 +270,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 15),
-
               _buildSocialMediaLink(
-                  notifier,
-                  'Facebook',
-                  'facebook_url',
-                  Icons.facebook
-              ),
+                  notifier, 'Facebook', 'facebook_url', Icons.facebook),
               _buildSocialMediaLink(
-                  notifier,
-                  'Twitter',
-                  'twitter_url',
-                  Icons.flutter_dash
-              ),
+                  notifier, 'Twitter', 'twitter_url', Icons.flutter_dash),
               _buildSocialMediaLink(
-                  notifier,
-                  'Instagram',
-                  'instagram_url',
-                  Icons.camera_alt
-              ),
+                  notifier, 'Instagram', 'instagram_url', Icons.camera_alt),
               _buildSocialMediaLink(
-                  notifier,
-                  'LinkedIn',
-                  'linkedIn_url',
-                  Icons.business
-              ),
+                  notifier, 'LinkedIn', 'linkedIn_url', Icons.business),
             ],
           ),
       ],
@@ -303,11 +285,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildSocialMediaLink(
-      ColourNotifier notifier,
-      String label,
-      String key,
-      IconData icon
-      ) {
+      ColourNotifier notifier, String label, String key, IconData icon) {
     final url = user!.additionalData![key];
     if (url == null || url.toString().isEmpty) return const SizedBox.shrink();
 

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/appointment_service.dart';
-import 'package:ige_hospital/constants/static_data.dart';
 
 class AppointmentFilters extends StatefulWidget {
   final ColourNotifier notifier;
@@ -25,7 +24,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => Padding(
+      () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Card(
           color: widget.notifier.getContainer,
@@ -43,7 +42,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                     _isFilterExpanded = !_isFilterExpanded;
                   });
                 },
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 title: Text(
                   "Filters & Search",
                   style: TextStyle(
@@ -59,7 +59,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                       onPressed: () {
                         widget.appointmentsService.resetFilters();
                       },
-                      icon: Icon(Icons.refresh, size: 16, color: widget.notifier.getIconColor),
+                      icon: Icon(Icons.refresh,
+                          size: 16, color: widget.notifier.getIconColor),
                       label: Text(
                         "Reset",
                         style: TextStyle(color: widget.notifier.getIconColor),
@@ -67,7 +68,9 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      _isFilterExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      _isFilterExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
                       color: widget.notifier.getIconColor,
                     ),
                   ],
@@ -103,7 +106,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
   }
 
   Widget _buildSearchBox() {
-    final searchController = TextEditingController(text: widget.appointmentsService.searchQuery.value);
+    final searchController = TextEditingController(
+        text: widget.appointmentsService.searchQuery.value);
 
     return TextFormField(
       controller: searchController,
@@ -124,13 +128,14 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
         ),
         suffixIcon: searchController.text.isNotEmpty
             ? IconButton(
-          icon: Icon(Icons.clear, size: 18, color: widget.notifier.getMaingey),
-          onPressed: () {
-            searchController.clear();
-            widget.appointmentsService.searchQuery.value = '';
-            widget.appointmentsService.fetchAppointments();
-          },
-        )
+                icon: Icon(Icons.clear,
+                    size: 18, color: widget.notifier.getMaingey),
+                onPressed: () {
+                  searchController.clear();
+                  widget.appointmentsService.searchQuery.value = '';
+                  widget.appointmentsService.fetchAppointments();
+                },
+              )
             : null,
       ),
       onFieldSubmitted: (value) {
@@ -183,8 +188,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(color: widget.notifier.getBorderColor),
           borderRadius: BorderRadius.circular(8),
@@ -198,7 +202,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
             Expanded(
               child: Text(
                 widget.appointmentsService.dateFrom.value.isNotEmpty &&
-                    widget.appointmentsService.dateTo.value.isNotEmpty
+                        widget.appointmentsService.dateTo.value.isNotEmpty
                     ? "${widget.appointmentsService.dateFrom.value} to ${widget.appointmentsService.dateTo.value}"
                     : "Select Date Range",
                 style: TextStyle(color: widget.notifier.getMainText),
@@ -223,8 +227,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
           child: DropdownButtonFormField<bool>(
             isExpanded: true,
             decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               isDense: true,
               filled: true,
               fillColor: widget.notifier.getPrimaryColor,
@@ -293,8 +297,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
           child: DropdownButtonFormField<String>(
             isExpanded: true,
             decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               isDense: true,
               filled: true,
               fillColor: widget.notifier.getPrimaryColor,
@@ -315,7 +319,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                 value: 'asc',
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_upward, size: 14, color: widget.notifier.getIconColor),
+                    Icon(Icons.arrow_upward,
+                        size: 14, color: widget.notifier.getIconColor),
                     const SizedBox(width: 8),
                     Text('Oldest First',
                         style: TextStyle(color: widget.notifier.getMainText)),
@@ -326,7 +331,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                 value: 'desc',
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_downward, size: 14, color: widget.notifier.getIconColor),
+                    Icon(Icons.arrow_downward,
+                        size: 14, color: widget.notifier.getIconColor),
                     const SizedBox(width: 8),
                     Text('Newest First',
                         style: TextStyle(color: widget.notifier.getMainText)),

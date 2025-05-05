@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:ige_hospital/constants/api_endpoints.dart';
 import 'package:ige_hospital/utils/http_client.dart';
@@ -32,13 +31,13 @@ class DepartmentModel {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'status': status,
-    'created_at': createdAt,
-    'updated_at': updatedAt,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'status': status,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
+      };
 }
 
 class DepartmentService extends GetxService {
@@ -68,15 +67,20 @@ class DepartmentService extends GetxService {
     errorMessage.value = '';
 
     try {
-      final dynamic result = await _httpClient.get(ApiEndpoints.doctorDepartmentsEndpoint);
+      final dynamic result =
+          await _httpClient.get(ApiEndpoints.doctorDepartmentsEndpoint);
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
-          final List<dynamic> departmentsList = result['data']['departments'] ?? [];
-          departments.value = departmentsList.map((json) => DepartmentModel.fromJson(json)).toList();
+          final List<dynamic> departmentsList =
+              result['data']['departments'] ?? [];
+          departments.value = departmentsList
+              .map((json) => DepartmentModel.fromJson(json))
+              .toList();
         } else {
           hasError.value = true;
-          errorMessage.value = result['message'] ?? 'Failed to fetch departments';
+          errorMessage.value =
+              result['message'] ?? 'Failed to fetch departments';
         }
       }
     } catch (e) {
@@ -89,7 +93,8 @@ class DepartmentService extends GetxService {
 
   // Helper method to get department title from ID
   String getDepartmentTitle(String departmentId) {
-    final department = departments.firstWhereOrNull((dept) => dept.id == departmentId);
+    final department =
+        departments.firstWhereOrNull((dept) => dept.id == departmentId);
     return department?.title ?? 'Unknown Department';
   }
 

@@ -367,8 +367,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       padding: const EdgeInsets.all(15.0),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          bool isMobile = constraints.maxWidth < 600;
-
           return Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -386,7 +384,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   children: [
                     SvgPicture.asset(
                       "assets/plus-circle.svg",
-                      color: Colors.white,
                       width: 18,
                       height: 18,
                     ),

@@ -2,22 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/controllers/nurse_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/provider/nurse_service.dart';
 import 'package:ige_hospital/provider/department_service.dart';
-import 'package:ige_hospital/widgets/common_button.dart';
-import 'package:ige_hospital/widgets/text_field.dart';
+import 'package:ige_hospital/widgets/form/app_dropdown_field.dart';
+import 'package:ige_hospital/widgets/form/app_text_field.dart';
+import 'package:provider/provider.dart';
 
 class EditNurseDialog extends StatefulWidget {
-  final NurseModel nurse;
-  final ColourNotifier notifier;
-  final NursesService nursesService;
+  final Nurse nurse;
+  final NurseController nurseController;
 
   const EditNurseDialog({
     super.key,
     required this.nurse,
-    required this.notifier,
-    required this.nursesService,
+    required this.nurseController,
   });
 
   @override
@@ -57,24 +56,24 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
     super.initState();
 
     // Initialize controllers with nurse data
-    firstNameController = TextEditingController(text: widget.nurse.user['first_name'] ?? '');
-    lastNameController = TextEditingController(text: widget.nurse.user['last_name'] ?? '');
+    firstNameController = TextEditingController(text: widget.nurse.firstName);
+    lastNameController = TextEditingController(text: widget.nurse.lastName);
     emailController = TextEditingController(text: widget.nurse.email);
     phoneController = TextEditingController(text: widget.nurse.phone);
-    specialtyController = TextEditingController(text: widget.nurse.specialty ?? '');
+    specialtyController = TextEditingController(text: widget.nurse.specialty);
     qualificationController = TextEditingController(text: widget.nurse.qualification);
     dobController = TextEditingController(text: widget.nurse.user['dob'] ?? '');
 
     // Initialize selected values
     selectedGender = widget.nurse.gender.toLowerCase();
     selectedDepartment = widget.nurse.departmentId;
-    selectedBloodGroup = widget.nurse.user['blood_group'] ?? 'O+';
+    selectedBloodGroup = widget.nurse.bloodGroup;
     selectedStatus = widget.nurse.status.toLowerCase();
 
     // Parse date of birth if available
     try {
       selectedDate = widget.nurse.user['dob'] != null && widget.nurse.user['dob'].toString().isNotEmpty
-          ? DateFormat('yyyy-MM-dd').parse(widget.nurse.user['dob'])
+          ? DateTime.parse(widget.nurse.user['dob'])
           : DateTime.now().subtract(const Duration(days: 365 * 25));
     } catch (e) {
       selectedDate = DateTime.now().subtract(const Duration(days: 365 * 25));
@@ -116,11 +115,14 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: widget.notifier.getContainer,
-      contentPadding: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      content: Container(
+    final notifier = Provider.of<ColourNotifier>(context);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      backgroundColor: notifier.getContainer,
+      child: Container(
         width: 600,
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -129,289 +131,331 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: widget.notifier.getIconColor.withOpacity(0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.edit,
-                    color: widget.notifier.getIconColor,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "Edit Nurse: ${widget.nurse.fullName}",
-                      style: TextStyle(
-                        color: widget.notifier.getMainText,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close,
-                      color: widget.notifier.getMainText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildHeader(context, notifier),
 
             // Form content
-            Flexible(
+            Expanded(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Personal Information
-                        Text(
-                          "Personal Information",
-                          style: TextStyle(
-                            color: widget.notifier.getMainText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Personal Information
+                      _buildSectionTitle(context, 'Personal Information', notifier),
+                      const SizedBox(height: 16),
+
+                      // First & Last Name
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'First Name',
+                              controller: firstNameController,
+                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Last Name',
+                              controller: lastNameController,
+                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
 
-                        // Name fields
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: firstNameController,
-                                style: TextStyle(color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("First Name"),
-                                validator: (value) => value!.isEmpty ? "Required" : null,
-                              ),
+                      // Email & Phone
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Email',
+                              controller: emailController,
+                              prefixIcon: Icons.email,
+                              validator: (value) {
+                                if (value!.isEmpty) return 'Required';
+                                if (!GetUtils.isEmail(value)) return 'Invalid email';
+                                return null;
+                              },
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: TextFormField(
-                                controller: lastNameController,
-                                style: TextStyle(color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("Last Name"),
-                                validator: (value) => value!.isEmpty ? "Required" : null,
-                              ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Phone',
+                              controller: phoneController,
+                              prefixIcon: Icons.phone,
+                              validator: (value) => value!.isEmpty ? 'Required' : null,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
 
-                        // Email & Phone
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: emailController,
-                                style: TextStyle(color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("Email"),
-                                validator: (value) {
-                                  if (value!.isEmpty) return "Required";
-                                  if (!GetUtils.isEmail(value)) return "Invalid email";
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: TextFormField(
-                                controller: phoneController,
-                                style: TextStyle(color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("Phone"),
-                                validator: (value) => value!.isEmpty ? "Required" : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Gender & Date of Birth
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildDropdown(
-                                label: "Gender",
-                                value: selectedGender,
-                                items: const [
-                                  DropdownMenuItem(value: "male", child: Text("Male")),
-                                  DropdownMenuItem(value: "female", child: Text("Female")),
-                                ],
-                                onChanged: (value) {
+                      // Gender & Date of Birth
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppDropdownField(
+                              label: 'Gender',
+                              value: selectedGender,
+                              items: ['male', 'female'].map((gender) {
+                                return DropdownMenuItem(
+                                  value: gender,
+                                  child: Text(gender.capitalizeFirst!),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
                                   setState(() {
-                                    selectedGender = value!;
+                                    selectedGender = value;
                                   });
-                                },
-                              ),
+                                }
+                              },
+                              prefixIcon: Icons.person,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final date = await showDatePicker(
-                                    context: context,
-                                    initialDate: selectedDate,
-                                    firstDate: DateTime(1900),
-                                    lastDate: DateTime.now(),
-                                    builder: (context, child) {
-                                      return Theme(
-                                        data: Theme.of(context).copyWith(
-                                          colorScheme: ColorScheme.light(primary: widget.notifier.getIconColor),
-                                          dialogBackgroundColor: widget.notifier.getContainer,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                final date = await showDatePicker(
+                                  context: context,
+                                  initialDate: selectedDate,
+                                  firstDate: DateTime(1940),
+                                  lastDate: DateTime.now(),
+                                  builder: (context, child) {
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                        colorScheme: ColorScheme.light(
+                                          primary: notifier.getIconColor,
                                         ),
-                                        child: child!,
-                                      );
-                                    },
-                                  );
+                                        dialogBackgroundColor: notifier.getContainer,
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
 
-                                  if (date != null) {
-                                    setState(() {
-                                      selectedDate = date;
-                                      dobController.text = DateFormat('yyyy-MM-dd').format(date);
-                                    });
-                                  }
-                                },
-                                child: AbsorbPointer(
-                                  child: TextFormField(
-                                    controller: dobController,
-                                    style: TextStyle(color: widget.notifier.getMainText),
-                                    decoration: _inputDecoration(
-                                      "Date of Birth",
-                                      suffixIcon: Icons.calendar_today,
-                                    ),
-                                  ),
+                                if (date != null) {
+                                  setState(() {
+                                    selectedDate = date;
+                                    dobController.text = DateFormat('yyyy-MM-dd').format(date);
+                                  });
+                                }
+                              },
+                              child: AbsorbPointer(
+                                child: AppTextField(
+                                  label: 'Date of Birth',
+                                  controller: dobController,
+                                  prefixIcon: Icons.calendar_today,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Professional Information
-                        Text(
-                          "Professional Information",
-                          style: TextStyle(
-                            color: widget.notifier.getMainText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: qualificationController,
-                                style: TextStyle(color: widget.notifier.getMainText),
-                                decoration: _inputDecoration("Qualification"),
-                                validator: (value) => value!.isEmpty ? "Required" : null,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildDropdown(
-                                label: "Blood Group",
-                                value: selectedBloodGroup,
-                                items: const [
-                                  DropdownMenuItem(value: "A+", child: Text("A+")),
-                                  DropdownMenuItem(value: "A-", child: Text("A-")),
-                                  DropdownMenuItem(value: "B+", child: Text("B+")),
-                                  DropdownMenuItem(value: "B-", child: Text("B-")),
-                                  DropdownMenuItem(value: "AB+", child: Text("AB+")),
-                                  DropdownMenuItem(value: "AB-", child: Text("AB-")),
-                                  DropdownMenuItem(value: "O+", child: Text("O+")),
-                                  DropdownMenuItem(value: "O-", child: Text("O-")),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedBloodGroup = value!;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Status
-                        _buildDropdown(
-                          label: "Status",
-                          value: selectedStatus,
-                          items: const [
-                            DropdownMenuItem(value: "active", child: Text("Active")),
-                            DropdownMenuItem(value: "pending", child: Text("Pending")),
-                            DropdownMenuItem(value: "blocked", child: Text("Blocked")),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              selectedStatus = value!;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Dialog actions
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: widget.notifier.getBorderColor),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      "Cancel",
-                      style: TextStyle(color: widget.notifier.getMainText),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: isLoading ? null : _updateNurse,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: appMainColor,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: isLoading
-                        ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.0,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ],
                       ),
-                    )
-                        : const Text("Save Changes"),
+                      const SizedBox(height: 24),
+
+                      // Professional Information
+                      _buildSectionTitle(context, 'Professional Information', notifier),
+                      const SizedBox(height: 16),
+
+                      // Department & Specialty
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppDropdownField(
+                              label: 'Department',
+                              value: selectedDepartment,
+                              items: _getDepartmentItems(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() {
+                                    selectedDepartment = value;
+                                  });
+                                }
+                              },
+                              prefixIcon: Icons.business,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Specialty',
+                              controller: specialtyController,
+                              prefixIcon: Icons.local_hospital,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Qualification & Blood Group
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Qualification',
+                              controller: qualificationController,
+                              prefixIcon: Icons.school,
+                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: AppDropdownField(
+                              label: 'Blood Group',
+                              value: selectedBloodGroup,
+                              items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) {
+                                return DropdownMenuItem(
+                                  value: group,
+                                  child: Text(group),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() {
+                                    selectedBloodGroup = value;
+                                  });
+                                }
+                              },
+                              prefixIcon: Icons.bloodtype,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Status
+                      AppDropdownField(
+                        label: 'Status',
+                        value: selectedStatus,
+                        items: ['active', 'pending', 'blocked'].map((status) {
+                          return DropdownMenuItem(
+                            value: status,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _getStatusColor(status),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(status.capitalizeFirst!),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              selectedStatus = value;
+                            });
+                          }
+                        },
+                        prefixIcon: Icons.verified_user,
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
+
+            // Footer with actions
+            _buildFooter(context, notifier),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ColourNotifier notifier) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: notifier.getIconColor.withOpacity(0.1),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.edit,
+            color: notifier.getIconColor,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Edit Nurse: ${widget.nurse.fullName}',
+              style: TextStyle(
+                color: notifier.getMainText,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, color: notifier.getMainText),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(BuildContext context, ColourNotifier notifier) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: notifier.getBorderColor),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: notifier.getMainText),
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: isLoading ? null : _updateNurse,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appMainColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: isLoading
+                ? SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.0,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+                : const Text('Save Changes'),
+          ),
+        ],
       ),
     );
   }
@@ -437,17 +481,9 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
           if (dobController.text.isNotEmpty) "dob": dobController.text,
         };
 
-        await widget.nursesService.updateNurse(widget.nurse.id, nurseData);
+        await widget.nurseController.updateNurse(widget.nurse.id, nurseData);
 
         Navigator.pop(context);
-
-        Get.snackbar(
-          "Success",
-          "Nurse updated successfully",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
       } catch (e) {
         Get.snackbar(
           "Error",
@@ -466,62 +502,56 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
     }
   }
 
-  InputDecoration _inputDecoration(String label, {IconData? suffixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(color: widget.notifier.getMainText),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: widget.notifier.getBorderColor),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: widget.notifier.getBorderColor),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: widget.notifier.getIconColor),
-      ),
-      filled: true,
-      fillColor: widget.notifier.getPrimaryColor,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      suffixIcon: suffixIcon != null
-          ? Icon(suffixIcon, color: widget.notifier.getIconColor)
-          : null,
+  Widget _buildSectionTitle(BuildContext context, String title, ColourNotifier notifier) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: notifier.getIconColor,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Divider(color: notifier.getBorderColor),
+      ],
     );
   }
 
-  Widget _buildDropdown({
-    required String label,
-    required String value,
-    required List<DropdownMenuItem<String>> items,
-    required Function(String?) onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: widget.notifier.getMainText),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.notifier.getBorderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.notifier.getBorderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.notifier.getIconColor),
-        ),
-        filled: true,
-        fillColor: widget.notifier.getPrimaryColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      ),
-      dropdownColor: widget.notifier.getContainer,
-      style: TextStyle(color: widget.notifier.getMainText),
-      items: items,
-      onChanged: onChanged,
-    );
+  List<DropdownMenuItem<String>> _getDepartmentItems() {
+    if (!_departmentServiceInitialized) {
+      return [
+        const DropdownMenuItem(value: '', child: Text("Loading departments..."))
+      ];
+    }
+
+    if (_departmentService.departments.isEmpty) {
+      return [
+        const DropdownMenuItem(value: '', child: Text("No departments available"))
+      ];
+    }
+
+    return _departmentService.departments
+        .where((dept) => dept.status.toLowerCase() == 'active')
+        .map((dept) => DropdownMenuItem<String>(
+      value: dept.id,
+      child: Text(dept.title),
+    ))
+        .toList();
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'blocked':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
   }
 }

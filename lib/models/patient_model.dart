@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class PatientModel {
   final String id;
   final String patientUniqueId;
@@ -69,8 +67,12 @@ class PatientModel {
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
       user: json['user'] is Map ? Map<String, dynamic>.from(json['user']) : {},
-      address: json['address'] is Map ? Map<String, dynamic>.from(json['address']) : null,
-      template: json['template'] is Map ? Map<String, dynamic>.from(json['template']) : null,
+      address: json['address'] is Map
+          ? Map<String, dynamic>.from(json['address'])
+          : null,
+      template: json['template'] is Map
+          ? Map<String, dynamic>.from(json['template'])
+          : null,
       stats: statsMap,
       appointments: appointmentsList,
       documents: documentsList,

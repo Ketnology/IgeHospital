@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
-import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
 
 class DashboardCard extends StatefulWidget {

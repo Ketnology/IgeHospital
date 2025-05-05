@@ -292,11 +292,11 @@ class _AppBarCodeState extends State<AppBarCode> {
                       title: 'Profile',
                       icon: 'assets/user.svg',
                       index: 'profile'),
-                  row(
-                      title: 'Setting',
-                      icon: 'assets/settings.svg',
-                      index: 'settings'),
-                  row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
+                  // row(
+                  //     title: 'Setting',
+                  //     icon: 'assets/settings.svg',
+                  //     index: 'settings'),
+                  // row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
                   TableRow(children: [
                     TableRowInkWell(
                       onTap: () {
@@ -478,63 +478,3 @@ class _AppBarCodeState extends State<AppBarCode> {
 //     ),
 //   );
 // }
-
-Widget _buildCommonTile(
-    {required String title,
-    required String subTile,
-    EdgeInsetsGeometry? padding,
-    required Color color,
-    required String backgroundImage,
-    Color? backcolor,
-    FontWeight? fontWeight,
-    Color? colors,
-    double? width,
-    double? height,
-    required Color colorSub}) {
-  return Container(
-    color: backcolor,
-    child: Padding(
-      padding: const EdgeInsets.only(top: 5, bottom: 5),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100), color: color),
-            ),
-          ),
-          Flexible(
-            flex: 3,
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-              trailing: Text(
-                "just now",
-                style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 11,
-                    overflow: TextOverflow.ellipsis),
-              ),
-              title: Text(
-                title,
-                style: TextStyle(
-                    color: colors,
-                    fontSize: 16,
-                    overflow: TextOverflow.ellipsis),
-              ),
-              subtitle: Text(
-                subTile,
-                style: TextStyle(
-                    color: colorSub,
-                    fontWeight: fontWeight,
-                    overflow: TextOverflow.ellipsis),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}

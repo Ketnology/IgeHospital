@@ -337,68 +337,6 @@ class _DrawerCodeState extends State<DrawerCode> {
     });
   }
 
-  Widget _buildSizeBoxWithHeight() {
-    return SizedBox(
-      height: isPresent ? 25 : 20,
-    );
-  }
-
-  Widget _buildCommonText({required String title, required int index}) {
-    return Obx(
-      () => Text(
-        title,
-        style: mediumGreyTextStyle.copyWith(
-            fontSize: 13,
-            color: controller.selectedPageKey.value == index
-                ? appMainColor
-                : notifier!.getMainText),
-      ),
-    );
-  }
-
-  Widget _buildCommonDash({required int index}) {
-    return Obx(
-      () => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset("assets/minus.svg",
-              color: controller.selectedPageKey.value == index
-                  ? appMainColor
-                  : notifier!.getMainText,
-              width: 6),
-          const SizedBox(
-            width: 25,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExpansionTilt(
-      {required Widget children,
-      required String header,
-      required String iconPath,
-      required int index}) {
-    return ListTileTheme(
-      horizontalTitleGap: 12.0,
-      dense: true,
-      child: ExpansionTile(
-        title: Text(
-          header,
-          style: mediumBlackTextStyle.copyWith(
-              fontSize: 14, color: notifier!.getMainText),
-        ),
-        leading: SvgPicture.asset(iconPath,
-            height: 18, width: 18, color: notifier!.getMainText),
-        tilePadding:
-            EdgeInsets.symmetric(vertical: isPresent ? 5 : 2, horizontal: 8),
-        iconColor: appMainColor,
-        collapsedIconColor: Colors.grey,
-        children: <Widget>[children],
-      ),
-    );
-  }
-
   Widget _buildSingleTile(
       {required String header,
       required String iconPath,

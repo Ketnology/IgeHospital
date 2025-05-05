@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/appointment_service.dart';
-import 'package:ige_hospital/constants/static_data.dart';
 
 class AppointmentFilters extends StatefulWidget {
   final ColourNotifier notifier;
@@ -27,7 +26,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => Padding(
+      () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Card(
           color: widget.notifier.getContainer,
@@ -45,7 +44,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                     _isFilterExpanded = !_isFilterExpanded;
                   });
                 },
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 title: Text(
                   "Filters & Search",
                   style: TextStyle(
@@ -62,7 +62,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                         widget.searchController.clear();
                         widget.appointmentsService.resetFilters();
                       },
-                      icon: Icon(Icons.refresh, size: 16, color: widget.notifier.getIconColor),
+                      icon: Icon(Icons.refresh,
+                          size: 16, color: widget.notifier.getIconColor),
                       label: Text(
                         "Reset",
                         style: TextStyle(color: widget.notifier.getIconColor),
@@ -70,7 +71,9 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      _isFilterExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      _isFilterExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
                       color: widget.notifier.getIconColor,
                     ),
                   ],
@@ -125,13 +128,14 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
         ),
         suffixIcon: widget.searchController.text.isNotEmpty
             ? IconButton(
-          icon: Icon(Icons.clear, size: 18, color: widget.notifier.getMaingey),
-          onPressed: () {
-            widget.searchController.clear();
-            widget.appointmentsService.searchQuery.value = '';
-            widget.appointmentsService.fetchAppointments();
-          },
-        )
+                icon: Icon(Icons.clear,
+                    size: 18, color: widget.notifier.getMaingey),
+                onPressed: () {
+                  widget.searchController.clear();
+                  widget.appointmentsService.searchQuery.value = '';
+                  widget.appointmentsService.fetchAppointments();
+                },
+              )
             : null,
       ),
       onFieldSubmitted: (value) {
@@ -180,10 +184,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           border: Border.all(color: widget.notifier.getBorderColor),
           borderRadius: BorderRadius.circular(8),
@@ -197,7 +198,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
             Expanded(
               child: Text(
                 widget.appointmentsService.dateFrom.value.isNotEmpty &&
-                    widget.appointmentsService.dateTo.value.isNotEmpty
+                        widget.appointmentsService.dateTo.value.isNotEmpty
                     ? "${widget.appointmentsService.dateFrom.value} to ${widget.appointmentsService.dateTo.value}"
                     : "Select Date Range",
                 style: TextStyle(color: widget.notifier.getMainText),
@@ -231,7 +232,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: widget.notifier.getIconColor),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             value: widget.appointmentsService.sortDirection.value,
             dropdownColor: widget.notifier.getContainer,
@@ -275,7 +277,8 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: widget.notifier.getIconColor),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             value: widget.appointmentsService.filterCompleted.value,
             dropdownColor: widget.notifier.getContainer,
