@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
+import 'package:ige_hospital/controllers/nurse_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/dashboard_service.dart';
@@ -16,8 +17,11 @@ void main() async {
   Get.put(AuthController());
 
   await Get.putAsync(() => DashboardService().init());
-
   await Get.putAsync(() => DepartmentService().init());
+
+  // Initialize the NurseController
+  Get.put(NurseController());
+
   runApp(const MyApp());
 }
 
