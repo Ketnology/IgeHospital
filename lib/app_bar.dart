@@ -280,7 +280,7 @@ class _AppBarCodeState extends State<AppBarCode> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            height: 145,
+            height: 85,
             width: 155,
             child: Center(
               child: Table(
