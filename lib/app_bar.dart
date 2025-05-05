@@ -292,11 +292,11 @@ class _AppBarCodeState extends State<AppBarCode> {
                       title: 'Profile',
                       icon: 'assets/user.svg',
                       index: 'profile'),
-                  row(
-                      title: 'Setting',
-                      icon: 'assets/settings.svg',
-                      index: 'settings'),
-                  row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
+                  // row(
+                  //     title: 'Setting',
+                  //     icon: 'assets/settings.svg',
+                  //     index: 'settings'),
+                  // row(title: 'Faq', icon: 'assets/chat-info.svg', index: 'faq'),
                   TableRow(children: [
                     TableRowInkWell(
                       onTap: () {
