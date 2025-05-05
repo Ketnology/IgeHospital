@@ -167,12 +167,13 @@ class _PatientsPageState extends State<PatientsPage> {
                   return Column(
                     children: [
                       Expanded(
-                        child: _buildPatientList(controller.filteredPatients, isMobile, isTablet, isDesktop),
+                        child: _buildPatientList(controller.filteredPatients,
+                            isMobile, isTablet, isDesktop),
                       ),
-                      if (!isMobile)
-                        PatientPagination(
-                          controller: controller,
-                        ),
+                      // Always show pagination for all screen sizes
+                      PatientPagination(
+                        controller: controller,
+                      ),
                     ],
                   );
                 }),
@@ -184,7 +185,8 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  Widget _buildPatientList(List<PatientModel> patients, bool isMobile, bool isTablet, bool isDesktop) {
+  Widget _buildPatientList(List<PatientModel> patients, bool isMobile,
+      bool isTablet, bool isDesktop) {
     if (isMobile) {
       return _buildMobileList(patients);
     } else if (isTablet) {
@@ -204,7 +206,7 @@ class _PatientsPageState extends State<PatientsPage> {
         onEdit: () => _showEditPatientDialog(patients[index]),
         onDelete: () => _showDeleteConfirmation(patients[index]),
       ),
-      separatorBuilder: (context, index) => const SizedBox.shrink(),
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
     );
   }
 
@@ -275,7 +277,8 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  Widget _buildPageTopBar(ColourNotifier notifier, bool isDesktop, bool isTablet, bool isMobile) {
+  Widget _buildPageTopBar(
+      ColourNotifier notifier, bool isDesktop, bool isTablet, bool isMobile) {
     if (isMobile) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
@@ -293,69 +296,71 @@ class _PatientsPageState extends State<PatientsPage> {
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       child: isDesktop
           ? Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Manage patients and their medical records',
-              style: TextStyle(
-                color: notifier.getMaingey,
-                fontSize: 16,
-              ),
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: _showAddPatientDialog,
-            icon: SvgPicture.asset(
-              "assets/plus-circle.svg",
-              color: Colors.white,
-              width: 18,
-              height: 18,
-            ),
-            label: const Text('Add Patient'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: notifier.getIconColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            ),
-          ),
-        ],
-      )
+              children: [
+                Expanded(
+                  child: Text(
+                    'Manage patients and their medical records',
+                    style: TextStyle(
+                      color: notifier.getMaingey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _showAddPatientDialog,
+                  icon: SvgPicture.asset(
+                    "assets/plus-circle.svg",
+                    color: Colors.white,
+                    width: 18,
+                    height: 18,
+                  ),
+                  label: const Text('Add Patient'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: notifier.getIconColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
+                  ),
+                ),
+              ],
+            )
           : Wrap(
-        spacing: 16,
-        runSpacing: 16,
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              'Manage patients and their medical records',
-              style: TextStyle(
-                color: notifier.getMaingey,
-                fontSize: 16,
-              ),
+              spacing: 16,
+              runSpacing: 16,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'Manage patients and their medical records',
+                    style: TextStyle(
+                      color: notifier.getMaingey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _showAddPatientDialog,
+                    icon: SvgPicture.asset(
+                      "assets/plus-circle.svg",
+                      color: Colors.white,
+                      width: 18,
+                      height: 18,
+                    ),
+                    label: const Text('Add Patient'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: notifier.getIconColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 14),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _showAddPatientDialog,
-              icon: SvgPicture.asset(
-                "assets/plus-circle.svg",
-                color: Colors.white,
-                width: 18,
-                height: 18,
-              ),
-              label: const Text('Add Patient'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: notifier.getIconColor,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
