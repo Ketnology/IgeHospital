@@ -1101,8 +1101,7 @@ class CreateBillDialog extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-                'Bill creation form would go here with patient selection, items, etc.'),
+            const Text('Bill creation form '),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
