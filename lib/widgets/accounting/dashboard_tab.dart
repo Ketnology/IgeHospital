@@ -43,407 +43,427 @@ class DashboardTab extends StatelessWidget {
                 );
               }
 
-              final dashboardData = controller.dashboardData;
-              final accounts = dashboardData['accounts'] ?? {};
-              final payments = dashboardData['payments'] ?? {};
-              final bills = dashboardData['bills'] ?? {};
-              final recentPayments = dashboardData['recent_payments'] ?? [];
-              final recentBills = dashboardData['recent_bills'] ?? [];
-              final monthlyTrends = dashboardData['monthly_trends'] ?? [];
+              try {
+                final dashboardData =
+                    controller.dashboardData as Map<String, dynamic>;
+                final accounts =
+                    (dashboardData['accounts'] as Map<String, dynamic>?) ?? {};
+                final payments =
+                    (dashboardData['payments'] as Map<String, dynamic>?) ?? {};
+                final bills =
+                    (dashboardData['bills'] as Map<String, dynamic>?) ?? {};
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Section with Time Period Selector
-                  // Container(
-                  //   padding: const EdgeInsets.all(20),
-                  //   decoration: BoxDecoration(
-                  //     gradient: LinearGradient(
-                  //       begin: Alignment.topLeft,
-                  //       end: Alignment.bottomRight,
-                  //       colors: [
-                  //         appMainColor.withOpacity(0.1),
-                  //         appMainColor.withOpacity(0.05),
-                  //       ],
-                  //     ),
-                  //     borderRadius: BorderRadius.circular(16),
-                  //     border: Border.all(color: appMainColor.withOpacity(0.2)),
-                  //   ),
-                  //   child: Row(
-                  //     children: [
-                  //       Expanded(
-                  //         child: Column(
-                  //           crossAxisAlignment: CrossAxisAlignment.start,
-                  //           children: [
-                  //             Text(
-                  //               'Financial Overview',
-                  //               style: mainTextStyle.copyWith(
-                  //                 color: notifier!.getMainText,
-                  //                 fontSize: 24,
-                  //                 fontWeight: FontWeight.bold,
-                  //               ),
-                  //             ),
-                  //             const SizedBox(height: 8),
-                  //             Text(
-                  //               'Monitor your hospital\'s financial performance and key metrics',
-                  //               style: mediumGreyTextStyle.copyWith(
-                  //                 color: notifier.getMaingey,
-                  //                 fontSize: 14,
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //       Container(
-                  //         padding: const EdgeInsets.all(16),
-                  //         decoration: BoxDecoration(
-                  //           color: appMainColor.withOpacity(0.1),
-                  //           borderRadius: BorderRadius.circular(12),
-                  //         ),
-                  //         child: Icon(
-                  //           Icons.dashboard,
-                  //           color: appMainColor,
-                  //           size: 32,
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
+                final recentPayments =
+                    (dashboardData['recent_payments'] as List<dynamic>?) ?? [];
+                final recentBills =
+                    (dashboardData['recent_bills'] as List<dynamic>?) ?? [];
+                final monthlyTrends =
+                    (dashboardData['monthly_trends'] as List<dynamic>?) ?? [];
 
-                  const SizedBox(height: 24),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DashboardHeader(notifier: notifier),
 
-                  // Key Metrics Cards Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          'Total Accounts',
-                          accounts['total']?.toString() ?? '0',
-                          '${accounts['active']?.toString() ?? '0'} active',
-                          Icons.account_balance,
-                          Colors.blue,
-                          notifier,
-                          _calculateAccountsGrowth(accounts),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          'Total Revenue',
-                          controller.formatCurrency(
-                              payments['total_amount']?.toString() ?? '0'),
-                          '${payments['total_count']?.toString() ?? '0'} payments',
-                          Icons.trending_up,
-                          Colors.green,
-                          notifier,
-                          _calculatePaymentsGrowth(payments),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          'Outstanding Bills',
-                          controller.formatCurrency(
-                              bills['total_amount']?.toString() ?? '0'),
-                          '${bills['total_count']?.toString() ?? '0'} bills',
-                          Icons.receipt_long,
-                          Colors.orange,
-                          notifier,
-                          _calculateBillsGrowth(bills),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          'Collection Rate',
-                          _calculateCollectionRate(bills),
-                          '${bills['paid']?.toString() ?? '0'} paid',
-                          Icons.pie_chart,
-                          Colors.purple,
-                          notifier,
-                          0.0, // Static for now
-                        ),
-                      ),
-                    ],
-                  ),
+                    // Header Section with Time Period Selector
+                    // Container(
+                    //   padding: const EdgeInsets.all(20),
+                    //   decoration: BoxDecoration(
+                    //     gradient: LinearGradient(
+                    //       begin: Alignment.topLeft,
+                    //       end: Alignment.bottomRight,
+                    //       colors: [
+                    //         appMainColor.withOpacity(0.1),
+                    //         appMainColor.withOpacity(0.05),
+                    //       ],
+                    //     ),
+                    //     borderRadius: BorderRadius.circular(16),
+                    //     border: Border.all(color: appMainColor.withOpacity(0.2)),
+                    //   ),
+                    //   child: Row(
+                    //     children: [
+                    //       Expanded(
+                    //         child: Column(
+                    //           crossAxisAlignment: CrossAxisAlignment.start,
+                    //           children: [
+                    //             Text(
+                    //               'Financial Overview',
+                    //               style: mainTextStyle.copyWith(
+                    //                 color: notifier!.getMainText,
+                    //                 fontSize: 24,
+                    //                 fontWeight: FontWeight.bold,
+                    //               ),
+                    //             ),
+                    //             const SizedBox(height: 8),
+                    //             Text(
+                    //               'Monitor your hospital\'s financial performance and key metrics',
+                    //               style: mediumGreyTextStyle.copyWith(
+                    //                 color: notifier.getMaingey,
+                    //                 fontSize: 14,
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //       Container(
+                    //         padding: const EdgeInsets.all(16),
+                    //         decoration: BoxDecoration(
+                    //           color: appMainColor.withOpacity(0.1),
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //         child: Icon(
+                    //           Icons.dashboard,
+                    //           color: appMainColor,
+                    //           size: 32,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Charts and Analytics Row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Financial Trends Chart
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          height: 350,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: notifier.getContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: boxShadow,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Financial Trends',
-                                    style: mainTextStyle.copyWith(
-                                      color: notifier.getMainText,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  _buildTrendLegend(notifier),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              Expanded(
-                                child: _buildFinancialTrendsChart(
-                                    monthlyTrends, notifier, controller),
-                              ),
-                            ],
+                    // Key Metrics Cards Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildMetricCard(
+                            context,
+                            'Total Accounts',
+                            accounts['total']?.toString() ?? '0',
+                            '${accounts['active']?.toString() ?? '0'} active',
+                            Icons.account_balance,
+                            Colors.blue,
+                            notifier,
+                            _calculateAccountsGrowth(accounts),
                           ),
                         ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Account Distribution
-                      Expanded(
-                        child: Container(
-                          height: 350,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: notifier.getContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: boxShadow,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Account Distribution',
-                                style: mainTextStyle.copyWith(
-                                  color: notifier.getMainText,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Expanded(
-                                child: _buildAccountDistribution(
-                                    accounts['by_type'] ?? {}, notifier),
-                              ),
-                            ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildMetricCard(
+                            context,
+                            'Total Revenue',
+                            controller.formatCurrency(
+                                payments['total_amount']?.toString() ?? '0'),
+                            '${payments['total_count']?.toString() ?? '0'} payments',
+                            Icons.trending_up,
+                            Colors.green,
+                            notifier,
+                            _calculatePaymentsGrowth(payments),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Quick Actions and Status Row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Quick Actions
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: notifier.getContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: boxShadow,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Quick Actions',
-                                style: mainTextStyle.copyWith(
-                                  color: notifier.getMainText,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              _buildQuickActionsList(context, notifier),
-                            ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildMetricCard(
+                            context,
+                            'Outstanding Bills',
+                            controller.formatCurrency(
+                                bills['total_amount']?.toString() ?? '0'),
+                            '${bills['total_count']?.toString() ?? '0'} bills',
+                            Icons.receipt_long,
+                            Colors.orange,
+                            notifier,
+                            _calculateBillsGrowth(bills),
                           ),
                         ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Financial Health Status
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: notifier.getContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: boxShadow,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Financial Health',
-                                style: mainTextStyle.copyWith(
-                                  color: notifier.getMainText,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              _buildFinancialHealthStatus(accounts, payments,
-                                  bills, notifier, controller),
-                            ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildMetricCard(
+                            context,
+                            'Collection Rate',
+                            _calculateCollectionRate(bills),
+                            '${bills['paid']?.toString() ?? '0'} paid',
+                            Icons.pie_chart,
+                            Colors.purple,
+                            notifier,
+                            0.0, // Static for now
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Recent Activities Row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Recent Payments
-                      Expanded(
-                        child: Container(
-                          height: 400,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: notifier.getContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: boxShadow,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.payment,
-                                      color: Colors.green, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Recent Payments',
-                                    style: mainTextStyle.copyWith(
-                                      color: notifier.getMainText,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  TextButton(
-                                    onPressed: () {
-                                      // Switch to payments tab - you can implement this
-                                    },
-                                    child: const Text('View All'),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: recentPayments.isEmpty
-                                    ? _buildEmptyState(
-                                        'No recent payments',
-                                        'Payments will appear here once created',
-                                        Icons.payment,
-                                        notifier,
-                                      )
-                                    : ListView.builder(
-                                        itemCount: recentPayments.length,
-                                        itemBuilder: (context, index) {
-                                          final payment = recentPayments[index];
-                                          return _buildRecentPaymentItem(
-                                              payment, notifier, controller);
-                                        },
+                    // Charts and Analytics Row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Financial Trends Chart
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            height: 350,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: notifier.getContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: boxShadow,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Financial Trends',
+                                      style: mainTextStyle.copyWith(
+                                        color: notifier.getMainText,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Recent Bills
-                      Expanded(
-                        child: Container(
-                          height: 400,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: notifier.getContainer,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: boxShadow,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.receipt_long,
-                                      color: Colors.orange, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Recent Bills',
-                                    style: mainTextStyle.copyWith(
-                                      color: notifier.getMainText,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ),
-                                  const Spacer(),
-                                  TextButton(
-                                    onPressed: () {
-                                      // Switch to bills tab - you can implement this
-                                    },
-                                    child: const Text('View All'),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: recentBills.isEmpty
-                                    ? _buildEmptyState(
-                                        'No recent bills',
-                                        'Bills will appear here once created',
-                                        Icons.receipt_long,
-                                        notifier,
-                                      )
-                                    : ListView.builder(
-                                        itemCount: recentBills.length,
-                                        itemBuilder: (context, index) {
-                                          final bill = recentBills[index];
-                                          return _buildRecentBillItem(
-                                              bill, notifier, controller);
-                                        },
-                                      ),
-                              ),
-                            ],
+                                    const Spacer(),
+                                    _buildTrendLegend(notifier),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Expanded(
+                                  child: _buildFinancialTrendsChart(
+                                      monthlyTrends, notifier, controller),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 16),
-                ],
-              );
+                        const SizedBox(width: 16),
+
+                        // Account Distribution
+                        Expanded(
+                          child: Container(
+                            height: 350,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: notifier.getContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: boxShadow,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Account Distribution',
+                                  style: mainTextStyle.copyWith(
+                                    color: notifier.getMainText,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Expanded(
+                                  child: _buildAccountDistribution(
+                                      accounts['by_type'] ?? {}, notifier),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Quick Actions and Status Row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Quick Actions
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: notifier.getContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: boxShadow,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Quick Actions',
+                                  style: mainTextStyle.copyWith(
+                                    color: notifier.getMainText,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                _buildQuickActionsList(context, notifier),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        // Financial Health Status
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: notifier.getContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: boxShadow,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Financial Health',
+                                  style: mainTextStyle.copyWith(
+                                    color: notifier.getMainText,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                _buildFinancialHealthStatus(accounts, payments,
+                                    bills, notifier, controller),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Recent Activities Row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Recent Payments
+                        Expanded(
+                          child: Container(
+                            height: 400,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: notifier.getContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: boxShadow,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.payment,
+                                        color: Colors.green, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Recent Payments',
+                                      style: mainTextStyle.copyWith(
+                                        color: notifier.getMainText,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    TextButton(
+                                      onPressed: () {
+                                        // Switch to payments tab - you can implement this
+                                      },
+                                      child: const Text('View All'),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: recentPayments.isEmpty
+                                      ? _buildEmptyState(
+                                          'No recent payments',
+                                          'Payments will appear here once created',
+                                          Icons.payment,
+                                          notifier,
+                                        )
+                                      : ListView.builder(
+                                          itemCount: recentPayments.length,
+                                          itemBuilder: (context, index) {
+                                            final payment =
+                                                recentPayments[index];
+                                            return _buildRecentPaymentItem(
+                                                payment, notifier, controller);
+                                          },
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        // Recent Bills
+                        Expanded(
+                          child: Container(
+                            height: 400,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: notifier.getContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: boxShadow,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.receipt_long,
+                                        color: Colors.orange, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Recent Bills',
+                                      style: mainTextStyle.copyWith(
+                                        color: notifier.getMainText,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    TextButton(
+                                      onPressed: () {
+                                        // Switch to bills tab - you can implement this
+                                      },
+                                      child: const Text('View All'),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: recentBills.isEmpty
+                                      ? _buildEmptyState(
+                                          'No recent bills',
+                                          'Bills will appear here once created',
+                                          Icons.receipt_long,
+                                          notifier,
+                                        )
+                                      : ListView.builder(
+                                          itemCount: recentBills.length,
+                                          itemBuilder: (context, index) {
+                                            final bill = recentBills[index];
+                                            return _buildRecentBillItem(
+                                                bill, notifier, controller);
+                                          },
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+                  ],
+                );
+              } catch (e) {
+                return Center(
+                  child: Text(
+                    'Error loading dashboard data',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                );
+              }
             }),
           ),
         );
@@ -774,15 +794,15 @@ class DashboardTab extends StatelessWidget {
           // Navigate to create account
         },
       },
-      {
-        'title': 'Generate Report',
-        'subtitle': 'Financial reports',
-        'icon': Icons.assessment,
-        'color': Colors.green,
-        'action': () {
-          // Navigate to reports
-        },
-      },
+      // {
+      //   'title': 'Generate Report',
+      //   'subtitle': 'Financial reports',
+      //   'icon': Icons.assessment,
+      //   'color': Colors.green,
+      //   'action': () {
+      //     // Navigate to reports
+      //   },
+      // },
       {
         'title': 'Create Bill',
         'subtitle': 'New patient bill',
@@ -1385,5 +1405,75 @@ class DashboardTab extends StatelessWidget {
       default:
         return Colors.grey;
     }
+  }
+}
+
+class DashboardHeader extends StatelessWidget {
+  final ColourNotifier notifier;
+
+  const DashboardHeader({
+    super.key,
+    required this.notifier,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Accounting Dashboard',
+              style: mainTextStyle.copyWith(
+                color: notifier.getMainText,
+                fontSize: 28,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Overview of financial performance and transactions',
+              style: mediumGreyTextStyle.copyWith(
+                color: notifier.getMaingey,
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            IconButton(
+              onPressed: () => Get.find<AccountingController>().loadDashboard(),
+              icon: Icon(Icons.refresh, color: notifier.getIconColor),
+              tooltip: 'Refresh Dashboard',
+            ),
+            // const SizedBox(width: 8),
+            // Container(
+            //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            //   decoration: BoxDecoration(
+            //     color: appMainColor.withOpacity(0.1),
+            //     borderRadius: BorderRadius.circular(20),
+            //     border: Border.all(color: appMainColor.withOpacity(0.3)),
+            //   ),
+            //   child: Row(
+            //     mainAxisSize: MainAxisSize.min,
+            //     children: [
+            //       Icon(Icons.calendar_today, size: 16, color: appMainColor),
+            //       const SizedBox(width: 6),
+            //       Text(
+            //         'Today',
+            //         style: mediumBlackTextStyle.copyWith(
+            //           color: appMainColor,
+            //           fontSize: 12,
+            //           fontWeight: FontWeight.w600,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+          ],
+        ),
+      ],
+    );
   }
 }

@@ -102,7 +102,6 @@ class AuthService extends GetxService {
           UserModel? user;
           if (data["data"]["user"] != null) {
             user = UserModel.fromJson(data["data"]["user"]);
-            Get.log("Logged-in user details: ${user.toJson()}");
           }
 
           await _saveSession(accessToken, tokenExpiration, user);
