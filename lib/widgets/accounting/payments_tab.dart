@@ -368,7 +368,7 @@ class PaymentsTab extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Create Payment'),
-        content: const Text('Payment creation dialog would go here'),
+        content: const Text('Payment creation dialog form'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

@@ -11,6 +11,7 @@ import 'package:ige_hospital/widgets/patient_component/patient_detail_dialog.dar
 import 'package:ige_hospital/widgets/patient_component/patient_filters.dart';
 import 'package:ige_hospital/widgets/patient_component/patient_pagination.dart';
 import 'package:ige_hospital/widgets/patient_component/patient_card.dart';
+import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
 
 class PatientsPage extends StatefulWidget {
@@ -23,6 +24,7 @@ class PatientsPage extends StatefulWidget {
 class _PatientsPageState extends State<PatientsPage> {
   late PatientController controller;
   final TextEditingController searchController = TextEditingController();
+  bool _showFilters = false;
 
   @override
   void initState() {
@@ -117,261 +119,163 @@ class _PatientsPageState extends State<PatientsPage> {
   @override
   Widget build(BuildContext context) {
     final notifier = Provider.of<ColourNotifier>(context);
-    final isMobile = MediaQuery.of(context).size.width < 768;
-    final isTablet = MediaQuery.of(context).size.width >= 768 &&
-        MediaQuery.of(context).size.width < 1024;
-    final isDesktop = MediaQuery.of(context).size.width >= 1024;
 
     return Scaffold(
       backgroundColor: notifier.getBgColor,
-      appBar: isMobile ? _buildMobileAppBar(notifier) : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Desktop/Tablet header
-            if (!isMobile)
-              const CommonTitle(
-                  title: 'Patient Records', path: 'Hospital Operations'),
-
-            // Search and add button - responsive layout
-            _buildPageTopBar(notifier, isDesktop, isTablet, isMobile),
-
-            // Filters
-            PatientFilters(
-              controller: controller,
-              searchController: searchController,
-            ),
-
-            // Patients list with pagination
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(isMobile ? 8.0 : 20.0),
-                child: Obx(() {
-                  if (controller.isLoading.value) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: notifier.getIconColor,
-                      ),
-                    );
-                  }
-
-                  if (controller.hasError.value) {
-                    return _buildErrorState(notifier, isMobile);
-                  }
-
-                  if (controller.patients.isEmpty) {
-                    return _buildEmptyState(notifier, isMobile);
-                  }
-
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: _buildPatientList(controller.filteredPatients,
-                            isMobile, isTablet, isDesktop),
-                      ),
-                      // Always show pagination for all screen sizes
-                      PatientPagination(
-                        controller: controller,
-                      ),
-                    ],
-                  );
-                }),
+            const CommonTitle(
+                title: 'Patient Records', path: "Hospital Operations"),
+            _buildPageTopBar(notifier),
+            if (_showFilters)
+              PatientFilters(
+                controller: controller,
+                searchController: searchController,
+                showFilters: _showFilters,
               ),
-            ),
+            _buildPatientsList(notifier),
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: notifier.getIconColor,
+        onPressed: () {
+          setState(() {
+            _showFilters = !_showFilters;
+          });
+        },
+        child: Icon(
+          _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+          color: notifier.getBgColor,
         ),
       ),
     );
   }
 
-  Widget _buildPatientList(List<PatientModel> patients, bool isMobile,
-      bool isTablet, bool isDesktop) {
-    if (isMobile) {
-      return _buildMobileList(patients);
-    } else if (isTablet) {
-      return _buildTabletGrid(patients);
-    } else {
-      return _buildDesktopGrid(patients);
-    }
-  }
+  Widget _buildPageTopBar(ColourNotifier notifier) {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Toggle Filters Button
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showFilters = !_showFilters;
+              });
+            },
+            icon: Icon(
+              _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+              color: notifier.getIconColor,
+            ),
+            tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+          ),
 
-  Widget _buildMobileList(List<PatientModel> patients) {
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      itemCount: patients.length,
-      itemBuilder: (context, index) => PatientCard(
-        patient: patients[index],
-        onView: () => _showPatientDetail(patients[index]),
-        onEdit: () => _showEditPatientDialog(patients[index]),
-        onDelete: () => _showDeleteConfirmation(patients[index]),
+          // Add Patient Button
+          ElevatedButton(
+            onPressed: _showAddPatientDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: appMainColor,
+              fixedSize: const Size.fromHeight(40),
+              elevation: 0,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  "assets/plus-circle.svg",
+                  color: Colors.white,
+                  width: 18,
+                  height: 18,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  "Add Patient",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w200,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
     );
   }
 
-  Widget _buildTabletGrid(List<PatientModel> patients) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.8,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: patients.length,
-      itemBuilder: (context, index) => PatientCard(
-        patient: patients[index],
-        onView: () => _showPatientDetail(patients[index]),
-        onEdit: () => _showEditPatientDialog(patients[index]),
-        onDelete: () => _showDeleteConfirmation(patients[index]),
+  Widget _buildPatientsList(ColourNotifier notifier) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: notifier.getIconColor,
+              ),
+            );
+          }
+
+          if (controller.hasError.value) {
+            return _buildErrorState(notifier);
+          }
+
+          if (controller.patients.isEmpty) {
+            return _buildEmptyState(notifier);
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: _buildPatientGrid(controller.filteredPatients),
+              ),
+              // Always show pagination for all screen sizes
+              PatientPagination(
+                controller: controller,
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildDesktopGrid(List<PatientModel> patients) {
+  Widget _buildPatientGrid(List<PatientModel> patients) {
     return GridView.builder(
       padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 1.5,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 380,
+        childAspectRatio: 0.85,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
       ),
       itemCount: patients.length,
-      itemBuilder: (context, index) => PatientCard(
-        patient: patients[index],
-        onView: () => _showPatientDetail(patients[index]),
-        onEdit: () => _showEditPatientDialog(patients[index]),
-        onDelete: () => _showDeleteConfirmation(patients[index]),
-      ),
+      itemBuilder: (context, index) {
+        final patient = patients[index];
+        return PatientCard(
+          patient: patient,
+          onView: () => _showPatientDetail(patient),
+          onEdit: () => _showEditPatientDialog(patient),
+          onDelete: () => _showDeleteConfirmation(patient),
+        );
+      },
     );
   }
 
-  PreferredSizeWidget _buildMobileAppBar(ColourNotifier notifier) {
-    return AppBar(
-      backgroundColor: notifier.getContainer,
-      elevation: 1,
-      title: Text(
-        'Patient Records',
-        style: TextStyle(
-          color: notifier.getMainText,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              "assets/plus-circle.svg",
-              color: notifier.getIconColor,
-              width: 24,
-              height: 24,
-            ),
-            onPressed: _showAddPatientDialog,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPageTopBar(
-      ColourNotifier notifier, bool isDesktop, bool isTablet, bool isMobile) {
-    if (isMobile) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(
-          'Manage patients and their medical records',
-          style: TextStyle(
-            color: notifier.getMaingey,
-            fontSize: 14,
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-      child: isDesktop
-          ? Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Manage patients and their medical records',
-                    style: TextStyle(
-                      color: notifier.getMaingey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showAddPatientDialog,
-                  icon: SvgPicture.asset(
-                    "assets/plus-circle.svg",
-                    color: Colors.white,
-                    width: 18,
-                    height: 18,
-                  ),
-                  label: const Text('Add Patient'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: notifier.getIconColor,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 14),
-                  ),
-                ),
-              ],
-            )
-          : Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                    'Manage patients and their medical records',
-                    style: TextStyle(
-                      color: notifier.getMaingey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _showAddPatientDialog,
-                    icon: SvgPicture.asset(
-                      "assets/plus-circle.svg",
-                      color: Colors.white,
-                      width: 18,
-                      height: 18,
-                    ),
-                    label: const Text('Add Patient'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: notifier.getIconColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 14),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildErrorState(ColourNotifier notifier, bool isMobile) {
+  Widget _buildErrorState(ColourNotifier notifier) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.error_outline,
-            size: isMobile ? 50 : 60,
+            size: 60,
             color: Colors.red,
           ),
           const SizedBox(height: 16),
@@ -379,7 +283,7 @@ class _PatientsPageState extends State<PatientsPage> {
             'Failed to load patients',
             style: TextStyle(
               color: notifier.getMainText,
-              fontSize: isMobile ? 16 : 18,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -388,7 +292,7 @@ class _PatientsPageState extends State<PatientsPage> {
             'Please try again later',
             style: TextStyle(
               color: notifier.getMaingey,
-              fontSize: isMobile ? 14 : 16,
+              fontSize: 16,
             ),
           ),
           const SizedBox(height: 16),
@@ -399,10 +303,7 @@ class _PatientsPageState extends State<PatientsPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: notifier.getIconColor,
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 24,
-                vertical: isMobile ? 10 : 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
           ),
         ],
@@ -410,14 +311,14 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  Widget _buildEmptyState(ColourNotifier notifier, bool isMobile) {
+  Widget _buildEmptyState(ColourNotifier notifier) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.person_off_outlined,
-            size: isMobile ? 50 : 60,
+            size: 60,
             color: notifier.getMaingey,
           ),
           const SizedBox(height: 16),
@@ -425,7 +326,7 @@ class _PatientsPageState extends State<PatientsPage> {
             'No patients found',
             style: TextStyle(
               color: notifier.getMainText,
-              fontSize: isMobile ? 16 : 18,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -434,7 +335,7 @@ class _PatientsPageState extends State<PatientsPage> {
             'Add a new patient or adjust your filters',
             style: TextStyle(
               color: notifier.getMaingey,
-              fontSize: isMobile ? 14 : 16,
+              fontSize: 16,
             ),
             textAlign: TextAlign.center,
           ),
@@ -446,10 +347,7 @@ class _PatientsPageState extends State<PatientsPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: notifier.getIconColor,
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 24,
-                vertical: isMobile ? 10 : 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
           ),
         ],
