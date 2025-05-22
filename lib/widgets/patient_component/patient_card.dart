@@ -44,6 +44,9 @@ class PatientCard extends StatelessWidget {
               // Patient details - made adaptive for mobile/desktop
               _buildDetails(notifier),
 
+              // Statistics section
+              _buildStatistics(notifier),
+
               // Actions
               _buildActions(notifier),
             ],
@@ -168,6 +171,69 @@ class PatientCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatistics(ColourNotifier notifier) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildStatDisplay(
+            'Appointments',
+            patient.stats['appointments_count']?.toString() ?? '0',
+            Icons.calendar_month_outlined,
+            notifier,
+          ),
+          _buildStatDisplay(
+            'Documents',
+            patient.stats['documents_count']?.toString() ?? '0',
+            Icons.description_outlined,
+            notifier,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatDisplay(
+    String label,
+    String value,
+    IconData icon,
+    ColourNotifier notifier,
+  ) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: notifier.getIconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Icon(
+            icon,
+            color: notifier.getIconColor,
+            size: 20,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: notifier.getMainText,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: notifier.getMaingey,
+          ),
+        ),
+      ],
     );
   }
 
