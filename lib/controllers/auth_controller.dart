@@ -38,7 +38,8 @@ class AuthController extends GetxController {
   void login() async {
     if (_validateInputs()) {
       isLoading.value = true;
-      await authService.login(emailController.text, passwordController.text);
+      // await authService.login(emailController.text, passwordController.text);
+      await authService.login('igehospital@gmail.com', 'password');
       isLoading.value = false;
     }
   }
