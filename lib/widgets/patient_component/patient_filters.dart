@@ -10,13 +10,13 @@ import 'package:provider/provider.dart';
 class PatientFilters extends StatefulWidget {
   final PatientController controller;
   final TextEditingController searchController;
-  final bool initiallyExpanded;
+  final bool showFilters;
 
   const PatientFilters({
     super.key,
     required this.controller,
     required this.searchController,
-    this.initiallyExpanded = false,
+    required this.showFilters,
   });
 
   @override
@@ -29,7 +29,7 @@ class _PatientFiltersState extends State<PatientFilters> {
   @override
   void initState() {
     super.initState();
-    _isFilterExpanded = widget.initiallyExpanded;
+    _isFilterExpanded = widget.showFilters;
   }
 
   @override
@@ -78,7 +78,8 @@ class _PatientFiltersState extends State<PatientFilters> {
                           widget.searchController.clear();
                           widget.controller.resetFilters();
                         },
-                        icon: Icon(Icons.refresh, size: 16, color: notifier.getIconColor),
+                        icon: Icon(Icons.refresh,
+                            size: 16, color: notifier.getIconColor),
                         label: Text(
                           "Reset",
                           style: TextStyle(color: notifier.getIconColor),
@@ -124,7 +125,8 @@ class _PatientFiltersState extends State<PatientFilters> {
             hintText: "Search by name, email, or phone...",
             controller: widget.searchController,
             prefixIcon: Icons.search,
-            suffixIcon: widget.searchController.text.isNotEmpty ? Icons.clear : null,
+            suffixIcon:
+                widget.searchController.text.isNotEmpty ? Icons.clear : null,
             onSuffixIconPressed: () {
               widget.searchController.clear();
               widget.controller.searchQuery.value = '';
@@ -173,105 +175,229 @@ class _PatientFiltersState extends State<PatientFilters> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 18, color: notifier.getIconColor),
+                  Icon(Icons.calendar_today,
+                      size: 18, color: notifier.getIconColor),
                   const SizedBox(width: 8),
                   Obx(() => Expanded(
-                    child: Text(
-                      widget.controller.dateFrom.value.isNotEmpty &&
-                          widget.controller.dateTo.value.isNotEmpty
-                          ? "${widget.controller.dateFrom.value} to ${widget.controller.dateTo.value}"
-                          : "Select Date Range",
-                      style: TextStyle(color: notifier.getMainText),
-                    ),
-                  )),
-                  Icon(Icons.arrow_drop_down, color: notifier.getMainText),
+                        child: Text(
+                          widget.controller.dateFrom.value.isNotEmpty &&
+                                  widget.controller.dateTo.value.isNotEmpty
+                              ? "${widget.controller.dateFrom.value} to ${widget.controller.dateTo.value}"
+                              : "Select Date Range",
+                          style: TextStyle(
+                            color: widget
+                                        .controller.dateFrom.value.isNotEmpty &&
+                                    widget.controller.dateTo.value.isNotEmpty
+                                ? notifier.getMainText
+                                : notifier.getMaingey,
+                          ),
+                        ),
+                      )),
+                  Icon(Icons.arrow_drop_down, color: notifier.getIconColor),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
 
-          // Gender & Blood Group dropdowns
           Row(
             children: [
               Expanded(
-                child: Obx(() => AppDropdownField<String>(
-                  label: 'Gender',
-                  value: widget.controller.selectedGender.value.isEmpty
-                      ? 'All'
-                      : widget.controller.selectedGender.value,
-                  items: widget.controller.genders.map((gender) {
-                    return DropdownMenuItem(
-                      value: gender,
-                      child: Text(gender),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      widget.controller.selectedGender.value = value;
-                      widget.controller.loadPatients();
-                    }
-                  },
-                )),
+                child: Obx(() => DropdownButtonFormField<String>(
+                      menuMaxHeight: 400,
+                      isExpanded: true,
+                      value: widget.controller.selectedGender.value.isEmpty
+                          ? 'All'
+                          : widget
+                              .controller.selectedGender.value.capitalizeFirst,
+                      decoration: InputDecoration(
+                        labelText: 'Gender',
+                        labelStyle: TextStyle(color: notifier.getMainText),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: notifier.getBorderColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: notifier.getBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: notifier.getIconColor),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 16),
+                        filled: true,
+                        fillColor: notifier.getPrimaryColor,
+                      ),
+                      dropdownColor: notifier.getContainer,
+                      style: TextStyle(color: notifier.getMainText),
+                      items: widget.controller.genders.map((gender) {
+                        return DropdownMenuItem(
+                          value: gender,
+                          child: SizedBox(
+                            width: 200,
+                            child: Text(
+                              gender,
+                              style: TextStyle(color: notifier.getMainText),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          widget.controller.selectedGender.value =
+                              value == 'All' ? '' : value.toLowerCase();
+                          widget.controller.loadPatients();
+                        }
+                      },
+                    )),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Obx(() => AppDropdownField<String>(
-                  label: 'Blood Group',
-                  value: widget.controller.selectedBloodGroup.value.isEmpty
-                      ? 'All'
-                      : widget.controller.selectedBloodGroup.value,
-                  items: widget.controller.bloodGroups.map((group) {
-                    return DropdownMenuItem(
-                      value: group,
-                      child: Text(group),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      widget.controller.selectedBloodGroup.value = value;
-                      widget.controller.loadPatients();
-                    }
-                  },
-                )),
+                child: Obx(() => DropdownButtonFormField<String>(
+                      menuMaxHeight: 400,
+                      isExpanded: true,
+                      value: widget.controller.selectedBloodGroup.value.isEmpty
+                          ? 'All'
+                          : widget.controller.selectedBloodGroup.value,
+                      decoration: InputDecoration(
+                        labelText: 'Blood Group',
+                        labelStyle: TextStyle(color: notifier.getMainText),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: notifier.getBorderColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: notifier.getBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: notifier.getIconColor),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 16),
+                        filled: true,
+                        fillColor: notifier.getPrimaryColor,
+                      ),
+                      dropdownColor: notifier.getContainer,
+                      style: TextStyle(color: notifier.getMainText),
+                      items: widget.controller.bloodGroups.map((group) {
+                        return DropdownMenuItem(
+                          value: group,
+                          child: SizedBox(
+                            width: 200,
+                            child: Text(
+                              group,
+                              style: TextStyle(color: notifier.getMainText),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          widget.controller.selectedBloodGroup.value =
+                              value == 'All' ? '' : value;
+                          widget.controller.loadPatients();
+                        }
+                      },
+                    )),
               ),
             ],
           ),
           const SizedBox(height: 16),
 
           // Sort Direction
-          Obx(() => AppDropdownField<String>(
-            label: 'Sort Order',
-            value: widget.controller.sortDirection.value,
-            items: [
-              DropdownMenuItem(
-                value: 'desc',
-                child: Row(
-                  children: [
-                    Icon(Icons.arrow_downward, size: 14, color: notifier.getIconColor),
-                    const SizedBox(width: 8),
-                    Text('Newest First'),
-                  ],
+          Obx(() => DropdownButtonFormField<String>(
+                menuMaxHeight: 400,
+                isExpanded: true,
+                value: widget.controller.sortDirection.value,
+                decoration: InputDecoration(
+                  labelText: 'Sort Order',
+                  labelStyle: TextStyle(color: notifier.getMainText),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: notifier.getBorderColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: notifier.getBorderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: notifier.getIconColor),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  filled: true,
+                  fillColor: notifier.getPrimaryColor,
                 ),
-              ),
-              DropdownMenuItem(
-                value: 'asc',
-                child: Row(
-                  children: [
-                    Icon(Icons.arrow_upward, size: 14, color: notifier.getIconColor),
-                    const SizedBox(width: 8),
-                    Text('Oldest First'),
-                  ],
-                ),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                widget.controller.sortDirection.value = value;
-                widget.controller.loadPatients();
-              }
-            },
-          )),
+                dropdownColor: notifier.getContainer,
+                style: TextStyle(color: notifier.getMainText, fontSize: 14),
+                items: [
+                  DropdownMenuItem(
+                    value: 'desc',
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.25,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.arrow_downward,
+                              size: 14, color: notifier.getIconColor),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Newest First',
+                              style: TextStyle(
+                                  color: notifier.getMainText, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'asc',
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.25,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.arrow_upward,
+                              size: 14, color: notifier.getIconColor),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Oldest First',
+                              style: TextStyle(
+                                  color: notifier.getMainText, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    widget.controller.sortDirection.value = value;
+                    widget.controller.loadPatients();
+                  }
+                },
+              )),
         ],
       ),
     );
