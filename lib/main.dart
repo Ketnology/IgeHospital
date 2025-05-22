@@ -16,15 +16,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Get.putAsync(() => AuthService().init());
   Get.put(AuthController());
+  Get.put(AccountingController());
 
   await Get.putAsync(() => DashboardService().init());
   await Get.putAsync(() => DepartmentService().init());
 
   // Initialize the NurseController
   Get.put(NurseController());
-
-  // Initialize the AccountingController
-  Get.put(AccountingController());
 
   runApp(const MyApp());
 }

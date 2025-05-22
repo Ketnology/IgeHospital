@@ -89,10 +89,10 @@ class _AccountingPageState extends State<AccountingPage>
                             icon: Icon(Icons.payment),
                             text: 'Payments',
                           ),
-                          Tab(
-                            icon: Icon(Icons.receipt_long),
-                            text: 'Bills',
-                          ),
+                          // Tab(
+                          //   icon: Icon(Icons.receipt_long),
+                          //   text: 'Bills',
+                          // ),
                         ],
                         indicatorColor: appMainColor,
                         labelColor: appMainColor,
