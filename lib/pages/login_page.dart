@@ -4,16 +4,18 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/constants/password_constants.dart';
+import 'package:ige_hospital/widgets/password_text_field.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _SingUpPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _SingUpPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
   final AuthController authController = Get.put(AuthController());
 
   @override
@@ -58,45 +60,45 @@ class _SingUpPageState extends State<LoginPage> {
                           children: [
                             constraints.maxWidth < 860
                                 ? Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 80),
-                                    child: _buildLogin(
-                                        width: constraints.maxWidth),
-                                  )
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 80),
+                              child: _buildLogin(
+                                  width: constraints.maxWidth),
+                            )
                                 : Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 19, vertical: 80),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Container(
-                                              height: 782,
-                                              decoration: BoxDecoration(
-                                                color: notifier!.getBgColor,
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(37)),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: _buildLogin(
-                                                        width: constraints
-                                                            .maxWidth),
-                                                  ),
-                                                  Expanded(
-                                                    child: buildQrCode(),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 19, vertical: 80),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        height: 782,
+                                        decoration: BoxDecoration(
+                                          color: notifier!.getBgColor,
+                                          borderRadius:
+                                          const BorderRadius.all(
+                                              Radius.circular(37)),
                                         ),
-                                      ],
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: _buildLogin(
+                                                  width: constraints
+                                                      .maxWidth),
+                                            ),
+                                            Expanded(
+                                              child: buildQrCode(),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
-                                  )
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -202,17 +204,17 @@ class _SingUpPageState extends State<LoginPage> {
                         hintText: "Email Address",
                         prefixIcon: "assets/at.svg",
                         suffixIsTrue: true,
-                        suffix: 'assets/octagon-check.svg',
+                        suffix: '',
                       ),
                       const SizedBox(
                         height: 19.8,
                       ),
-                      _buildTextField(
+                      // Use the new PasswordTextField widget
+                      PasswordTextField(
                         controller: authController.passwordController,
-                        hintText: "Password",
-                        prefixIcon: "assets/lock.svg",
-                        suffixIsTrue: false,
-                        obscureText: true,
+                        hintText: PasswordFieldConstants.passwordHint,
+                        prefixIcon: PasswordFieldConstants.lockIcon,
+                        controllerTag: PasswordFieldConstants.loginPasswordTag,
                       ),
                       const SizedBox(
                         height: 27.3,
@@ -231,15 +233,15 @@ class _SingUpPageState extends State<LoginPage> {
                             children: [
                               const Expanded(
                                   child: SizedBox(
-                                width: 10,
-                              )),
+                                    width: 10,
+                                  )),
                               Text("Continue",
                                   style: mediumBlackTextStyle.copyWith(
                                       color: Colors.white)),
                               const Expanded(
                                   child: SizedBox(
-                                width: 10,
-                              )),
+                                    width: 10,
+                                  )),
                               Container(
                                 height: 35,
                                 width: 35,
@@ -248,21 +250,21 @@ class _SingUpPageState extends State<LoginPage> {
                                     borderRadius: BorderRadius.circular(12)),
                                 child: Center(
                                   child:
-                                      Obx(() => authController.isLoading.value
-                                          ? SizedBox(
-                                              height: 18,
-                                              width: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.5,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                          : SvgPicture.asset(
-                                              "assets/arrow-right-small.svg",
-                                              width: 12,
-                                              height: 12,
-                                              color: Colors.white,
-                                            )),
+                                  Obx(() => authController.isLoading.value
+                                      ? SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                      : SvgPicture.asset(
+                                    "assets/arrow-right-small.svg",
+                                    width: 12,
+                                    height: 12,
+                                    color: Colors.white,
+                                  )),
                                 ),
                               ),
                             ],
@@ -348,24 +350,24 @@ Widget _buildTextField({
         width: 50,
         child: Center(
             child: SvgPicture.asset(
-          prefixIcon,
-          height: 18,
-          width: 18,
-          color: notifier!.getIconColor,
-        )),
+              prefixIcon,
+              height: 18,
+              width: 18,
+              color: notifier!.getIconColor,
+            )),
       ),
       suffixIcon: suffixIsTrue
           ? SizedBox(
-              height: 20,
-              width: 50,
-              child: Center(
-                  child: SvgPicture.asset(
-                suffix!,
-                height: 18,
-                width: 18,
-                color: notifier!.getIconColor,
-              )),
-            )
+        height: 20,
+        width: 50,
+        child: Center(
+            child: SvgPicture.asset(
+              suffix!,
+              height: 18,
+              width: 18,
+              color: notifier!.getIconColor,
+            )),
+      )
           : const SizedBox(),
     ),
   );
