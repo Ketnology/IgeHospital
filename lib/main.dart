@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
+import 'package:ige_hospital/controllers/accounting_controller.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
 import 'package:ige_hospital/controllers/nurse_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
@@ -21,6 +22,9 @@ void main() async {
 
   // Initialize the NurseController
   Get.put(NurseController());
+
+  // Initialize the AccountingController
+  Get.put(AccountingController());
 
   runApp(const MyApp());
 }

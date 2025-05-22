@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ige_hospital/pages/accounting_page.dart';
 import 'package:ige_hospital/pages/admin_page.dart';
 import 'package:ige_hospital/pages/patients_page.dart';
 import 'package:ige_hospital/pages/profile_page.dart';
@@ -12,8 +13,13 @@ final Map<String, Widget> pages = {
   'overview': const DefaultPage(),
   'appointments': const AppointmentsPage(),
   'profile': const ProfilePage(),
+
+  // Hospital Operations
   'patients': const PatientsPage(),
   'doctors': DoctorsPage(),
   'nurses': const NursesPage(),
   'admins': const AdminsPage(),
+
+  // Accounting & Finance
+  'accounting': const AccountingPage(),
 };

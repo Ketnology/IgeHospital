@@ -119,6 +119,15 @@ class _DrawerCodeState extends State<DrawerCode> {
                                   controller.changePage('nurses');
                                   Get.back();
                                 }),
+                            _buildDivider(title: 'Finance & Accounting'),
+                            _buildSingleTile(
+                                header: "Accounting",
+                                iconPath: "assets/hand-holding-dollar.svg",
+                                index: 'accounting',
+                                onTap: () {
+                                  controller.changePage('accounting');
+                                  Get.back();
+                                }),
                             // _buildSingleTile(
                             //     header: "Hospital Stay",
                             //     iconPath: "assets/home.svg",

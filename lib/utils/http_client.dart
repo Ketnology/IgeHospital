@@ -122,6 +122,18 @@ class HttpClient {
     return _parseResponse(response);
   }
 
+  /// Make a PATCH request with authentication
+  Future<dynamic> patch(String url,
+      {Map<String, String>? headers, dynamic body}) async {
+    final response = await _executeRequest(() => http.patch(
+          Uri.parse(url),
+          headers: _addAuthHeader(headers),
+          body: body,
+        ));
+
+    return _parseResponse(response);
+  }
+
   /// Make a DELETE request with authentication
   Future<dynamic> delete(String url, {Map<String, String>? headers}) async {
     final response = await _executeRequest(() => http.delete(
