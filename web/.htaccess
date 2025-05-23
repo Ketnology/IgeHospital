@@ -1,5 +1,18 @@
 <IfModule mod_headers.c>
-  Header set Cache-Control "no-cache, no-store, must-revalidate"
-  Header set Pragma "no-cache"
-  Header set Expires 0
+    # Disable caching for sensitive pages
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+
+    # ====== CONTENT SECURITY POLICY (CSP) ======
+    # Strict CSP
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+
+    # ====== OTHER SECURITY HEADERS ======
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"  # Enable if using HTTPS
 </IfModule>

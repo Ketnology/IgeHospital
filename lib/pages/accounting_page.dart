@@ -24,7 +24,7 @@ class _AccountingPageState extends State<AccountingPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
