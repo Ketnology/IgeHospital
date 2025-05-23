@@ -88,8 +88,6 @@ class AppointmentsService extends GetxService {
         'page': 1,
       };
 
-      Get.log("Fetching appointments with payload: $payload");
-
       final dynamic result = await _httpClient.post(
         ApiEndpoints.appointmentEndpoint,
         headers: {
@@ -103,10 +101,6 @@ class AppointmentsService extends GetxService {
           final responseData = AppointmentResponse.fromJson(result['data']);
           appointments.value = responseData.appointments;
           totalAppointments.value = responseData.total;
-
-          // Log for debugging
-          Get.log(
-              "Loaded ${appointments.length} appointments. Total: ${totalAppointments.value}");
 
           // If we're on a page that doesn't exist anymore, go back to page 1
           if (appointments.isEmpty &&

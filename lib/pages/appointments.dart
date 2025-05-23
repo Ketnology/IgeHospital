@@ -157,12 +157,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Obx(() {
-                      // Log for debugging
-                      Get.log(
-                          "Building appointments UI with ${appointmentsService.appointments.length} appointments");
-                      Get.log(
-                          "Total appointments: ${appointmentsService.totalAppointments.value}");
-
                       if (appointmentsService.isLoading.value) {
                         return Center(
                           child: CircularProgressIndicator(

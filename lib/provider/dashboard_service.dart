@@ -82,12 +82,8 @@ class DashboardService extends GetxService {
         },
       );
 
-      Get.log("Dashboard response received");
-
       if (result is Map<String, dynamic>) {
         if (result["status"] == 200) {
-          Get.log("Dashboard data processing: ${result["data"]["doctors_count"]}");
-
           // Update the Rx variables correctly
           doctorCount.value = result["data"]["doctors_count"] ?? 0;
           patientCount.value = result["data"]["patients_count"] ?? 0;
@@ -116,7 +112,6 @@ class DashboardService extends GetxService {
 
   void refreshDashboardData() {
     // Debounce the refresh calls to prevent spamming
-    Get.log("Manual dashboard refresh requested");
     fetchDashboardData();
   }
 }

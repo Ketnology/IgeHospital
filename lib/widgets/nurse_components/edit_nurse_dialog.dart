@@ -61,7 +61,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
     emailController = TextEditingController(text: widget.nurse.email);
     phoneController = TextEditingController(text: widget.nurse.phone);
     specialtyController = TextEditingController(text: widget.nurse.specialty);
-    qualificationController = TextEditingController(text: widget.nurse.qualification);
+    qualificationController =
+        TextEditingController(text: widget.nurse.qualification);
     dobController = TextEditingController(text: widget.nurse.user['dob'] ?? '');
 
     // Initialize selected values
@@ -72,7 +73,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
 
     // Parse date of birth if available
     try {
-      selectedDate = widget.nurse.user['dob'] != null && widget.nurse.user['dob'].toString().isNotEmpty
+      selectedDate = widget.nurse.user['dob'] != null &&
+              widget.nurse.user['dob'].toString().isNotEmpty
           ? DateTime.parse(widget.nurse.user['dob'])
           : DateTime.now().subtract(const Duration(days: 365 * 25));
     } catch (e) {
@@ -143,7 +145,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Personal Information
-                      _buildSectionTitle(context, 'Personal Information', notifier),
+                      _buildSectionTitle(
+                          context, 'Personal Information', notifier),
                       const SizedBox(height: 16),
 
                       // First & Last Name
@@ -153,7 +156,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                             child: AppTextField(
                               label: 'First Name',
                               controller: firstNameController,
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -161,7 +165,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                             child: AppTextField(
                               label: 'Last Name',
                               controller: lastNameController,
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
                             ),
                           ),
                         ],
@@ -178,7 +183,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                               prefixIcon: Icons.email,
                               validator: (value) {
                                 if (value!.isEmpty) return 'Required';
-                                if (!GetUtils.isEmail(value)) return 'Invalid email';
+                                if (!GetUtils.isEmail(value))
+                                  return 'Invalid email';
                                 return null;
                               },
                             ),
@@ -189,7 +195,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                               label: 'Phone',
                               controller: phoneController,
                               prefixIcon: Icons.phone,
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
                             ),
                           ),
                         ],
@@ -234,7 +241,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                                         colorScheme: ColorScheme.light(
                                           primary: notifier.getIconColor,
                                         ),
-                                        dialogBackgroundColor: notifier.getContainer,
+                                        dialogBackgroundColor:
+                                            notifier.getContainer,
                                       ),
                                       child: child!,
                                     );
@@ -244,7 +252,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                                 if (date != null) {
                                   setState(() {
                                     selectedDate = date;
-                                    dobController.text = DateFormat('yyyy-MM-dd').format(date);
+                                    dobController.text =
+                                        DateFormat('yyyy-MM-dd').format(date);
                                   });
                                 }
                               },
@@ -262,7 +271,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                       const SizedBox(height: 24),
 
                       // Professional Information
-                      _buildSectionTitle(context, 'Professional Information', notifier),
+                      _buildSectionTitle(
+                          context, 'Professional Information', notifier),
                       const SizedBox(height: 16),
 
                       // Department & Specialty
@@ -271,7 +281,10 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppDropdownField(
                               label: 'Department',
-                              value: selectedDepartment,
+                              value: _departmentService.departments
+                                      .any((d) => d.id == selectedDepartment)
+                                  ? selectedDepartment
+                                  : null, // null if value not in list
                               items: _getDepartmentItems(),
                               onChanged: (value) {
                                 if (value != null) {
@@ -303,7 +316,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                               label: 'Qualification',
                               controller: qualificationController,
                               prefixIcon: Icons.school,
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -311,7 +325,16 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                             child: AppDropdownField(
                               label: 'Blood Group',
                               value: selectedBloodGroup,
-                              items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) {
+                              items: [
+                                'A+',
+                                'A-',
+                                'B+',
+                                'B-',
+                                'AB+',
+                                'AB-',
+                                'O+',
+                                'O-'
+                              ].map((group) {
                                 return DropdownMenuItem(
                                   value: group,
                                   child: Text(group),
@@ -446,13 +469,13 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
             ),
             child: isLoading
                 ? SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.0,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
                 : const Text('Save Changes'),
           ),
         ],
@@ -502,7 +525,8 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
     }
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title, ColourNotifier notifier) {
+  Widget _buildSectionTitle(
+      BuildContext context, String title, ColourNotifier notifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -521,24 +545,30 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
   }
 
   List<DropdownMenuItem<String>> _getDepartmentItems() {
-    if (!_departmentServiceInitialized) {
+    if (!_departmentServiceInitialized ||
+        _departmentService.departments.isEmpty) {
+      // Return a default item with the current value if departments aren't loaded yet
       return [
-        const DropdownMenuItem(value: '', child: Text("Loading departments..."))
+        DropdownMenuItem(
+          value: selectedDepartment, // Keep the current value
+          child: Text(_departmentServiceInitialized
+              ? "No departments available"
+              : "Loading departments..."),
+        )
       ];
     }
 
-    if (_departmentService.departments.isEmpty) {
-      return [
-        const DropdownMenuItem(value: '', child: Text("No departments available"))
-      ];
-    }
-
-    return _departmentService.departments
+    // Filter active departments and ensure no duplicates
+    final activeDepartments = _departmentService.departments
         .where((dept) => dept.status.toLowerCase() == 'active')
+        .toSet() // Remove duplicates
+        .toList();
+
+    return activeDepartments
         .map((dept) => DropdownMenuItem<String>(
-      value: dept.id,
-      child: Text(dept.title),
-    ))
+              value: dept.id,
+              child: Text(dept.title),
+            ))
         .toList();
   }
 
