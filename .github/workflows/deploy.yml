@@ -23,7 +23,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Flutter Web
-        run: flutter build web
+        run: flutter build web --release --dart-define=FLUTTER_WEB_RENDERER=html
 
       - name: Clean public_html directory
         uses: appleboy/ssh-action@v0.1.10
