@@ -5,12 +5,8 @@ import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/form/app_text_field.dart';
 import 'package:ige_hospital/widgets/form/app_dropdown_field.dart';
-import 'package:ige_hospital/widgets/form/app_date_field.dart';
 import 'package:ige_hospital/widgets/form/app_search_field.dart';
-import 'package:ige_hospital/widgets/form/app_currency_field.dart';
-import 'package:ige_hospital/widgets/common_button.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 
 class BillsTab extends StatelessWidget {
   const BillsTab({super.key});
@@ -85,7 +81,8 @@ class BillsTab extends StatelessWidget {
                   if (isMobile) {
                     return _buildMobileBillsList(controller, notifier);
                   } else {
-                    return _buildDesktopBillsList(controller, notifier, isTablet);
+                    return _buildDesktopBillsList(
+                        controller, notifier, isTablet);
                   }
                 }),
               ),
@@ -96,23 +93,15 @@ class BillsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileFilters(AccountingController controller, ColourNotifier notifier) {
+  Widget _buildMobileFilters(
+      AccountingController controller, ColourNotifier notifier) {
     return Column(
       children: [
         // Search Field
-        TextField(
+        AppSearchField(
+          hintText: 'Search bills...',
+          controller: TextEditingController(),
           onChanged: (value) => controller.searchQuery.value = value,
-          decoration: InputDecoration(
-            hintText: 'Search bills...',
-            prefixIcon: Icon(Icons.search, color: notifier.getIconColor),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: notifier.getBorderColor),
-            ),
-            filled: true,
-            fillColor: notifier.getBgColor,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          ),
         ),
         const SizedBox(height: 12),
 
@@ -120,61 +109,47 @@ class BillsTab extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Obx(() => DropdownButtonFormField<String>(
-                value: controller.selectedBillStatus.value,
-                decoration: InputDecoration(
-                  labelText: 'Status',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  filled: true,
-                  fillColor: notifier.getBgColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                ),
-                isExpanded: true,
-                items: controller.billStatuses.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(
-                      status,
-                      style: const TextStyle(fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  controller.selectedBillStatus.value = value ?? 'All Statuses';
-                },
-              )),
+              child: Obx(() => AppDropdownField<String>(
+                    label: '',
+                    value: controller.selectedBillStatus.value,
+                    hint: 'Status',
+                    items: controller.billStatuses.map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(
+                          status,
+                          style: const TextStyle(fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      controller.selectedBillStatus.value =
+                          value ?? 'All Statuses';
+                    },
+                  )),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Obx(() => DropdownButtonFormField<String>(
-                value: controller.selectedPaymentMode.value,
-                decoration: InputDecoration(
-                  labelText: 'Mode',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  filled: true,
-                  fillColor: notifier.getBgColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                ),
-                isExpanded: true,
-                items: controller.paymentModes.map((mode) {
-                  return DropdownMenuItem(
-                    value: mode,
-                    child: Text(
-                      mode,
-                      style: const TextStyle(fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  controller.selectedPaymentMode.value = value ?? 'All Modes';
-                },
-              )),
+              child: Obx(() => AppDropdownField<String>(
+                    label: '',
+                    value: controller.selectedPaymentMode.value,
+                    hint: 'Mode',
+                    items: controller.paymentModes.map((mode) {
+                      return DropdownMenuItem(
+                        value: mode,
+                        child: Text(
+                          mode,
+                          style: const TextStyle(fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      controller.selectedPaymentMode.value =
+                          value ?? 'All Modes';
+                    },
+                  )),
             ),
           ],
         ),
@@ -237,7 +212,8 @@ class BillsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopFilters(AccountingController controller, ColourNotifier notifier, bool isTablet) {
+  Widget _buildDesktopFilters(
+      AccountingController controller, ColourNotifier notifier, bool isTablet) {
     return Column(
       children: [
         // Main Filter Row
@@ -246,80 +222,57 @@ class BillsTab extends StatelessWidget {
             // Search Field
             Expanded(
               flex: isTablet ? 2 : 3,
-              child: TextField(
+              child: AppSearchField(
+                hintText: 'Search by bill reference or patient name...',
+                controller: TextEditingController(),
                 onChanged: (value) => controller.searchQuery.value = value,
-                decoration: InputDecoration(
-                  hintText: 'Search by bill reference or patient name...',
-                  prefixIcon: Icon(Icons.search, color: notifier.getIconColor),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: notifier.getBorderColor),
-                  ),
-                  filled: true,
-                  fillColor: notifier.getBgColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
               ),
             ),
             const SizedBox(width: 12),
 
             // Status Filter
             Expanded(
-              child: Obx(() => DropdownButtonFormField<String>(
-                value: controller.selectedBillStatus.value,
-                decoration: InputDecoration(
-                  labelText: 'Status',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  filled: true,
-                  fillColor: notifier.getBgColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                isExpanded: true,
-                items: controller.billStatuses.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(
-                      status,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  controller.selectedBillStatus.value = value ?? 'All Statuses';
-                },
-              )),
+              child: Obx(() => AppDropdownField<String>(
+                    label: '',
+                    value: controller.selectedBillStatus.value,
+                    hint: 'Status',
+                    items: controller.billStatuses.map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(
+                          status,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      controller.selectedBillStatus.value =
+                          value ?? 'All Statuses';
+                    },
+                  )),
             ),
             const SizedBox(width: 12),
 
             // Payment Mode Filter
             Expanded(
-              child: Obx(() => DropdownButtonFormField<String>(
-                value: controller.selectedPaymentMode.value,
-                decoration: InputDecoration(
-                  labelText: isTablet ? 'Mode' : 'Payment Mode',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  filled: true,
-                  fillColor: notifier.getBgColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                isExpanded: true,
-                items: controller.paymentModes.map((mode) {
-                  return DropdownMenuItem(
-                    value: mode,
-                    child: Text(
-                      mode,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  controller.selectedPaymentMode.value = value ?? 'All Modes';
-                },
-              )),
+              child: Obx(() => AppDropdownField<String>(
+                    label: '',
+                    value: controller.selectedPaymentMode.value,
+                    hint: isTablet ? 'Mode' : 'Payment Mode',
+                    items: controller.paymentModes.map((mode) {
+                      return DropdownMenuItem(
+                        value: mode,
+                        child: Text(
+                          mode,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      controller.selectedPaymentMode.value =
+                          value ?? 'All Modes';
+                    },
+                  )),
             ),
           ],
         ),
@@ -362,7 +315,8 @@ class BillsTab extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: appMainColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -386,41 +340,51 @@ class BillsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDateField(RxString dateValue, String label, ColourNotifier notifier, VoidCallback onDateChanged) {
-    return Obx(() => TextField(
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: dateValue.value.isEmpty ? 'Select date' : dateValue.value,
-        suffixIcon: Icon(Icons.calendar_today, color: notifier.getIconColor),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        filled: true,
-        fillColor: notifier.getBgColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      ),
-      readOnly: true,
-      onTap: () async {
-        final date = await showDatePicker(
-          context: Get.context!,
-          initialDate: DateTime.now(),
-          firstDate: DateTime(2020),
-          lastDate: DateTime.now(),
-        );
-        if (date != null) {
-          dateValue.value = date.toIso8601String().split('T')[0];
-          onDateChanged();
-        }
-      },
-    ));
+  Widget _buildDateField(RxString dateValue, String label,
+      ColourNotifier notifier, VoidCallback onDateChanged) {
+    return Obx(() => AppTextField(
+          label: '',
+          hintText: dateValue.value.isEmpty ? 'Select $label' : dateValue.value,
+          controller: TextEditingController(text: dateValue.value),
+          readOnly: true,
+          suffixIcon: Icons.calendar_today,
+          onTap: () async {
+            final date = await showDatePicker(
+              context: Get.context!,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2020),
+              lastDate: DateTime.now(),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: notifier.getIconColor,
+                    ),
+                    dialogBackgroundColor: notifier.getContainer,
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (date != null) {
+              dateValue.value = date.toIso8601String().split('T')[0];
+              onDateChanged();
+            }
+          },
+        ));
   }
 
-  Widget _buildSummaryCards(AccountingController controller, ColourNotifier notifier, bool isMobile) {
+  Widget _buildSummaryCards(
+      AccountingController controller, ColourNotifier notifier, bool isMobile) {
     return Obx(() {
       final totalBills = controller.totalItems.value;
-      final paidBills = controller.filteredBills.where((bill) => bill.isPaid).length;
-      final pendingBills = controller.filteredBills.where((bill) => bill.isPending).length;
-      final unpaidBills = controller.filteredBills.where((bill) => !bill.isPaid && !bill.isPending).length;
+      final paidBills =
+          controller.filteredBills.where((bill) => bill.isPaid).length;
+      final pendingBills =
+          controller.filteredBills.where((bill) => bill.isPending).length;
+      final unpaidBills = controller.filteredBills
+          .where((bill) => !bill.isPaid && !bill.isPending)
+          .length;
 
       if (isMobile) {
         return Column(
@@ -480,12 +444,12 @@ class BillsTab extends StatelessWidget {
         );
       }
 
-      return Row(
-      );
+      return Row();
     });
   }
 
-  Widget _buildMobileBillsList(AccountingController controller, ColourNotifier notifier) {
+  Widget _buildMobileBillsList(
+      AccountingController controller, ColourNotifier notifier) {
     return Container(
       decoration: BoxDecoration(
         color: notifier.getContainer,
@@ -530,13 +494,15 @@ class BillsTab extends StatelessWidget {
           ),
 
           // Mobile Pagination
-          if (controller.totalPages.value > 1) _buildMobilePagination(controller, notifier),
+          if (controller.totalPages.value > 1)
+            _buildMobilePagination(controller, notifier),
         ],
       ),
     );
   }
 
-  Widget _buildMobileBillCard(dynamic bill, AccountingController controller, ColourNotifier notifier) {
+  Widget _buildMobileBillCard(
+      dynamic bill, AccountingController controller, ColourNotifier notifier) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       color: notifier.getContainer,
@@ -572,7 +538,8 @@ class BillsTab extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: _getStatusColor(bill.status).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -632,9 +599,11 @@ class BillsTab extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: _getPaymentModeColor(bill.paymentMode).withOpacity(0.1),
+                      color: _getPaymentModeColor(bill.paymentMode)
+                          .withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -661,7 +630,8 @@ class BillsTab extends StatelessWidget {
                           controller.updateBillStatus(bill.id, value);
                           break;
                         case 'delete':
-                          _showDeleteDialog(Get.context!, bill.id, bill.reference);
+                          _showDeleteDialog(
+                              Get.context!, bill.id, bill.reference);
                           break;
                       }
                     },
@@ -681,7 +651,8 @@ class BillsTab extends StatelessWidget {
                         value: 'paid',
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle, color: Colors.green, size: 16),
+                            Icon(Icons.check_circle,
+                                color: Colors.green, size: 16),
                             SizedBox(width: 8),
                             Text('Mark as Paid'),
                           ],
@@ -734,7 +705,8 @@ class BillsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopBillsList(AccountingController controller, ColourNotifier notifier, bool isTablet) {
+  Widget _buildDesktopBillsList(
+      AccountingController controller, ColourNotifier notifier, bool isTablet) {
     return Container(
       decoration: BoxDecoration(
         color: notifier.getContainer,
@@ -814,19 +786,22 @@ class BillsTab extends StatelessWidget {
               itemCount: controller.filteredBills.length,
               itemBuilder: (context, index) {
                 final bill = controller.filteredBills[index];
-                return _buildDesktopBillRow(bill, controller, notifier, isTablet);
+                return _buildDesktopBillRow(
+                    bill, controller, notifier, isTablet);
               },
             ),
           ),
 
           // Desktop Pagination
-          if (controller.totalPages.value > 1) _buildDesktopPagination(controller, notifier),
+          if (controller.totalPages.value > 1)
+            _buildDesktopPagination(controller, notifier),
         ],
       ),
     );
   }
 
-  Widget _buildDesktopBillRow(dynamic bill, AccountingController controller, ColourNotifier notifier, bool isTablet) {
+  Widget _buildDesktopBillRow(dynamic bill, AccountingController controller,
+      ColourNotifier notifier, bool isTablet) {
     return InkWell(
       onTap: () => showDialog(
         context: Get.context!,
@@ -897,7 +872,8 @@ class BillsTab extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getPaymentModeColor(bill.paymentMode).withOpacity(0.1),
+                            color: _getPaymentModeColor(bill.paymentMode)
+                                .withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -966,7 +942,8 @@ class BillsTab extends StatelessWidget {
                       ],
                     ),
                   ],
-                  if (bill.patient?.patientUniqueId.isNotEmpty == true && !isTablet) ...[
+                  if (bill.patient?.patientUniqueId.isNotEmpty == true &&
+                      !isTablet) ...[
                     const SizedBox(height: 2),
                     Text(
                       'ID: ${bill.patient!.patientUniqueId}',
@@ -1123,7 +1100,8 @@ class BillsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildMobilePagination(AccountingController controller, ColourNotifier notifier) {
+  Widget _buildMobilePagination(
+      AccountingController controller, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1152,29 +1130,35 @@ class BillsTab extends StatelessWidget {
               // Previous button
               ElevatedButton(
                 onPressed: controller.currentPage.value > 1
-                    ? () => controller.changePage(controller.currentPage.value - 1)
+                    ? () =>
+                        controller.changePage(controller.currentPage.value - 1)
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: controller.currentPage.value > 1
                       ? appMainColor
                       : Colors.grey,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 ),
                 child: const Text('Previous'),
               ),
 
               // Next button
               ElevatedButton(
-                onPressed: controller.currentPage.value < controller.totalPages.value
-                    ? () => controller.changePage(controller.currentPage.value + 1)
+                onPressed: controller.currentPage.value <
+                        controller.totalPages.value
+                    ? () =>
+                        controller.changePage(controller.currentPage.value + 1)
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: controller.currentPage.value < controller.totalPages.value
-                      ? appMainColor
-                      : Colors.grey,
+                  backgroundColor:
+                      controller.currentPage.value < controller.totalPages.value
+                          ? appMainColor
+                          : Colors.grey,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 ),
                 child: const Text('Next'),
               ),
@@ -1185,7 +1169,8 @@ class BillsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopPagination(AccountingController controller, ColourNotifier notifier) {
+  Widget _buildDesktopPagination(
+      AccountingController controller, ColourNotifier notifier) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1213,7 +1198,8 @@ class BillsTab extends StatelessWidget {
               // Previous button
               IconButton(
                 onPressed: controller.currentPage.value > 1
-                    ? () => controller.changePage(controller.currentPage.value - 1)
+                    ? () =>
+                        controller.changePage(controller.currentPage.value - 1)
                     : null,
                 icon: const Icon(Icons.chevron_left),
                 style: IconButton.styleFrom(
@@ -1225,7 +1211,8 @@ class BillsTab extends StatelessWidget {
 
               // Page numbers
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: appMainColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -1241,14 +1228,17 @@ class BillsTab extends StatelessWidget {
 
               // Next button
               IconButton(
-                onPressed: controller.currentPage.value < controller.totalPages.value
-                    ? () => controller.changePage(controller.currentPage.value + 1)
+                onPressed: controller.currentPage.value <
+                        controller.totalPages.value
+                    ? () =>
+                        controller.changePage(controller.currentPage.value + 1)
                     : null,
                 icon: const Icon(Icons.chevron_right),
                 style: IconButton.styleFrom(
-                  backgroundColor: controller.currentPage.value < controller.totalPages.value
-                      ? appMainColor.withOpacity(0.1)
-                      : Colors.transparent,
+                  backgroundColor:
+                      controller.currentPage.value < controller.totalPages.value
+                          ? appMainColor.withOpacity(0.1)
+                          : Colors.transparent,
                 ),
               ),
             ],
@@ -1310,7 +1300,8 @@ class BillsTab extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: appMainColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
               ),
             ],
@@ -1321,13 +1312,13 @@ class BillsTab extends StatelessWidget {
   }
 
   Widget _buildSummaryCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      ColourNotifier notifier,
-      bool isCompact,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    ColourNotifier notifier,
+    bool isCompact,
+  ) {
     return Container(
       padding: EdgeInsets.all(isCompact ? 12 : 16),
       decoration: BoxDecoration(
@@ -1414,7 +1405,8 @@ class BillsTab extends StatelessWidget {
     }
   }
 
-  void _showDeleteDialog(BuildContext context, String billId, String billReference) {
+  void _showDeleteDialog(
+      BuildContext context, String billId, String billReference) {
     final AccountingController controller = Get.find<AccountingController>();
 
     showDialog(
@@ -1562,24 +1554,21 @@ class BillDetailsDialog extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Patient: ${bill.patient?.fullName ?? 'Unknown'}'),
             const SizedBox(height: 8),
-            Text('Amount: ${Get.find<AccountingController>().formatCurrency(
-                bill.amount)}'),
+            Text(
+                'Amount: ${Get.find<AccountingController>().formatCurrency(bill.amount)}'),
             const SizedBox(height: 8),
             Text('Status: ${bill.statusDisplay}'),
             const SizedBox(height: 8),
             Text('Date: ${bill.billDateFormatted}'),
             const SizedBox(height: 24),
             if (bill.billItems.isNotEmpty) ...[
-              const Text(
-                  'Bill Items:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Bill Items:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              ...bill.billItems.map((item) =>
-                  Padding(
+              ...bill.billItems.map((item) => Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
-                        '${item.itemName} - Qty: ${item.qty} - ${Get.find<
-                            AccountingController>().formatCurrency(
-                            item.amount)}'),
+                        '${item.itemName} - Qty: ${item.qty} - ${Get.find<AccountingController>().formatCurrency(item.amount)}'),
                   )),
             ],
             const SizedBox(height: 24),
