@@ -9,6 +9,7 @@ import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/consultation_card.dart';
 import 'package:ige_hospital/widgets/consultation_filters.dart';
 import 'package:ige_hospital/widgets/consultation_form_dialog.dart';
+import 'package:ige_hospital/widgets/consultation_detail_dialog.dart';
 import 'package:provider/provider.dart';
 
 class LiveConsultationsPage extends StatefulWidget {
@@ -20,8 +21,7 @@ class LiveConsultationsPage extends StatefulWidget {
 
 class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
   bool _showFilters = false;
-  static final ConsultationController controller = Get.put(
-      ConsultationController());
+  static final ConsultationController controller = Get.put(ConsultationController());
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +33,9 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const CommonTitle(
-                title: 'Live Consultations', path: "Medical Services"),
+            const CommonTitle(title: 'Live Consultations', path: "Medical Services"),
             _buildPageTopBar(context, notifier),
-            if (_showFilters) const ConsultationFilters(
-                initiallyExpanded: true),
-            _buildStatisticsCards(notifier),
+            if (_showFilters) const ConsultationFilters(initiallyExpanded: true),
             _buildConsultationsList(notifier),
           ],
         ),
@@ -78,14 +75,13 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
                 tooltip: _showFilters ? 'Hide filters' : 'Show filters',
               ),
               const SizedBox(width: 8),
-              Obx(() =>
-                  Text(
-                    controller.pageInfo,
-                    style: TextStyle(
-                      color: notifier.getMaingey,
-                      fontSize: 14,
-                    ),
-                  )),
+              Obx(() => Text(
+                controller.pageInfo,
+                style: TextStyle(
+                  color: notifier.getMaingey,
+                  fontSize: 14,
+                ),
+              )),
             ],
           ),
 
@@ -124,7 +120,7 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      "New Consultation",
+                      "Create New",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -136,128 +132,6 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatisticsCards(ColourNotifier notifier) {
-    return Obx(() {
-      if (controller.statistics.value == null) {
-        return const SizedBox();
-      }
-
-      final stats = controller.statistics.value!;
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // Responsive grid based on screen width
-            int crossAxisCount = 2;
-            if (constraints.maxWidth > 1200) {
-              crossAxisCount = 5;
-            } else if (constraints.maxWidth > 800) {
-              crossAxisCount = 4;
-            } else if (constraints.maxWidth > 600) {
-              crossAxisCount = 3;
-            }
-
-            return GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.8,
-              children: [
-                _buildStatCard(
-                  'Total',
-                  stats.totalConsultations.toString(),
-                  Icons.video_call,
-                  const Color(0xFF3B82F6),
-                  notifier,
-                ),
-                _buildStatCard(
-                  'Scheduled',
-                  stats.scheduledConsultations.toString(),
-                  Icons.schedule,
-                  const Color(0xFF8B5CF6),
-                  notifier,
-                ),
-                _buildStatCard(
-                  'Ongoing',
-                  stats.ongoingConsultations.toString(),
-                  Icons.play_circle,
-                  const Color(0xFF10B981),
-                  notifier,
-                ),
-                _buildStatCard(
-                  'Completed',
-                  stats.completedConsultations.toString(),
-                  Icons.check_circle,
-                  const Color(0xFF6B7280),
-                  notifier,
-                ),
-                _buildStatCard(
-                  'Cancelled',
-                  stats.cancelledConsultations.toString(),
-                  Icons.cancel,
-                  const Color(0xFFEF4444),
-                  notifier,
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    });
-  }
-
-  Widget _buildStatCard(String label,
-      String value,
-      IconData icon,
-      Color color,
-      ColourNotifier notifier,) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: notifier.getContainer,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: notifier.getBorderColor),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: color, size: 20),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: notifier.getMainText,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: notifier.getMaingey,
-              fontWeight: FontWeight.w500,
-            ),
           ),
         ],
       ),
@@ -278,8 +152,7 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.video_call_outlined, size: 64,
-                    color: notifier.getMaingey),
+                Icon(Icons.video_call_outlined, size: 64, color: notifier.getMaingey),
                 const SizedBox(height: 16),
                 Text(
                   'No consultations found',
@@ -335,5 +208,186 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
         );
       }),
     );
+  }
+
+  Widget _buildGridView(int crossAxisCount, ColourNotifier notifier) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(20),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: 0.9,
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
+      ),
+      itemCount: controller.filteredConsultations.length,
+      itemBuilder: (context, index) {
+        final consultation = controller.filteredConsultations[index];
+        return ConsultationCard(
+          consultation: consultation,
+          onTap: () => _showConsultationDetail(context, consultation),
+          onEdit: () => _showEditConsultationDialog(context, consultation),
+          onDelete: () => _showDeleteConfirmation(context, consultation, notifier),
+          onJoin: () => _handleJoinConsultation(consultation.id),
+          onStart: () => _handleStartConsultation(consultation.id),
+          onEnd: () => _handleEndConsultation(consultation.id),
+        );
+      },
+    );
+  }
+
+  Widget _buildListView(ColourNotifier notifier) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: controller.filteredConsultations.length,
+      itemBuilder: (context, index) {
+        final consultation = controller.filteredConsultations[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: ConsultationCard(
+            consultation: consultation,
+            onTap: () => _showConsultationDetail(context, consultation),
+            onEdit: () => _showEditConsultationDialog(context, consultation),
+            onDelete: () => _showDeleteConfirmation(context, consultation, notifier),
+            onJoin: () => _handleJoinConsultation(consultation.id),
+            onStart: () => _handleStartConsultation(consultation.id),
+            onEnd: () => _handleEndConsultation(consultation.id),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPagination(ColourNotifier notifier) {
+    return Obx(() {
+      if (controller.lastPage.value <= 1) return const SizedBox();
+
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: notifier.getContainer,
+          border: Border(top: BorderSide(color: notifier.getBorderColor)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Previous button
+            ElevatedButton.icon(
+              onPressed: controller.hasPreviousPage
+                  ? () => controller.previousPage()
+                  : null,
+              icon: const Icon(Icons.chevron_left),
+              label: const Text('Previous'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: controller.hasPreviousPage
+                    ? notifier.getIconColor
+                    : notifier.getMaingey,
+                foregroundColor: Colors.white,
+              ),
+            ),
+
+            // Page info
+            Text(
+              'Page ${controller.currentPage.value} of ${controller.lastPage.value}',
+              style: TextStyle(
+                color: notifier.getMainText,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
+            // Next button
+            ElevatedButton.icon(
+              onPressed: controller.hasNextPage
+                  ? () => controller.nextPage()
+                  : null,
+              icon: const Icon(Icons.chevron_right),
+              label: const Text('Next'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: controller.hasNextPage
+                    ? notifier.getIconColor
+                    : notifier.getMaingey,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void _showCreateConsultationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const ConsultationFormDialog(),
+    );
+  }
+
+  void _showEditConsultationDialog(BuildContext context, LiveConsultation consultation) {
+    showDialog(
+      context: context,
+      builder: (context) => ConsultationFormDialog(
+        consultation: consultation,
+        isEdit: true,
+      ),
+    );
+  }
+
+  void _showConsultationDetail(BuildContext context, LiveConsultation consultation) {
+    showDialog(
+      context: context,
+      builder: (context) => ConsultationDetailDialog(consultation: consultation),
+    );
+  }
+
+  void _showDeleteConfirmation(
+      BuildContext context,
+      LiveConsultation consultation,
+      ColourNotifier notifier,
+      ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: notifier.getContainer,
+        title: Text(
+          'Delete Consultation',
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${consultation.consultationTitle}"?',
+          style: TextStyle(color: notifier.getMainText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: notifier.getMainText),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              controller.deleteConsultation(consultation.id);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleJoinConsultation(String id) {
+    controller.joinConsultation(id);
+  }
+
+  void _handleStartConsultation(String id) {
+    controller.startConsultation(id);
+  }
+
+  void _handleEndConsultation(String id) {
+    controller.endConsultation(id);
   }
 }

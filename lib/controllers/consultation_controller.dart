@@ -331,6 +331,6 @@ class ConsultationController extends GetxController {
         ? totalConsultations.value
         : currentPage.value * perPage.value;
 
-    return 'Showing $start-$end of ${totalConsultations.value} consultations';
+    return '$start-$end of ${totalConsultations.value}';
   }
 }
