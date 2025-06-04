@@ -1,55 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
-class AppTextField extends StatefulWidget {
+class AppCurrencyField extends StatefulWidget {
   final String label;
-  final String hintText;
   final TextEditingController controller;
-  final IconData? prefixIcon;
-  final IconData? suffixIcon;
-  final VoidCallback? onSuffixIconPressed;
-  final bool enabled;
-  final bool readOnly;
-  final TextInputType keyboardType;
   final String? Function(String?)? validator;
-  final int? maxLines;
-  final int? maxLength;
-  final bool obscureText;
+  final bool enabled;
+  final String hintText;
+  final String currencySymbol;
   final void Function(String)? onChanged;
-  final void Function()? onTap;
-  final FocusNode? focusNode;
-  final bool autofocus;
-  final TextCapitalization textCapitalization;
 
-  const AppTextField({
+  const AppCurrencyField({
     super.key,
     required this.label,
-    required this.hintText,
     required this.controller,
-    this.prefixIcon,
-    this.suffixIcon,
-    this.onSuffixIconPressed,
-    this.enabled = true,
-    this.readOnly = false,
-    this.keyboardType = TextInputType.text,
     this.validator,
-    this.maxLines = 1,
-    this.maxLength,
-    this.obscureText = false,
+    this.enabled = true,
+    this.hintText = '0.00',
+    this.currencySymbol = '₦',
     this.onChanged,
-    this.onTap,
-    this.focusNode,
-    this.autofocus = false,
-    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
-  State<AppTextField> createState() => _AppTextFieldState();
+  State<AppCurrencyField> createState() => _AppCurrencyFieldState();
 }
 
-class _AppTextFieldState extends State<AppTextField> {
+class _AppCurrencyFieldState extends State<AppCurrencyField> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ColourNotifier>(
@@ -71,17 +51,12 @@ class _AppTextFieldState extends State<AppTextField> {
             TextFormField(
               controller: widget.controller,
               enabled: widget.enabled,
-              readOnly: widget.readOnly,
-              keyboardType: widget.keyboardType,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+              ],
               validator: widget.validator,
-              maxLines: widget.maxLines,
-              maxLength: widget.maxLength,
-              obscureText: widget.obscureText,
               onChanged: widget.onChanged,
-              onTap: widget.onTap,
-              focusNode: widget.focusNode,
-              autofocus: widget.autofocus,
-              textCapitalization: widget.textCapitalization,
               style: TextStyle(
                 color: notifier.getMainText,
                 fontSize: 14,
@@ -92,23 +67,18 @@ class _AppTextFieldState extends State<AppTextField> {
                   fontSize: 13,
                   color: notifier.getMaingey,
                 ),
-                prefixIcon: widget.prefixIcon != null
-                    ? Icon(
-                  widget.prefixIcon,
-                  color: notifier.getIconColor,
-                  size: 20,
-                )
-                    : null,
-                suffixIcon: widget.suffixIcon != null
-                    ? IconButton(
-                  icon: Icon(
-                    widget.suffixIcon,
-                    color: notifier.getMaingey,
-                    size: 20,
+                prefixIcon: Container(
+                  width: 40,
+                  alignment: Alignment.center,
+                  child: Text(
+                    widget.currencySymbol,
+                    style: TextStyle(
+                      color: notifier.getIconColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  onPressed: widget.onSuffixIconPressed,
-                )
-                    : null,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
@@ -150,7 +120,6 @@ class _AppTextFieldState extends State<AppTextField> {
                   horizontal: 12,
                   vertical: 16,
                 ),
-                counterStyle: TextStyle(color: notifier.getMaingey),
               ),
             ),
           ],

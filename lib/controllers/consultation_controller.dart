@@ -18,7 +18,7 @@ class ConsultationController extends GetxController {
   // Pagination
   final RxInt totalConsultations = 0.obs;
   final RxInt currentPage = 1.obs;
-  final RxInt perPage = 15.obs;
+  final RxInt perPage = 12.obs;
   final RxInt lastPage = 1.obs;
 
   // Filter variables

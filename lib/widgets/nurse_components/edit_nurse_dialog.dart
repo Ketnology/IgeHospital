@@ -155,6 +155,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppTextField(
                               label: 'First Name',
+                              hintText: 'Enter first name',
                               controller: firstNameController,
                               validator: (value) =>
                                   value!.isEmpty ? 'Required' : null,
@@ -164,6 +165,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppTextField(
                               label: 'Last Name',
+                              hintText: 'Enter last name',
                               controller: lastNameController,
                               validator: (value) =>
                                   value!.isEmpty ? 'Required' : null,
@@ -179,6 +181,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppTextField(
                               label: 'Email',
+                              hintText: 'Enter email address',
                               controller: emailController,
                               prefixIcon: Icons.email,
                               validator: (value) {
@@ -193,6 +196,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppTextField(
                               label: 'Phone',
+                              hintText: 'Enter phone number',
                               controller: phoneController,
                               prefixIcon: Icons.phone,
                               validator: (value) =>
@@ -260,6 +264,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                               child: AbsorbPointer(
                                 child: AppTextField(
                                   label: 'Date of Birth',
+                                  hintText: 'Select date of birth',
                                   controller: dobController,
                                   prefixIcon: Icons.calendar_today,
                                 ),
@@ -300,6 +305,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppTextField(
                               label: 'Specialty',
+                              hintText: 'Enter specialty',
                               controller: specialtyController,
                               prefixIcon: Icons.local_hospital,
                             ),
@@ -314,6 +320,7 @@ class _EditNurseDialogState extends State<EditNurseDialog> {
                           Expanded(
                             child: AppTextField(
                               label: 'Qualification',
+                              hintText: 'Enter qualifications',
                               controller: qualificationController,
                               prefixIcon: Icons.school,
                               validator: (value) =>
