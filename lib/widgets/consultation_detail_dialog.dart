@@ -648,7 +648,7 @@ class ConsultationDetailDialog extends StatelessWidget {
             backgroundImage: NetworkImage(imageUrl),
             onBackgroundImageError: (exception, stackTrace) {},
             child: avatar?.isNotEmpty != true
-                ? Icon(defaultIcon, size: 30, color: Colors.white)
+                ? null
                 : null,
           ),
           const SizedBox(width: 16),

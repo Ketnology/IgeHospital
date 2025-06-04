@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/accounting_controller.dart';
-// import 'package:ige_hospital/widgets/accounting/create_bill_dialog.dart';
-// import 'package:ige_hospital/widgets/accounting/bill_details_dialog.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/widgets/form/app_text_field.dart';
+import 'package:ige_hospital/widgets/form/app_dropdown_field.dart';
+import 'package:ige_hospital/widgets/form/app_date_field.dart';
+import 'package:ige_hospital/widgets/form/app_search_field.dart';
+import 'package:ige_hospital/widgets/form/app_currency_field.dart';
+import 'package:ige_hospital/widgets/common_button.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class BillsTab extends StatelessWidget {
   const BillsTab({super.key});

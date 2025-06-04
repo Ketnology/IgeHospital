@@ -215,7 +215,7 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
       padding: const EdgeInsets.all(20),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 0.9,
+        childAspectRatio: 1.3,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
       ),

@@ -172,28 +172,14 @@ class _ConsultationFiltersState extends State<ConsultationFilters> {
                   decoration: _inputDecoration('Status', notifier, Icons.circle),
                   dropdownColor: notifier.getContainer,
                   style: TextStyle(color: notifier.getMainText),
+                  isExpanded: true,
                   items: consultationController.statusOptions.map((status) {
                     return DropdownMenuItem(
                       value: status,
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: status == 'All'
-                                  ? Colors.grey
-                                  : consultationController.getStatusColor(status),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            status,
-                            style: TextStyle(color: notifier.getMainText),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      child: Text(
+                        status,
+                        style: TextStyle(color: notifier.getMainText),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     );
                   }).toList(),
@@ -212,33 +198,22 @@ class _ConsultationFiltersState extends State<ConsultationFilters> {
                   decoration: _inputDecoration('Sort Order', notifier, Icons.sort),
                   dropdownColor: notifier.getContainer,
                   style: TextStyle(color: notifier.getMainText),
+                  isExpanded: true,
                   items: [
                     DropdownMenuItem(
                       value: 'desc',
-                      child: Row(
-                        children: [
-                          Icon(Icons.arrow_downward,
-                              size: 14, color: notifier.getIconColor),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Newest First',
-                            style: TextStyle(color: notifier.getMainText),
-                          ),
-                        ],
+                      child: Text(
+                        'Newest First',
+                        style: TextStyle(color: notifier.getMainText),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     DropdownMenuItem(
                       value: 'asc',
-                      child: Row(
-                        children: [
-                          Icon(Icons.arrow_upward,
-                              size: 14, color: notifier.getIconColor),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Oldest First',
-                            style: TextStyle(color: notifier.getMainText),
-                          ),
-                        ],
+                      child: Text(
+                        'Oldest First',
+                        style: TextStyle(color: notifier.getMainText),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
