@@ -20,6 +20,9 @@ final Map<String, Widget> pages = {
   'nurses': const NursesPage(),
   'admins': const AdminsPage(),
 
+  // Medical Services
+  // 'live-consultations': const LiveConsultationsPage(),
+
   // Accounting & Finance
   'accounting': const AccountingPage(),
 };

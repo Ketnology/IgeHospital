@@ -22,4 +22,13 @@ class ApiEndpoints {
 
   static const String userProfile = "$baseUrl/user/profile";
   static const String updateProfile = "$baseUrl/user/profile/update";
+
+  static const String liveConsultationsEndpoint = "$baseUrl/live-consultations";
+  static const String upcomingConsultationsEndpoint = "$baseUrl/live-consultations/upcoming";
+  static const String todaysConsultationsEndpoint = "$baseUrl/live-consultations/today";
+  static const String consultationStatisticsEndpoint = "$baseUrl/live-consultations/statistics";
+
+  static const String loginRecordsEndpoint = "$baseUrl/login-records";
+  static const String myLoginRecordsEndpoint = "$baseUrl/login-records/my-records";
+  static const String loginStatisticsEndpoint = "$baseUrl/login-records/statistics";
 }

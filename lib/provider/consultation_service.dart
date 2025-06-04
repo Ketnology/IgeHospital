@@ -8,7 +8,9 @@ import 'package:ige_hospital/utils/snack_bar_utils.dart';
 class ConsultationService extends GetxService {
   final HttpClient _httpClient = HttpClient();
 
-  // ========== GET ALL CONSULTATIONS ==========
+  static const String _consultationsEndpoint = "${ApiEndpoints.baseUrl}/live-consultations";
+
+  // Get all consultations with filters
   Future<Map<String, dynamic>> getConsultations({
     String? doctorId,
     String? patientId,
@@ -18,8 +20,8 @@ class ConsultationService extends GetxService {
     String? search,
     String sortBy = 'consultation_date',
     String sortDirection = 'desc',
-    int perPage = 15,
     int page = 1,
+    int perPage = 15,
   }) async {
     try {
       final Map<String, String> queryParams = {
@@ -31,26 +33,25 @@ class ConsultationService extends GetxService {
         if (search != null && search.isNotEmpty) 'search': search,
         'sort_by': sortBy,
         'sort_direction': sortDirection,
-        'per_page': perPage.toString(),
         'page': page.toString(),
+        'per_page': perPage.toString(),
       };
 
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/live-consultations')
-          .replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(_consultationsEndpoint).replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         final List<dynamic> consultationsList = result['data']['consultations'] ?? [];
-        final List<ConsultationModel> consultations = consultationsList
-            .map((json) => ConsultationModel.fromJson(json))
+        final List<LiveConsultation> consultations = consultationsList
+            .map((json) => LiveConsultation.fromJson(json))
             .toList();
 
         return {
           'consultations': consultations,
           'total': result['data']['total'] ?? 0,
-          'current_page': result['data']['current_page'] ?? 1,
-          'last_page': result['data']['last_page'] ?? 1,
           'per_page': result['data']['per_page'] ?? perPage,
+          'current_page': result['data']['current_page'] ?? page,
+          'last_page': result['data']['last_page'] ?? 1,
         };
       } else {
         throw Exception(result['message'] ?? 'Failed to fetch consultations');
@@ -61,36 +62,37 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== GET CONSULTATION DETAILS ==========
-  Future<ConsultationModel> getConsultationDetails(String id) async {
+  // Get consultation by ID
+  Future<LiveConsultation> getConsultationById(String id) async {
     try {
-      final dynamic result = await _httpClient
-          .get('${ApiEndpoints.baseUrl}/live-consultations/$id');
+      final dynamic result = await _httpClient.get('$_consultationsEndpoint/$id');
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
-        return ConsultationModel.fromJson(result['data']);
+        return LiveConsultation.fromJson(result['data']);
       } else {
         throw Exception(result['message'] ?? 'Failed to get consultation details');
       }
     } catch (e) {
-      Get.log("Error in getConsultationDetails: $e");
+      Get.log("Error in getConsultationById: $e");
       throw Exception('Failed to get consultation details: $e');
     }
   }
 
-  // ========== CREATE CONSULTATION ==========
-  Future<ConsultationModel> createConsultation(Map<String, dynamic> consultationData) async {
+  // Create new consultation
+  Future<LiveConsultation> createConsultation(Map<String, dynamic> consultationData) async {
     try {
       final dynamic result = await _httpClient.post(
-        '${ApiEndpoints.baseUrl}/live-consultations',
-        headers: {'Content-Type': 'application/json'},
+        _consultationsEndpoint,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode(consultationData),
       );
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 201 || result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Consultation created successfully');
-          return ConsultationModel.fromJson(result['data']);
+          return LiveConsultation.fromJson(result['data']);
         } else {
           throw Exception(result['message'] ?? 'Failed to create consultation');
         }
@@ -103,20 +105,21 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== UPDATE CONSULTATION ==========
-  Future<ConsultationModel> updateConsultation(
-      String id, Map<String, dynamic> consultationData) async {
+  // Update consultation
+  Future<LiveConsultation> updateConsultation(String id, Map<String, dynamic> consultationData) async {
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.baseUrl}/live-consultations/$id',
-        headers: {'Content-Type': 'application/json'},
+        '$_consultationsEndpoint/$id',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode(consultationData),
       );
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Consultation updated successfully');
-          return ConsultationModel.fromJson(result['data']);
+          return LiveConsultation.fromJson(result['data']);
         } else {
           throw Exception(result['message'] ?? 'Failed to update consultation');
         }
@@ -129,11 +132,10 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== DELETE CONSULTATION ==========
+  // Delete consultation
   Future<void> deleteConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient
-          .delete('${ApiEndpoints.baseUrl}/live-consultations/$id');
+      final dynamic result = await _httpClient.delete('$_consultationsEndpoint/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -150,17 +152,16 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== JOIN CONSULTATION ==========
+  // Join consultation
   Future<void> joinConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient
-          .post('${ApiEndpoints.baseUrl}/live-consultations/$id/join');
+      final dynamic result = await _httpClient.post('$_consultationsEndpoint/$id/join');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Joined consultation successfully');
         } else {
-          throw Exception(result['message'] ?? 'Unable to join consultation at this time');
+          throw Exception(result['message'] ?? 'Failed to join consultation');
         }
       } else {
         throw Exception('Unexpected response format');
@@ -171,17 +172,16 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== START CONSULTATION ==========
+  // Start consultation (doctor only)
   Future<void> startConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient
-          .post('${ApiEndpoints.baseUrl}/live-consultations/$id/start');
+      final dynamic result = await _httpClient.post('$_consultationsEndpoint/$id/start');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Consultation started successfully');
         } else {
-          throw Exception(result['message'] ?? 'Unable to start consultation');
+          throw Exception(result['message'] ?? 'Failed to start consultation');
         }
       } else {
         throw Exception('Unexpected response format');
@@ -192,17 +192,16 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== END CONSULTATION ==========
+  // End consultation (doctor only)
   Future<void> endConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient
-          .post('${ApiEndpoints.baseUrl}/live-consultations/$id/end');
+      final dynamic result = await _httpClient.post('$_consultationsEndpoint/$id/end');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Consultation ended successfully');
         } else {
-          throw Exception(result['message'] ?? 'Unable to end consultation');
+          throw Exception(result['message'] ?? 'Failed to end consultation');
         }
       } else {
         throw Exception('Unexpected response format');
@@ -213,19 +212,21 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== CHANGE CONSULTATION STATUS ==========
-  Future<ConsultationModel> changeConsultationStatus(String id, String status) async {
+  // Change consultation status
+  Future<LiveConsultation> changeConsultationStatus(String id, String status) async {
     try {
       final dynamic result = await _httpClient.patch(
-        '${ApiEndpoints.baseUrl}/live-consultations/$id/status',
-        headers: {'Content-Type': 'application/json'},
+        '$_consultationsEndpoint/$id/status',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode({'status': status}),
       );
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
           SnackBarUtils.showSuccessSnackBar('Consultation status updated successfully');
-          return ConsultationModel.fromJson(result['data']);
+          return LiveConsultation.fromJson(result['data']);
         } else {
           throw Exception(result['message'] ?? 'Failed to update consultation status');
         }
@@ -238,17 +239,18 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== GET UPCOMING CONSULTATIONS ==========
-  Future<List<ConsultationModel>> getUpcomingConsultations({int limit = 10}) async {
+  // Get upcoming consultations
+  Future<List<LiveConsultation>> getUpcomingConsultations({int limit = 10}) async {
     try {
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/live-consultations/upcoming')
-          .replace(queryParameters: {'limit': limit.toString()});
+      final Uri uri = Uri.parse('$_consultationsEndpoint/upcoming').replace(
+        queryParameters: {'limit': limit.toString()},
+      );
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         final List<dynamic> consultationsList = result['data'] ?? [];
         return consultationsList
-            .map((json) => ConsultationModel.fromJson(json))
+            .map((json) => LiveConsultation.fromJson(json))
             .toList();
       } else {
         throw Exception(result['message'] ?? 'Failed to fetch upcoming consultations');
@@ -259,16 +261,15 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== GET TODAY'S CONSULTATIONS ==========
-  Future<List<ConsultationModel>> getTodaysConsultations() async {
+  // Get today's consultations
+  Future<List<LiveConsultation>> getTodaysConsultations() async {
     try {
-      final dynamic result = await _httpClient
-          .get('${ApiEndpoints.baseUrl}/live-consultations/today');
+      final dynamic result = await _httpClient.get('$_consultationsEndpoint/today');
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         final List<dynamic> consultationsList = result['data'] ?? [];
         return consultationsList
-            .map((json) => ConsultationModel.fromJson(json))
+            .map((json) => LiveConsultation.fromJson(json))
             .toList();
       } else {
         throw Exception(result['message'] ?? 'Failed to fetch today\'s consultations');
@@ -279,7 +280,7 @@ class ConsultationService extends GetxService {
     }
   }
 
-  // ========== GET CONSULTATION STATISTICS ==========
+  // Get consultation statistics
   Future<ConsultationStatistics> getConsultationStatistics({
     String? dateFrom,
     String? dateTo,
@@ -289,8 +290,7 @@ class ConsultationService extends GetxService {
       if (dateFrom != null && dateFrom.isNotEmpty) queryParams['date_from'] = dateFrom;
       if (dateTo != null && dateTo.isNotEmpty) queryParams['date_to'] = dateTo;
 
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/live-consultations/statistics')
-          .replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse('$_consultationsEndpoint/statistics').replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {

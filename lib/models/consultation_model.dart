@@ -1,7 +1,7 @@
-class ConsultationModel {
+class LiveConsultation {
   final String id;
   final String consultationTitle;
-  final String consultationDate;
+  final DateTime consultationDate;
   final int consultationDurationMinutes;
   final bool hostVideo;
   final bool participantVideo;
@@ -14,23 +14,19 @@ class ConsultationModel {
   final String password;
   final String status;
   final Map<String, dynamic> meta;
-  final String createdAt;
-  final String updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
   final String consultationDateFormatted;
   final String consultationTimeFormatted;
   final String dateHuman;
   final String? timeUntilConsultation;
   final ConsultationStatusInfo statusInfo;
-  final bool canJoin;
-  final bool canStart;
-  final bool canEnd;
-  final bool canEdit;
-  final bool canDelete;
+  final ConsultationPermissions permissions;
   final ConsultationDoctor doctor;
   final ConsultationPatient patient;
-  final JoinInfo? joinInfo;
+  final ConsultationJoinInfo? joinInfo;
 
-  ConsultationModel({
+  LiveConsultation({
     required this.id,
     required this.consultationTitle,
     required this.consultationDate,
@@ -53,21 +49,17 @@ class ConsultationModel {
     required this.dateHuman,
     this.timeUntilConsultation,
     required this.statusInfo,
-    required this.canJoin,
-    required this.canStart,
-    required this.canEnd,
-    required this.canEdit,
-    required this.canDelete,
+    required this.permissions,
     required this.doctor,
     required this.patient,
     this.joinInfo,
   });
 
-  factory ConsultationModel.fromJson(Map<String, dynamic> json) {
-    return ConsultationModel(
+  factory LiveConsultation.fromJson(Map<String, dynamic> json) {
+    return LiveConsultation(
       id: json['id'] ?? '',
       consultationTitle: json['consultation_title'] ?? '',
-      consultationDate: json['consultation_date'] ?? '',
+      consultationDate: DateTime.parse(json['consultation_date']),
       consultationDurationMinutes: json['consultation_duration_minutes'] ?? 0,
       hostVideo: json['host_video'] ?? false,
       participantVideo: json['participant_video'] ?? false,
@@ -80,28 +72,25 @@ class ConsultationModel {
       password: json['password'] ?? '',
       status: json['status'] ?? '',
       meta: json['meta'] ?? {},
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
       consultationDateFormatted: json['consultation_date_formatted'] ?? '',
       consultationTimeFormatted: json['consultation_time_formatted'] ?? '',
       dateHuman: json['date_human'] ?? '',
       timeUntilConsultation: json['time_until_consultation'],
       statusInfo: ConsultationStatusInfo.fromJson(json['status_info'] ?? {}),
-      canJoin: json['can_join'] ?? false,
-      canStart: json['can_start'] ?? false,
-      canEnd: json['can_end'] ?? false,
-      canEdit: json['can_edit'] ?? false,
-      canDelete: json['can_delete'] ?? false,
+      permissions: ConsultationPermissions.fromJson(json),
       doctor: ConsultationDoctor.fromJson(json['doctor'] ?? {}),
       patient: ConsultationPatient.fromJson(json['patient'] ?? {}),
-      joinInfo: json['join_info'] != null ? JoinInfo.fromJson(json['join_info']) : null,
+      joinInfo: json['join_info'] != null ? ConsultationJoinInfo.fromJson(json['join_info']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'consultation_title': consultationTitle,
-      'consultation_date': consultationDate,
+      'consultation_date': consultationDate.toIso8601String(),
       'consultation_duration_minutes': consultationDurationMinutes,
       'host_video': hostVideo,
       'participant_video': participantVideo,
@@ -138,6 +127,32 @@ class ConsultationStatusInfo {
       isActive: json['is_active'] ?? false,
       isUpcoming: json['is_upcoming'] ?? false,
       isPast: json['is_past'] ?? false,
+    );
+  }
+}
+
+class ConsultationPermissions {
+  final bool canJoin;
+  final bool canStart;
+  final bool canEnd;
+  final bool canEdit;
+  final bool canDelete;
+
+  ConsultationPermissions({
+    required this.canJoin,
+    required this.canStart,
+    required this.canEnd,
+    required this.canEdit,
+    required this.canDelete,
+  });
+
+  factory ConsultationPermissions.fromJson(Map<String, dynamic> json) {
+    return ConsultationPermissions(
+      canJoin: json['can_join'] ?? false,
+      canStart: json['can_start'] ?? false,
+      canEnd: json['can_end'] ?? false,
+      canEdit: json['can_edit'] ?? false,
+      canDelete: json['can_delete'] ?? false,
     );
   }
 }
@@ -203,39 +218,39 @@ class ConsultationPatient {
   }
 }
 
-class JoinInfo {
+class ConsultationJoinInfo {
   final String joinUrl;
-  final MeetingInstructions meetingInstructions;
-  final TechnicalRequirements technicalRequirements;
+  final ConsultationMeetingInstructions meetingInstructions;
+  final ConsultationTechnicalRequirements technicalRequirements;
 
-  JoinInfo({
+  ConsultationJoinInfo({
     required this.joinUrl,
     required this.meetingInstructions,
     required this.technicalRequirements,
   });
 
-  factory JoinInfo.fromJson(Map<String, dynamic> json) {
-    return JoinInfo(
+  factory ConsultationJoinInfo.fromJson(Map<String, dynamic> json) {
+    return ConsultationJoinInfo(
       joinUrl: json['join_url'] ?? '',
-      meetingInstructions: MeetingInstructions.fromJson(json['meeting_instructions'] ?? {}),
-      technicalRequirements: TechnicalRequirements.fromJson(json['technical_requirements'] ?? {}),
+      meetingInstructions: ConsultationMeetingInstructions.fromJson(json['meeting_instructions'] ?? {}),
+      technicalRequirements: ConsultationTechnicalRequirements.fromJson(json['technical_requirements'] ?? {}),
     );
   }
 }
 
-class MeetingInstructions {
+class ConsultationMeetingInstructions {
   final List<String> beforeMeeting;
   final List<String> duringMeeting;
   final List<String> troubleshooting;
 
-  MeetingInstructions({
+  ConsultationMeetingInstructions({
     required this.beforeMeeting,
     required this.duringMeeting,
     required this.troubleshooting,
   });
 
-  factory MeetingInstructions.fromJson(Map<String, dynamic> json) {
-    return MeetingInstructions(
+  factory ConsultationMeetingInstructions.fromJson(Map<String, dynamic> json) {
+    return ConsultationMeetingInstructions(
       beforeMeeting: List<String>.from(json['before_meeting'] ?? []),
       duringMeeting: List<String>.from(json['during_meeting'] ?? []),
       troubleshooting: List<String>.from(json['troubleshooting'] ?? []),
@@ -243,21 +258,21 @@ class MeetingInstructions {
   }
 }
 
-class TechnicalRequirements {
+class ConsultationTechnicalRequirements {
   final List<String> browsers;
   final Map<String, String> bandwidth;
   final List<String> devices;
   final List<String> permissions;
 
-  TechnicalRequirements({
+  ConsultationTechnicalRequirements({
     required this.browsers,
     required this.bandwidth,
     required this.devices,
     required this.permissions,
   });
 
-  factory TechnicalRequirements.fromJson(Map<String, dynamic> json) {
-    return TechnicalRequirements(
+  factory ConsultationTechnicalRequirements.fromJson(Map<String, dynamic> json) {
+    return ConsultationTechnicalRequirements(
       browsers: List<String>.from(json['browsers'] ?? []),
       bandwidth: Map<String, String>.from(json['bandwidth'] ?? {}),
       devices: List<String>.from(json['devices'] ?? []),
@@ -292,10 +307,10 @@ class ConsultationStatistics {
       cancelledConsultations: json['cancelled_consultations'] ?? 0,
       ongoingConsultations: json['ongoing_consultations'] ?? 0,
       scheduledConsultations: json['scheduled_consultations'] ?? 0,
-      completionRate: (json['completion_rate'] ?? 0.0).toDouble(),
-      dailyStatistics: (json['daily_statistics'] as List?)
-          ?.map((stat) => DailyStatistic.fromJson(stat))
-          .toList() ?? [],
+      completionRate: (json['completion_rate'] ?? 0).toDouble(),
+      dailyStatistics: (json['daily_statistics'] as List? ?? [])
+          .map((stat) => DailyStatistic.fromJson(stat))
+          .toList(),
     );
   }
 }
@@ -320,17 +335,11 @@ class DailyStatistic {
   factory DailyStatistic.fromJson(Map<String, dynamic> json) {
     return DailyStatistic(
       date: json['date'] ?? '',
-      scheduled: _parseIntValue(json['scheduled']),
-      completed: _parseIntValue(json['completed']),
-      cancelled: _parseIntValue(json['cancelled']),
-      ongoing: _parseIntValue(json['ongoing']),
+      scheduled: int.tryParse(json['scheduled'].toString()) ?? 0,
+      completed: int.tryParse(json['completed'].toString()) ?? 0,
+      cancelled: int.tryParse(json['cancelled'].toString()) ?? 0,
+      ongoing: int.tryParse(json['ongoing'].toString()) ?? 0,
       total: json['total'] ?? 0,
     );
-  }
-
-  static int _parseIntValue(dynamic value) {
-    if (value is int) return value;
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
   }
 }
