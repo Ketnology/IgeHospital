@@ -3,9 +3,11 @@ import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/accounting_controller.dart';
 import 'package:ige_hospital/controllers/auth_controller.dart';
+import 'package:ige_hospital/controllers/consultation_controller.dart';
 import 'package:ige_hospital/controllers/nurse_controller.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/provider/consultation_service.dart';
 import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/provider/department_service.dart';
 import 'package:ige_hospital/screen/auth/splash_screen.dart';
@@ -20,9 +22,11 @@ void main() async {
 
   await Get.putAsync(() => DashboardService().init());
   await Get.putAsync(() => DepartmentService().init());
+  Get.put(ConsultationService());
 
-  // Initialize the NurseController
+  // Initialize controllers
   Get.put(NurseController());
+  Get.put(ConsultationController());
 
   runApp(const MyApp());
 }

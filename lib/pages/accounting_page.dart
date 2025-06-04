@@ -7,6 +7,7 @@ import 'package:ige_hospital/widgets/accounting/bills_tab.dart';
 import 'package:ige_hospital/widgets/accounting/dashboard_tab.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:provider/provider.dart';
 
 class AccountingPage extends StatefulWidget {
@@ -24,7 +25,7 @@ class _AccountingPageState extends State<AccountingPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -37,89 +38,171 @@ class _AccountingPageState extends State<AccountingPage>
   Widget build(BuildContext context) {
     return Consumer<ColourNotifier>(
       builder: (context, notifier, child) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isMobile = screenWidth < 768;
+        final isTablet = screenWidth >= 768 && screenWidth < 1024;
+
         return Scaffold(
           backgroundColor: notifier!.getBgColor,
           body: Column(
             children: [
-              // Header Section
+              // Header Section with Common Title
+              const CommonTitle(
+                title: 'Accounting',
+                path: "Financial Management",
+              ),
+
+              // Tab Section - Responsive layout
               Container(
-                padding: const EdgeInsets.all(padding),
+                margin: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 12 : padding,
+                  vertical: 8,
+                ),
+                padding: EdgeInsets.all(isMobile ? 8 : 12),
                 decoration: BoxDecoration(
                   color: notifier.getContainer,
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: boxShadow,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Text(
-                    //   'Hospital Accounting',
-                    //   style: mainTextStyle.copyWith(
-                    //     color: notifier.getMainText,
-                    //     fontSize: 28,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 8),
-                    // Text(
-                    //   'Manage accounts, payments, bills, and financial reports',
-                    //   style: mediumGreyTextStyle.copyWith(
-                    //     color: notifier.getMaingey,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 20),
+                    // Page Title and Description - responsive
+                    if (!isMobile) ...[
+                      Text(
+                        'Financial Management System',
+                        style: mainTextStyle.copyWith(
+                          color: notifier.getMainText,
+                          fontSize: isTablet ? 22 : 28,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Manage accounts, payments, bills, and financial reports',
+                        style: mediumGreyTextStyle.copyWith(
+                          color: notifier.getMaingey,
+                          fontSize: isTablet ? 13 : 14,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
 
-                    // Tab Bar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: notifier.getBgColor,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: notifier.getBorderColor),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        tabs: const [
-                          Tab(
-                            icon: Icon(Icons.dashboard),
-                            text: 'Dashboard',
-                          ),
-                          Tab(
-                            icon: Icon(Icons.account_balance),
-                            text: 'Accounts',
-                          ),
-                          Tab(
-                            icon: Icon(Icons.payment),
-                            text: 'Payments',
-                          ),
-                          // Tab(
-                          //   icon: Icon(Icons.receipt_long),
-                          //   text: 'Bills',
-                          // ),
-                        ],
-                        indicatorColor: appMainColor,
-                        labelColor: appMainColor,
-                        unselectedLabelColor: notifier.getMainText,
-                        dividerColor: Colors.transparent,
-                      ),
-                    ),
+                    // Tab Bar - Responsive design
+                    _buildResponsiveTabBar(notifier, isMobile, isTablet),
                   ],
                 ),
               ),
 
               // Tab Content
               Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: const [
-                    DashboardTab(),
-                    AccountsTab(),
-                    PaymentsTab(),
-                    BillsTab(),
-                  ],
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 8 : 0,
+                  ),
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: const [
+                      DashboardTab(),
+                      AccountsTab(),
+                      PaymentsTab(),
+                      BillsTab(),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildResponsiveTabBar(
+      ColourNotifier notifier, bool isMobile, bool isTablet) {
+    if (isMobile) {
+      // Mobile: Scrollable tabs with icons only or compact text
+      return Container(
+        decoration: BoxDecoration(
+          color: notifier.getBgColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: notifier.getBorderColor),
+        ),
+        child: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          tabs: [
+            _buildMobileTab(Icons.dashboard, 'Dashboard'),
+            _buildMobileTab(Icons.account_balance, 'Accounts'),
+            _buildMobileTab(Icons.payment, 'Payments'),
+            _buildMobileTab(Icons.receipt_long, 'Bills'),
+          ],
+          indicatorColor: appMainColor,
+          labelColor: appMainColor,
+          unselectedLabelColor: notifier.getMainText,
+          dividerColor: Colors.transparent,
+          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+        ),
+      );
+    } else {
+      // Desktop/Tablet: Full tabs with icons and text
+      return Container(
+        decoration: BoxDecoration(
+          color: notifier.getBgColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: notifier.getBorderColor),
+        ),
+        child: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(
+              icon: Icon(Icons.dashboard, size: isTablet ? 20 : 24),
+              text: 'Dashboard',
+            ),
+            Tab(
+              icon: Icon(Icons.account_balance, size: isTablet ? 20 : 24),
+              text: 'Accounts',
+            ),
+            Tab(
+              icon: Icon(Icons.payment, size: isTablet ? 20 : 24),
+              text: 'Payments',
+            ),
+            Tab(
+              icon: Icon(Icons.receipt_long, size: isTablet ? 20 : 24),
+              text: 'Bills',
+            ),
+          ],
+          indicatorColor: appMainColor,
+          labelColor: appMainColor,
+          unselectedLabelColor: notifier.getMainText,
+          dividerColor: Colors.transparent,
+          labelStyle: TextStyle(
+            fontSize: isTablet ? 13 : 14,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: isTablet ? 12 : 13,
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildMobileTab(IconData icon, String text) {
+    return Tab(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }

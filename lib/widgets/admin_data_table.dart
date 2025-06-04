@@ -274,8 +274,6 @@ class _AdminDataTableState extends State<AdminDataTable> {
               _detailItem("Email", admin.email, Icons.email),
               _detailItem("Phone", admin.phone, Icons.phone),
               _detailItem("Gender", admin.gender, Icons.person),
-              _detailItem(
-                  "User ID", admin.userId, Icons.perm_identity),
               _detailItem("Created At", createdAtFormatted, Icons.calendar_today),
               _detailItem("Updated At", updatedAtFormatted, Icons.update),
             ],
