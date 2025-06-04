@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ige_hospital/pages/accounting_page.dart';
 import 'package:ige_hospital/pages/admin_page.dart';
+import 'package:ige_hospital/pages/live_consultations_page.dart';
 import 'package:ige_hospital/pages/patients_page.dart';
 import 'package:ige_hospital/pages/profile_page.dart';
 import 'package:ige_hospital/pages/appointments.dart';
@@ -21,7 +22,7 @@ final Map<String, Widget> pages = {
   'admins': const AdminsPage(),
 
   // Medical Services
-  // 'live-consultations': const LiveConsultationsPage(),
+  'live-consultations': const LiveConsultationsPage(),
 
   // Accounting & Finance
   'accounting': const AccountingPage(),

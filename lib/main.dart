@@ -22,7 +22,7 @@ void main() async {
 
   await Get.putAsync(() => DashboardService().init());
   await Get.putAsync(() => DepartmentService().init());
-  await Get.putAsync(() => ConsultationService().init());
+  Get.put(ConsultationService());
 
   // Initialize controllers
   Get.put(NurseController());

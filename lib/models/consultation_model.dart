@@ -82,7 +82,9 @@ class LiveConsultation {
       permissions: ConsultationPermissions.fromJson(json),
       doctor: ConsultationDoctor.fromJson(json['doctor'] ?? {}),
       patient: ConsultationPatient.fromJson(json['patient'] ?? {}),
-      joinInfo: json['join_info'] != null ? ConsultationJoinInfo.fromJson(json['join_info']) : null,
+      joinInfo: json['join_info'] != null
+          ? ConsultationJoinInfo.fromJson(json['join_info'])
+          : null,
     );
   }
 
@@ -232,8 +234,10 @@ class ConsultationJoinInfo {
   factory ConsultationJoinInfo.fromJson(Map<String, dynamic> json) {
     return ConsultationJoinInfo(
       joinUrl: json['join_url'] ?? '',
-      meetingInstructions: ConsultationMeetingInstructions.fromJson(json['meeting_instructions'] ?? {}),
-      technicalRequirements: ConsultationTechnicalRequirements.fromJson(json['technical_requirements'] ?? {}),
+      meetingInstructions: ConsultationMeetingInstructions.fromJson(
+          json['meeting_instructions'] ?? {}),
+      technicalRequirements: ConsultationTechnicalRequirements.fromJson(
+          json['technical_requirements'] ?? {}),
     );
   }
 }
@@ -271,7 +275,8 @@ class ConsultationTechnicalRequirements {
     required this.permissions,
   });
 
-  factory ConsultationTechnicalRequirements.fromJson(Map<String, dynamic> json) {
+  factory ConsultationTechnicalRequirements.fromJson(
+      Map<String, dynamic> json) {
     return ConsultationTechnicalRequirements(
       browsers: List<String>.from(json['browsers'] ?? []),
       bandwidth: Map<String, String>.from(json['bandwidth'] ?? {}),
