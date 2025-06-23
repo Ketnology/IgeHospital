@@ -23,7 +23,8 @@ class ConsultationFormDialog extends StatefulWidget {
 
 class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  final ConsultationController consultationController = Get.find<ConsultationController>();
+  final ConsultationController consultationController =
+      Get.find<ConsultationController>();
 
   // Text controllers
   late final TextEditingController titleController;
@@ -45,8 +46,18 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
 
   // Options
   final List<int> durationOptions = [15, 30, 45, 60, 90, 120];
-  final List<String> typeOptions = ['scheduled', 'follow-up', 'emergency', 'comprehensive'];
-  final List<String> timeZoneOptions = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Tokyo'];
+  final List<String> typeOptions = [
+    'scheduled',
+    'follow-up',
+    'emergency',
+    'comprehensive'
+  ];
+  final List<String> timeZoneOptions = [
+    'UTC',
+    'America/New_York',
+    'Europe/London',
+    'Asia/Tokyo'
+  ];
 
   @override
   void initState() {
@@ -57,10 +68,13 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
   void _initializeControllers() {
     if (widget.isEdit && widget.consultation != null) {
       final consultation = widget.consultation!;
-      titleController = TextEditingController(text: consultation.consultationTitle);
-      descriptionController = TextEditingController(text: consultation.description ?? '');
+      titleController =
+          TextEditingController(text: consultation.consultationTitle);
+      descriptionController =
+          TextEditingController(text: consultation.description ?? '');
       doctorIdController = TextEditingController(text: consultation.doctor.id);
-      patientIdController = TextEditingController(text: consultation.patient.id);
+      patientIdController =
+          TextEditingController(text: consultation.patient.id);
 
       selectedDate = consultation.consultationDate;
       selectedTime = TimeOfDay.fromDateTime(consultation.consultationDate);
@@ -129,8 +143,10 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                       // Title
                       TextFormField(
                         controller: titleController,
-                        decoration: _inputDecoration('Consultation Title', notifier, Icons.title),
-                        validator: (value) => value!.isEmpty ? 'Required' : null,
+                        decoration: _inputDecoration(
+                            'Consultation Title', notifier, Icons.title),
+                        validator: (value) =>
+                            value!.isEmpty ? 'Required' : null,
                         style: TextStyle(color: notifier.getMainText),
                       ),
                       const SizedBox(height: 16),
@@ -138,7 +154,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                       // Description
                       TextFormField(
                         controller: descriptionController,
-                        decoration: _inputDecoration('Description (Optional)', notifier, Icons.description),
+                        decoration: _inputDecoration('Description (Optional)',
+                            notifier, Icons.description),
                         maxLines: 3,
                         style: TextStyle(color: notifier.getMainText),
                       ),
@@ -155,9 +172,11 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                               onTap: () => _selectDate(context, notifier),
                               child: AbsorbPointer(
                                 child: TextFormField(
-                                  decoration: _inputDecoration('Date', notifier, Icons.calendar_today),
+                                  decoration: _inputDecoration(
+                                      'Date', notifier, Icons.calendar_today),
                                   controller: TextEditingController(
-                                    text: DateFormat('MMM dd, yyyy').format(selectedDate),
+                                    text: DateFormat('MMM dd, yyyy')
+                                        .format(selectedDate),
                                   ),
                                   style: TextStyle(color: notifier.getMainText),
                                 ),
@@ -170,7 +189,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                               onTap: () => _selectTime(context, notifier),
                               child: AbsorbPointer(
                                 child: TextFormField(
-                                  decoration: _inputDecoration('Time', notifier, Icons.access_time),
+                                  decoration: _inputDecoration(
+                                      'Time', notifier, Icons.access_time),
                                   controller: TextEditingController(
                                     text: selectedTime.format(context),
                                   ),
@@ -188,13 +208,16 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
+                              isExpanded: true,
                               value: selectedDuration,
-                              decoration: _inputDecoration('Duration (minutes)', notifier, Icons.timer),
+                              decoration: _inputDecoration(
+                                  'Duration (minutes)', notifier, Icons.timer),
                               items: durationOptions.map((duration) {
                                 return DropdownMenuItem(
                                   value: duration,
                                   child: Text('$duration minutes',
-                                      style: TextStyle(color: notifier.getMainText)),
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
                                 );
                               }).toList(),
                               onChanged: (value) {
@@ -211,13 +234,16 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
+                              isExpanded: true,
                               value: selectedType,
-                              decoration: _inputDecoration('Type', notifier, Icons.category),
+                              decoration: _inputDecoration(
+                                  'Type', notifier, Icons.category),
                               items: typeOptions.map((type) {
                                 return DropdownMenuItem(
                                   value: type,
                                   child: Text(type.capitalizeFirst!,
-                                      style: TextStyle(color: notifier.getMainText)),
+                                      style: TextStyle(
+                                          color: notifier.getMainText)),
                                 );
                               }).toList(),
                               onChanged: (value) {
@@ -238,7 +264,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                       // Time Zone
                       DropdownButtonFormField<String>(
                         value: selectedTimeZone,
-                        decoration: _inputDecoration('Time Zone', notifier, Icons.public),
+                        decoration: _inputDecoration(
+                            'Time Zone', notifier, Icons.public),
                         items: timeZoneOptions.map((timeZone) {
                           return DropdownMenuItem(
                             value: timeZone,
@@ -267,8 +294,10 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: doctorIdController,
-                              decoration: _inputDecoration('Doctor ID', notifier, Icons.medical_services),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration('Doctor ID',
+                                  notifier, Icons.medical_services),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -276,8 +305,10 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                           Expanded(
                             child: TextFormField(
                               controller: patientIdController,
-                              decoration: _inputDecoration('Patient ID', notifier, Icons.person),
-                              validator: (value) => value!.isEmpty ? 'Required' : null,
+                              decoration: _inputDecoration(
+                                  'Patient ID', notifier, Icons.person),
+                              validator: (value) =>
+                                  value!.isEmpty ? 'Required' : null,
                               style: TextStyle(color: notifier.getMainText),
                             ),
                           ),
@@ -294,7 +325,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                           Expanded(
                             child: CheckboxListTile(
                               title: Text('Host Video',
-                                  style: TextStyle(color: notifier.getMainText)),
+                                  style:
+                                      TextStyle(color: notifier.getMainText)),
                               value: hostVideo,
                               onChanged: (value) {
                                 setState(() {
@@ -308,7 +340,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                           Expanded(
                             child: CheckboxListTile(
                               title: Text('Participant Video',
-                                  style: TextStyle(color: notifier.getMainText)),
+                                  style:
+                                      TextStyle(color: notifier.getMainText)),
                               value: participantVideo,
                               onChanged: (value) {
                                 setState(() {
@@ -386,7 +419,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               foregroundColor: notifier.getMainText,
             ),
-            child: Text('Cancel', style: TextStyle(color: notifier.getMainText)),
+            child:
+                Text('Cancel', style: TextStyle(color: notifier.getMainText)),
           ),
           const SizedBox(width: 12),
           ElevatedButton(
@@ -398,14 +432,16 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
             ),
             child: isLoading
                 ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.0,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-                : Text(widget.isEdit ? 'Update Consultation' : 'Create Consultation'),
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(widget.isEdit
+                    ? 'Update Consultation'
+                    : 'Create Consultation'),
           ),
         ],
       ),
@@ -430,7 +466,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, ColourNotifier notifier, IconData icon) {
+  InputDecoration _inputDecoration(
+      String label, ColourNotifier notifier, IconData icon) {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(color: notifier.getMaingey),
@@ -453,7 +490,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     );
   }
 
-  Future<void> _selectDate(BuildContext context, ColourNotifier notifier) async {
+  Future<void> _selectDate(
+      BuildContext context, ColourNotifier notifier) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
@@ -483,7 +521,8 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context, ColourNotifier notifier) async {
+  Future<void> _selectTime(
+      BuildContext context, ColourNotifier notifier) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: selectedTime,
@@ -525,7 +564,9 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
           'consultation_duration_minutes': selectedDuration,
           'host_video': hostVideo,
           'participant_video': participantVideo,
-          'description': descriptionController.text.isEmpty ? null : descriptionController.text,
+          'description': descriptionController.text.isEmpty
+              ? null
+              : descriptionController.text,
           'time_zone': selectedTimeZone,
           'type': selectedType,
           'doctor_id': doctorIdController.text,
