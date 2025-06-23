@@ -48,11 +48,6 @@ class BillsTab extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Bills Summary Cards - Responsive grid
-              _buildSummaryCards(controller, notifier, isMobile),
-
-              const SizedBox(height: 16),
-
               // Bills List
               Expanded(
                 child: Obx(() {
@@ -372,80 +367,6 @@ class BillsTab extends StatelessWidget {
             }
           },
         ));
-  }
-
-  Widget _buildSummaryCards(
-      AccountingController controller, ColourNotifier notifier, bool isMobile) {
-    return Obx(() {
-      final totalBills = controller.totalItems.value;
-      final paidBills =
-          controller.filteredBills.where((bill) => bill.isPaid).length;
-      final pendingBills =
-          controller.filteredBills.where((bill) => bill.isPending).length;
-      final unpaidBills = controller.filteredBills
-          .where((bill) => !bill.isPaid && !bill.isPending)
-          .length;
-
-      if (isMobile) {
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryCard(
-                    'Total',
-                    totalBills.toString(),
-                    Icons.receipt_long,
-                    Colors.blue,
-                    notifier,
-                    true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildSummaryCard(
-                    'Paid',
-                    paidBills.toString(),
-                    Icons.check_circle,
-                    Colors.green,
-                    notifier,
-                    true,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryCard(
-                    'Pending',
-                    pendingBills.toString(),
-                    Icons.pending,
-                    Colors.orange,
-                    notifier,
-                    true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildSummaryCard(
-                    'Unpaid',
-                    unpaidBills.toString(),
-                    Icons.cancel,
-                    Colors.red,
-                    notifier,
-                    true,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      }
-
-      return Row();
-    });
   }
 
   Widget _buildMobileBillsList(
