@@ -141,7 +141,8 @@ class _AccountingPageState extends State<AccountingPage>
           labelColor: appMainColor,
           unselectedLabelColor: notifier.getMainText,
           dividerColor: Colors.transparent,
-          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          labelStyle:
+              const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),

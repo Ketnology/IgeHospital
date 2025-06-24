@@ -160,18 +160,53 @@ class _PatientsPageState extends State<PatientsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Toggle Filters Button
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _showFilters = !_showFilters;
-              });
-            },
-            icon: Icon(
-              _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
-              color: notifier.getIconColor,
-            ),
-            tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+          // Stats and Filters Button
+          Row(
+            children: [
+              // Total patients count
+              Obx(() => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: notifier.getIconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: notifier.getIconColor.withOpacity(0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.people,
+                      size: 16,
+                      color: notifier.getIconColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${controller.totalPatients.value} Patients',
+                      style: TextStyle(
+                        color: notifier.getIconColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+              const SizedBox(width: 12),
+
+              // Toggle Filters Button
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _showFilters = !_showFilters;
+                  });
+                },
+                icon: Icon(
+                  _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+                  color: notifier.getIconColor,
+                ),
+                tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+              ),
+            ],
           ),
 
           // Add Patient Button
@@ -216,8 +251,21 @@ class _PatientsPageState extends State<PatientsPage> {
         child: Obx(() {
           if (controller.isLoading.value) {
             return Center(
-              child: CircularProgressIndicator(
-                color: notifier.getIconColor,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: notifier.getIconColor,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading patients...',
+                    style: TextStyle(
+                      color: notifier.getMainText,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             );
           }
@@ -232,9 +280,15 @@ class _PatientsPageState extends State<PatientsPage> {
 
           return Column(
             children: [
+              // Quick stats row if patients exist
+              if (controller.patients.isNotEmpty) _buildQuickStats(notifier),
+
+              const SizedBox(height: 16),
+
               Expanded(
                 child: _buildPatientGrid(controller.filteredPatients),
               ),
+
               // Always show pagination for all screen sizes
               PatientPagination(
                 controller: controller,
@@ -246,23 +300,153 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  Widget _buildPatientGrid(List<PatientModel> patients) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 380,
-        childAspectRatio: 0.85,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
+  Widget _buildQuickStats(ColourNotifier notifier) {
+    return Obx(() {
+      // Calculate stats from current patients
+      final patientsWithVitals = controller.patients.where((p) => p.hasVitalSigns).length;
+      final activePatients = controller.patients.where((p) => p.user['status'] == 'active').length;
+      final totalAppointments = controller.patients.fold<int>(0, (sum, p) =>
+      sum + int.parse(p.stats['appointments_count']?.toString() ?? '0'));
+
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: notifier.getContainer,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: notifier.getBorderColor),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildStatItem(
+                'Active Patients',
+                activePatients.toString(),
+                Icons.person_outline,
+                Colors.green,
+                notifier,
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 30,
+              color: notifier.getBorderColor,
+            ),
+            Expanded(
+              child: _buildStatItem(
+                'With Vital Signs',
+                patientsWithVitals.toString(),
+                Icons.favorite_outline,
+                Colors.red,
+                notifier,
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 30,
+              color: notifier.getBorderColor,
+            ),
+            Expanded(
+              child: _buildStatItem(
+                'Total Appointments',
+                totalAppointments.toString(),
+                Icons.calendar_today_outlined,
+                Colors.blue,
+                notifier,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildStatItem(
+      String label,
+      String value,
+      IconData icon,
+      Color color,
+      ColourNotifier notifier,
+      ) {
+    return Flexible(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: notifier.getMainText,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: notifier.getMaingey,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      itemCount: patients.length,
-      itemBuilder: (context, index) {
-        final patient = patients[index];
-        return PatientCard(
-          patient: patient,
-          onView: () => _showPatientDetail(patient),
-          onEdit: () => _showEditPatientDialog(patient),
-          onDelete: () => _showDeleteConfirmation(patient),
+    );
+  }
+
+  Widget _buildPatientGrid(List<PatientModel> patients) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Responsive grid based on screen width
+        int crossAxisCount;
+        double childAspectRatio;
+
+        if (constraints.maxWidth > 1400) {
+          crossAxisCount = 4;
+          childAspectRatio = 0.85; // Increased for more height
+        } else if (constraints.maxWidth > 1000) {
+          crossAxisCount = 3;
+          childAspectRatio = 0.8; // Increased for more height
+        } else if (constraints.maxWidth > 600) {
+          crossAxisCount = 2;
+          childAspectRatio = 0.75; // Increased for more height
+        } else {
+          crossAxisCount = 1;
+          childAspectRatio = 1.0; // Increased for more height
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: childAspectRatio,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: patients.length,
+          itemBuilder: (context, index) {
+            final patient = patients[index];
+            return PatientCard(
+              patient: patient,
+              onView: () => _showPatientDetail(patient),
+              onEdit: () => _showEditPatientDialog(patient),
+              onDelete: () => _showDeleteConfirmation(patient),
+            );
+          },
         );
       },
     );
@@ -289,11 +473,14 @@ class _PatientsPageState extends State<PatientsPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Please try again later',
+            controller.errorMessage.value.isNotEmpty
+                ? controller.errorMessage.value
+                : 'Please try again later',
             style: TextStyle(
               color: notifier.getMaingey,
               fontSize: 16,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -332,7 +519,9 @@ class _PatientsPageState extends State<PatientsPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add a new patient or adjust your filters',
+            controller.searchQuery.value.isNotEmpty
+                ? 'No patients match your search criteria'
+                : 'Add a new patient to get started',
             style: TextStyle(
               color: notifier.getMaingey,
               fontSize: 16,
@@ -341,9 +530,18 @@ class _PatientsPageState extends State<PatientsPage> {
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: _showAddPatientDialog,
-            icon: const Icon(Icons.person_add),
-            label: const Text('Add Patient'),
+            onPressed: controller.searchQuery.value.isNotEmpty
+                ? () {
+              searchController.clear();
+              controller.resetFilters();
+            }
+                : _showAddPatientDialog,
+            icon: Icon(controller.searchQuery.value.isNotEmpty
+                ? Icons.clear
+                : Icons.person_add),
+            label: Text(controller.searchQuery.value.isNotEmpty
+                ? 'Clear Filters'
+                : 'Add Patient'),
             style: ElevatedButton.styleFrom(
               backgroundColor: notifier.getIconColor,
               foregroundColor: Colors.white,

@@ -23,33 +23,77 @@ class PatientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final notifier = Provider.of<ColourNotifier>(context);
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.all(0),
-      color: notifier.getContainer,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: notifier.getBorderColor),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            notifier.getContainer,
+            notifier.getContainer.withOpacity(0.95),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: notifier.getBorderColor.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: onView,
-        borderRadius: BorderRadius.circular(12),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with patient info
-              _buildHeader(notifier),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onView,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with profile and status
+                _buildHeader(notifier),
 
-              // Patient details - made adaptive for mobile/desktop
-              _buildDetails(notifier),
+                const SizedBox(height: 12),
 
-              // Statistics section
-              _buildStatistics(notifier),
+                // Patient info section
+                Flexible(
+                  child: _buildPatientInfo(notifier),
+                ),
 
-              // Actions
-              _buildActions(notifier),
-            ],
+                const SizedBox(height: 12),
+
+                // Vital signs section (if available)
+                if (patient.hasVitalSigns) ...[
+                  Flexible(
+                    child: _buildVitalSignsSection(notifier),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Statistics section
+                Flexible(
+                  child: _buildStatsSection(notifier),
+                ),
+
+                const Spacer(),
+
+                // Action buttons
+                _buildActionButtons(notifier),
+              ],
+            ),
           ),
         ),
       ),
@@ -57,113 +101,229 @@ class PatientCard extends StatelessWidget {
   }
 
   Widget _buildHeader(ColourNotifier notifier) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: notifier.getIconColor.withOpacity(0.1),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Profile image - smaller size
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.shade200,
-            ),
-            child: patient.user['profile_image'] != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      patient.user['profile_image'],
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, _) => Icon(
-                        Icons.person,
-                        size: 20,
-                        color: notifier.getIconColor,
-                      ),
-                    ),
-                  )
-                : Icon(
+    return Row(
+      children: [
+        // Profile Avatar with status indicator
+        Stack(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    notifier.getIconColor.withOpacity(0.2),
+                    notifier.getIconColor.withOpacity(0.1),
+                  ],
+                ),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: notifier.getIconColor.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
+              child: patient.user['profile_image'] != null
+                  ? ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Image.network(
+                  patient.user['profile_image'],
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, _) => Icon(
                     Icons.person,
-                    size: 20,
+                    size: 30,
                     color: notifier.getIconColor,
                   ),
-          ),
-          const SizedBox(width: 12),
-
-          // Name and status
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  patient.user['full_name'] ?? 'N/A',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: notifier.getMainText,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                 ),
-                const SizedBox(height: 4),
-                StatusBadge(
-                  status: patient.user['status'] ?? 'active',
-                  fontSize: 10,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                ),
-              ],
+              )
+                  : Icon(
+                Icons.person,
+                size: 30,
+                color: notifier.getIconColor,
+              ),
             ),
+
+            // Status indicator dot
+            Positioned(
+              bottom: 2,
+              right: 2,
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: _getStatusColor(patient.user['status'] ?? 'active'),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: notifier.getContainer,
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _getStatusIcon(patient.user['status'] ?? 'active'),
+                  size: 10,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(width: 16),
+
+        // Name and ID
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                patient.user['full_name'] ?? 'Unknown Patient',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: notifier.getMainText,
+                  letterSpacing: -0.5,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: notifier.getIconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'ID: ${patient.patientUniqueId}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: notifier.getIconColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // More options button
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: notifier.getBgColor,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: notifier.getBorderColor),
+          ),
+          child: PopupMenuButton<String>(
+            icon: Icon(
+              Icons.more_vert,
+              color: notifier.getMainText,
+              size: 18,
+            ),
+            color: notifier.getContainer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            onSelected: (value) {
+              switch (value) {
+                case 'view':
+                  onView();
+                  break;
+                case 'edit':
+                  onEdit();
+                  break;
+                case 'delete':
+                  onDelete();
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'view',
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility, size: 16, color: notifier.getIconColor),
+                    const SizedBox(width: 8),
+                    Text('View Details', style: TextStyle(color: notifier.getMainText)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, size: 16, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Text('Edit Patient', style: TextStyle(color: notifier.getMainText)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, size: 16, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Text('Delete', style: TextStyle(color: notifier.getMainText)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDetails(ColourNotifier notifier) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  Widget _buildPatientInfo(ColourNotifier notifier) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: notifier.getBgColor.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: notifier.getBorderColor.withOpacity(0.5)),
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildDetailRow(
-            icon: Icons.email,
-            label: 'Email',
-            value: patient.user['email'] ?? 'N/A',
+          _buildInfoRow(
+            icon: Icons.email_outlined,
+            text: patient.user['email'] ?? 'N/A',
             notifier: notifier,
           ),
           const SizedBox(height: 8),
-          _buildDetailRow(
-            icon: Icons.phone,
-            label: 'Phone',
-            value: patient.user['phone'] ?? 'N/A',
+          _buildInfoRow(
+            icon: Icons.phone_outlined,
+            text: patient.user['phone'] ?? 'N/A',
             notifier: notifier,
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: _buildDetailChip(
-                  icon: Icons.person,
-                  value: (patient.user['gender'] ?? 'N/A')
-                      .toString()
-                      .capitalizeFirst!,
+                child: _buildInfoChip(
+                  icon: Icons.person_outline,
+                  text: (patient.user['gender'] ?? 'N/A').toString().capitalizeFirst!,
+                  color: Colors.blue,
                   notifier: notifier,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
-                child: _buildDetailChip(
-                  icon: Icons.bloodtype,
-                  value: patient.user['blood_group'] ?? 'N/A',
+                child: _buildInfoChip(
+                  icon: Icons.bloodtype_outlined,
+                  text: patient.user['blood_group'] ?? 'N/A',
+                  color: Colors.red,
                   notifier: notifier,
                 ),
               ),
@@ -174,129 +334,238 @@ class PatientCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatistics(ColourNotifier notifier) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget _buildVitalSignsSection(ColourNotifier notifier) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.red.withOpacity(0.05),
+            Colors.pink.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.red.withOpacity(0.1)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStatDisplay(
-            'Appointments',
-            patient.stats['appointments_count']?.toString() ?? '0',
-            Icons.calendar_month_outlined,
-            notifier,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  Icons.favorite,
+                  color: Colors.red,
+                  size: 12,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Latest Vitals',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: notifier.getMainText,
+                  ),
+                ),
+              ),
+              Text(
+                'Recent',
+                style: TextStyle(
+                  fontSize: 8,
+                  color: notifier.getMaingey,
+                ),
+              ),
+            ],
           ),
-          _buildStatDisplay(
-            'Documents',
-            patient.stats['documents_count']?.toString() ?? '0',
-            Icons.description_outlined,
-            notifier,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildVitalChip(
+                'BP',
+                _shortenVitalValue(patient.latestBloodPressure),
+                Icons.monitor_heart,
+                Colors.red,
+                notifier,
+              ),
+              const SizedBox(width: 2),
+              _buildVitalChip(
+                'HR',
+                _shortenVitalValue(patient.latestHeartRate),
+                Icons.favorite,
+                Colors.pink,
+                notifier,
+              ),
+              const SizedBox(width: 2),
+              _buildVitalChip(
+                'Temp',
+                _shortenVitalValue(patient.latestTemperature),
+                Icons.thermostat,
+                Colors.orange,
+                notifier,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatDisplay(
-    String label,
-    String value,
-    IconData icon,
-    ColourNotifier notifier,
-  ) {
-    return Column(
+  Widget _buildStatsSection(ColourNotifier notifier) {
+    return Row(
       children: [
+        _buildStatCard(
+          'Appts',
+          patient.stats['appointments_count']?.toString() ?? '0',
+          Icons.calendar_today_outlined,
+          Colors.blue,
+          notifier,
+        ),
+        const SizedBox(width: 4),
+        _buildStatCard(
+          'Docs',
+          patient.stats['documents_count']?.toString() ?? '0',
+          Icons.description_outlined,
+          Colors.green,
+          notifier,
+        ),
+        const SizedBox(width: 4),
+        _buildStatCard(
+          'Vitals',
+          patient.vitalSignsCount.toString(),
+          Icons.favorite_outline,
+          Colors.red,
+          notifier,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(ColourNotifier notifier) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: onView,
+            icon: Icon(Icons.visibility, size: 14),
+            label: Text('View', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: notifier.getIconColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
         Container(
-          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: notifier.getIconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.blue.withOpacity(0.3)),
           ),
-          child: Icon(
-            icon,
-            color: notifier.getIconColor,
-            size: 20,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: notifier.getMainText,
+          child: IconButton(
+            onPressed: onEdit,
+            icon: Icon(Icons.edit, color: Colors.blue, size: 16),
+            tooltip: 'Edit',
+            padding: EdgeInsets.all(8),
+            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: notifier.getMaingey,
+        const SizedBox(width: 6),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red.withOpacity(0.3)),
+          ),
+          child: IconButton(
+            onPressed: onDelete,
+            icon: Icon(Icons.delete, color: Colors.red, size: 16),
+            tooltip: 'Delete',
+            padding: EdgeInsets.all(8),
+            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDetailRow({
+  Widget _buildInfoRow({
     required IconData icon,
-    required String label,
-    required String value,
+    required String text,
     required ColourNotifier notifier,
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: notifier.getIconColor,
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: notifier.getIconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(
+            icon,
+            size: 14,
+            color: notifier.getIconColor,
+          ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Expanded(
           child: Text(
-            value,
+            text,
             style: TextStyle(
               color: notifier.getMainText,
               fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
             overflow: TextOverflow.ellipsis,
-            maxLines: 1,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDetailChip({
+  Widget _buildInfoChip({
     required IconData icon,
-    required String value,
+    required String text,
+    required Color color,
     required ColourNotifier notifier,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: notifier.getBgColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: notifier.getBorderColor),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             icon,
-            size: 14,
-            color: notifier.getIconColor,
+            size: 12,
+            color: color,
           ),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              value,
+              text,
               style: TextStyle(
-                color: notifier.getMainText,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
-              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -304,70 +573,167 @@ class PatientCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActions(ColourNotifier notifier) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: notifier.getBorderColor),
+  Widget _buildVitalChip(
+      String label,
+      String value,
+      IconData icon,
+      Color color,
+      ColourNotifier notifier,
+      ) {
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: color.withOpacity(0.2)),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildActionButton(
-            icon: Icons.visibility,
-            label: 'View',
-            color: notifier.getIconColor,
-            onTap: onView,
-          ),
-          _buildActionButton(
-            icon: Icons.edit,
-            label: 'Edit',
-            color: Colors.blue,
-            onTap: onEdit,
-          ),
-          _buildActionButton(
-            icon: Icons.delete,
-            label: 'Delete',
-            color: Colors.red,
-            onTap: onDelete,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
+              size: 8,
               color: color,
-              size: 20,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 1),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 7,
+                fontWeight: FontWeight.bold,
+                color: notifier.getMainText,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             Text(
               label,
               style: TextStyle(
+                fontSize: 6,
                 color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatCard(
+      String label,
+      String value,
+      IconData icon,
+      Color color,
+      ColourNotifier notifier,
+      ) {
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color.withOpacity(0.1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 12,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: notifier.getMainText,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 8,
+                color: notifier.getMaingey,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'blocked':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Icons.check;
+      case 'blocked':
+        return Icons.block;
+      case 'pending':
+        return Icons.schedule;
+      default:
+        return Icons.info;
+    }
+  }
+
+  String _shortenVitalValue(String value) {
+    if (value == 'N/A' || value.isEmpty) return 'N/A';
+
+    // For blood pressure, show abbreviated form
+    if (value.contains('/')) {
+      final parts = value.split('/');
+      if (parts.length == 2) {
+        final systolic = parts[0].replaceAll(RegExp(r'[^\d]'), '');
+        final diastolic = parts[1].replaceAll(RegExp(r'[^\d]'), '');
+        return '$systolic/$diastolic';
+      }
+      return value;
+    }
+
+    // For temperature, remove everything except numbers and degree
+    if (value.contains('°')) {
+      final temp = value.replaceAll(RegExp(r'[^\d.]'), '');
+      return '${temp}°';
+    }
+
+    // For heart rate, extract just the number
+    if (value.contains('bpm')) {
+      final hr = value.replaceAll(RegExp(r'[^\d.]'), '');
+      return hr;
+    }
+
+    // For percentage values
+    if (value.contains('%')) {
+      final percent = value.replaceAll(RegExp(r'[^\d.]'), '');
+      return '${percent}%';
+    }
+
+    // General cleanup - remove units and keep only numbers
+    final cleaned = value.replaceAll(RegExp(r'[^\d./]'), '');
+
+    // Truncate if still too long
+    return cleaned.length > 6 ? '${cleaned.substring(0, 4)}...' : cleaned;
   }
 }
