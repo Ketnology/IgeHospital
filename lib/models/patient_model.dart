@@ -10,6 +10,8 @@ class PatientModel {
   final Map<String, dynamic> stats;
   final List<dynamic> appointments;
   final List<dynamic> documents;
+  final List<dynamic> vitalSigns;
+  final Map<String, dynamic>? vitalSignsSummary;
 
   PatientModel({
     required this.id,
@@ -23,6 +25,8 @@ class PatientModel {
     required this.stats,
     required this.appointments,
     required this.documents,
+    required this.vitalSigns,
+    this.vitalSignsSummary,
   });
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
@@ -35,12 +39,14 @@ class PatientModel {
       statsMap = {
         'appointments_count': '0',
         'documents_count': '0',
+        'vital_signs_count': 0,
       };
     } else {
       // Default fallback
       statsMap = {
         'appointments_count': '0',
         'documents_count': '0',
+        'vital_signs_count': 0,
       };
     }
 
@@ -60,6 +66,20 @@ class PatientModel {
       documentsList = [];
     }
 
+    // Handle vital signs - ensure it's a list
+    List<dynamic> vitalSignsList;
+    if (json['vital_signs'] is List) {
+      vitalSignsList = json['vital_signs'];
+    } else {
+      vitalSignsList = [];
+    }
+
+    // Handle vital signs summary
+    Map<String, dynamic>? vitalSignsSummary;
+    if (json['vital_signs_summary'] is Map) {
+      vitalSignsSummary = Map<String, dynamic>.from(json['vital_signs_summary']);
+    }
+
     return PatientModel(
       id: json['id'] ?? '',
       patientUniqueId: json['patient_unique_id'] ?? '',
@@ -76,6 +96,8 @@ class PatientModel {
       stats: statsMap,
       appointments: appointmentsList,
       documents: documentsList,
+      vitalSigns: vitalSignsList,
+      vitalSignsSummary: vitalSignsSummary,
     );
   }
 
@@ -93,6 +115,46 @@ class PatientModel {
       'stats': stats,
       'appointments': appointments,
       'documents': documents,
+      'vital_signs': vitalSigns,
+      'vital_signs_summary': vitalSignsSummary,
     };
+  }
+
+  // Helper methods for vital signs
+  bool get hasVitalSigns => vitalSigns.isNotEmpty;
+
+  String get lastVitalSignsDate {
+    if (vitalSignsSummary != null && vitalSignsSummary!['last_recorded'] != null) {
+      return vitalSignsSummary!['last_recorded'];
+    }
+    return 'No records';
+  }
+
+  String get latestBloodPressure {
+    if (vitalSignsSummary != null && vitalSignsSummary!['blood_pressure'] != null) {
+      return vitalSignsSummary!['blood_pressure'];
+    }
+    return 'N/A';
+  }
+
+  String get latestHeartRate {
+    if (vitalSignsSummary != null && vitalSignsSummary!['heart_rate'] != null) {
+      return vitalSignsSummary!['heart_rate'];
+    }
+    return 'N/A';
+  }
+
+  String get latestTemperature {
+    if (vitalSignsSummary != null && vitalSignsSummary!['temperature'] != null) {
+      return vitalSignsSummary!['temperature'];
+    }
+    return 'N/A';
+  }
+
+  int get vitalSignsCount {
+    if (vitalSignsSummary != null && vitalSignsSummary!['total_records'] != null) {
+      return vitalSignsSummary!['total_records'] as int;
+    }
+    return vitalSigns.length;
   }
 }

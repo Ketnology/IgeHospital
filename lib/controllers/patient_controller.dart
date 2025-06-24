@@ -1,24 +1,23 @@
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:ige_hospital/models/patient_model.dart';
 import 'package:ige_hospital/provider/patient_service.dart';
 import 'package:ige_hospital/utils/snack_bar_utils.dart';
 
 class PatientController extends GetxController {
-  final PatientService _patientService = PatientService();
+  final PatientService _patientService = Get.put(PatientService());
 
-  // Reactive variables
-  var isLoading = false.obs;
-  final RxBool hasError = false.obs;
+  // Observable variables
   var patients = <PatientModel>[].obs;
-  var filteredPatients = <PatientModel>[].obs;
+  var isLoading = false.obs;
+  var hasError = false.obs;
+  var errorMessage = ''.obs;
 
   // Pagination
-  final RxInt totalPatients = 0.obs;
-  final RxInt currentPage = 1.obs;
-  final RxInt perPage = 12.obs;
+  var currentPage = 1.obs;
+  var totalPatients = 0.obs;
+  var perPage = 12.obs;
 
-  // Filter variables
+  // Filters
   var searchQuery = ''.obs;
   var selectedGender = ''.obs;
   var selectedBloodGroup = ''.obs;
@@ -27,192 +26,116 @@ class PatientController extends GetxController {
   var sortBy = 'created_at'.obs;
   var sortDirection = 'desc'.obs;
 
-  // Gender options for filter dropdown
-  final genders = ['All', 'Male', 'Female'].obs;
-
-  // Blood group options for filter dropdown
-  final bloodGroups =
-      ['All', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].obs;
+  // Filter options
+  var genders = ['All', 'Male', 'Female'].obs;
+  var bloodGroups = ['All', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].obs;
 
   @override
   void onInit() {
     super.onInit();
     loadPatients();
 
-    // Initialize filter listeners
-    ever(searchQuery, (_) => applyFilters());
-    ever(selectedGender, (_) => applyFilters());
-    ever(selectedBloodGroup, (_) => applyFilters());
-    ever(dateFrom, (_) => applyFilters());
-    ever(dateTo, (_) => applyFilters());
-    ever(sortDirection, (_) => applyFilters());
+    // Set up debounced search
+    debounce(searchQuery, (_) => loadPatients(), time: const Duration(milliseconds: 500));
+  }
+
+  // Computed property for filtered patients (for UI display)
+  List<PatientModel> get filteredPatients {
+    return patients.where((patient) {
+      bool matchesSearch = true;
+      if (searchQuery.value.isNotEmpty) {
+        final search = searchQuery.value.toLowerCase();
+        final fullName = patient.user['full_name']?.toString().toLowerCase() ?? '';
+        final email = patient.user['email']?.toString().toLowerCase() ?? '';
+        final phone = patient.user['phone']?.toString().toLowerCase() ?? '';
+        final patientId = patient.patientUniqueId.toLowerCase();
+
+        matchesSearch = fullName.contains(search) ||
+            email.contains(search) ||
+            phone.contains(search) ||
+            patientId.contains(search);
+      }
+      return matchesSearch;
+    }).toList();
   }
 
   Future<void> loadPatients() async {
-    isLoading.value = true;
-
     try {
-      final Map<String, dynamic> result =
-          await _patientService.getPatientsWithPagination(
-        search: searchQuery.value,
-        gender: selectedGender.value == 'All'
-            ? ''
-            : selectedGender.value.toLowerCase(),
-        bloodGroup:
-            selectedBloodGroup.value == 'All' ? '' : selectedBloodGroup.value,
-        dateFrom: dateFrom.value,
-        dateTo: dateTo.value,
+      isLoading.value = true;
+      hasError.value = false;
+      errorMessage.value = '';
+
+      final result = await _patientService.getPatientsWithPagination(
+        search: searchQuery.value.isNotEmpty ? searchQuery.value : null,
+        gender: selectedGender.value.isNotEmpty ? selectedGender.value : null,
+        bloodGroup: selectedBloodGroup.value.isNotEmpty ? selectedBloodGroup.value : null,
+        dateFrom: dateFrom.value.isNotEmpty ? dateFrom.value : null,
+        dateTo: dateTo.value.isNotEmpty ? dateTo.value : null,
         sortBy: sortBy.value,
         sortDirection: sortDirection.value,
         page: currentPage.value,
         perPage: perPage.value,
       );
 
-      // Update patients list
-      patients.value = result['patients'] as List<PatientModel>;
+      patients.value = result['patients'];
+      totalPatients.value = result['total'];
+      perPage.value = result['per_page'];
 
-      // Update pagination info
-      totalPatients.value = result['total'] as int;
-
-      // Apply filters to update filteredPatients
-      applyFilters();
     } catch (e) {
+      hasError.value = true;
+      errorMessage.value = e.toString();
       Get.log("Error loading patients: $e");
-      SnackBarUtils.showErrorSnackBar('Failed to load patients: $e');
+      SnackBarUtils.showErrorSnackBar('Failed to load patients: ${e.toString()}');
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  void applyFilters() {
-    filteredPatients.value = patients.where((patient) {
-      // Search by name, email, or phone
-      bool matchesSearch = true;
-      if (searchQuery.value.isNotEmpty) {
-        final String fullName = patient.user['full_name'] ?? '';
-        final String email = patient.user['email'] ?? '';
-        final String phone = patient.user['phone'] ?? '';
-
-        matchesSearch =
-            fullName.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-                email.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-                phone.toLowerCase().contains(searchQuery.value.toLowerCase());
-      }
-
-      // Filter by gender
-      bool matchesGender = true;
-      if (selectedGender.value.isNotEmpty && selectedGender.value != 'All') {
-        final String gender = patient.user['gender'] ?? '';
-        matchesGender =
-            gender.toLowerCase() == selectedGender.value.toLowerCase();
-      }
-
-      // Filter by blood group
-      bool matchesBloodGroup = true;
-      if (selectedBloodGroup.value.isNotEmpty &&
-          selectedBloodGroup.value != 'All') {
-        final String bloodGroup = patient.user['blood_group'] ?? '';
-        matchesBloodGroup = bloodGroup == selectedBloodGroup.value;
-      }
-
-      // Date range filtering would be applied in the API call
-
-      return matchesSearch && matchesGender && matchesBloodGroup;
-    }).toList();
-
-    // Sort the list
-    if (sortDirection.value == 'asc') {
-      filteredPatients.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    } else {
-      filteredPatients.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    }
-  }
-
-  void resetFilters() {
-    searchQuery.value = '';
-    selectedGender.value = 'All';
-    selectedBloodGroup.value = 'All';
-    dateFrom.value = '';
-    dateTo.value = '';
-    sortDirection.value = 'desc';
-
-    // Reset pagination to first page
-    currentPage.value = 1;
-
-    // Reload patients from API with reset filters
-    loadPatients();
-  }
-
-  Color getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'blocked':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.blue;
     }
   }
 
   Future<void> addPatient(Map<String, dynamic> patientData) async {
-    isLoading.value = true;
-
     try {
       await _patientService.createPatient(patientData);
-      SnackBarUtils.showSuccessSnackBar('Patient added successfully');
-      loadPatients();
+      await loadPatients(); // Refresh the list
     } catch (e) {
-      SnackBarUtils.showErrorSnackBar('Failed to add patient: $e');
-    } finally {
-      isLoading.value = false;
+      Get.log("Error adding patient: $e");
+      SnackBarUtils.showErrorSnackBar('Failed to add patient: ${e.toString()}');
+      rethrow;
     }
   }
 
-  Future<void> updatePatient(
-      String id, Map<String, dynamic> patientData) async {
-    isLoading.value = true;
-
+  Future<void> updatePatient(String id, Map<String, dynamic> patientData) async {
     try {
       await _patientService.updatePatient(id, patientData);
-      SnackBarUtils.showSuccessSnackBar('Patient updated successfully');
-      loadPatients();
+      await loadPatients(); // Refresh the list
     } catch (e) {
-      SnackBarUtils.showErrorSnackBar('Failed to update patient: $e');
-    } finally {
-      isLoading.value = false;
+      Get.log("Error updating patient: $e");
+      SnackBarUtils.showErrorSnackBar('Failed to update patient: ${e.toString()}');
+      rethrow;
     }
   }
 
   Future<void> deletePatient(String id) async {
-    isLoading.value = true;
-
     try {
       await _patientService.deletePatient(id);
-      SnackBarUtils.showSuccessSnackBar('Patient deleted successfully');
-      loadPatients();
+      await loadPatients(); // Refresh the list
     } catch (e) {
-      SnackBarUtils.showErrorSnackBar('Failed to delete patient: $e');
-    } finally {
-      isLoading.value = false;
+      Get.log("Error deleting patient: $e");
+      SnackBarUtils.showErrorSnackBar('Failed to delete patient: ${e.toString()}');
     }
   }
 
-  void setPage(int page) {
-    if (page < 1) page = 1;
-    int maxPage = (totalPatients.value / perPage.value).ceil();
-    if (page > maxPage) page = maxPage;
-
-    if (currentPage.value != page) {
-      currentPage.value = page;
-      loadPatients();
+  Future<PatientModel?> getPatientDetails(String id) async {
+    try {
+      return await _patientService.getPatientDetails(id);
+    } catch (e) {
+      Get.log("Error getting patient details: $e");
+      SnackBarUtils.showErrorSnackBar('Failed to get patient details: ${e.toString()}');
+      return null;
     }
   }
 
+  // Pagination methods
   void nextPage() {
-    int maxPages = (totalPatients.value / perPage.value).ceil();
-    if (currentPage.value < maxPages) {
+    if (currentPage.value < totalPages) {
       currentPage.value++;
       loadPatients();
     }
@@ -223,5 +146,56 @@ class PatientController extends GetxController {
       currentPage.value--;
       loadPatients();
     }
+  }
+
+  void setPage(int page) {
+    if (page >= 1 && page <= totalPages) {
+      currentPage.value = page;
+      loadPatients();
+    }
+  }
+
+  int get totalPages => (totalPatients.value / perPage.value).ceil();
+
+  // Filter methods
+  void resetFilters() {
+    searchQuery.value = '';
+    selectedGender.value = '';
+    selectedBloodGroup.value = '';
+    dateFrom.value = '';
+    dateTo.value = '';
+    sortDirection.value = 'desc';
+    currentPage.value = 1;
+    loadPatients();
+  }
+
+  void applySearch(String query) {
+    searchQuery.value = query;
+    currentPage.value = 1; // Reset to first page when searching
+  }
+
+  void applyGenderFilter(String gender) {
+    selectedGender.value = gender == 'All' ? '' : gender.toLowerCase();
+    currentPage.value = 1;
+    loadPatients();
+  }
+
+  void applyBloodGroupFilter(String bloodGroup) {
+    selectedBloodGroup.value = bloodGroup == 'All' ? '' : bloodGroup;
+    currentPage.value = 1;
+    loadPatients();
+  }
+
+  void applyDateRange(String from, String to) {
+    dateFrom.value = from;
+    dateTo.value = to;
+    currentPage.value = 1;
+    loadPatients();
+  }
+
+  void changeSortDirection(String direction) {
+    sortDirection.value = direction;
+    currentPage.value = 1;
+    loadPatients();
   }
 }
