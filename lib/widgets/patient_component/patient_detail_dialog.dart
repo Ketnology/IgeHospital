@@ -41,7 +41,7 @@ class PatientDetailDialog extends StatelessWidget {
             // Content
             Expanded(
               child: DefaultTabController(
-                length: 4, // Added vital signs tab
+                length: 4,
                 child: Column(
                   children: [
                     TabBar(
@@ -117,7 +117,6 @@ class PatientDetailDialog extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, ColourNotifier notifier) {
-    // Default image if none provided
     String profileImage = '';
     if (patient.user['profile_image'] != null) {
       profileImage = patient.user['profile_image'];
@@ -143,24 +142,24 @@ class PatientDetailDialog extends StatelessWidget {
             backgroundColor: Colors.grey.shade200,
             child: profileImage.isNotEmpty
                 ? ClipRRect(
-              borderRadius: BorderRadius.circular(40),
-              child: Image.network(
-                profileImage,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, _) => Icon(
-                  Icons.person,
-                  size: 40,
-                  color: notifier.getIconColor,
-                ),
-              ),
-            )
+                    borderRadius: BorderRadius.circular(40),
+                    child: Image.network(
+                      profileImage,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, _) => Icon(
+                        Icons.person,
+                        size: 40,
+                        color: notifier.getIconColor,
+                      ),
+                    ),
+                  )
                 : Icon(
-              Icons.person,
-              size: 40,
-              color: notifier.getIconColor,
-            ),
+                    Icons.person,
+                    size: 40,
+                    color: notifier.getIconColor,
+                  ),
           ),
           const SizedBox(width: 20),
 
@@ -171,7 +170,7 @@ class PatientDetailDialog extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(
+                    Expanded(
                       child: Text(
                         fullName,
                         style: TextStyle(
@@ -179,7 +178,6 @@ class PatientDetailDialog extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: notifier.getMainText,
                         ),
-                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -197,68 +195,58 @@ class PatientDetailDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
                     StatusBadge(
                       status: patient.user['status'] ?? 'active',
                     ),
-                    const SizedBox(width: 10),
-                    if (patient.user['blood_group'] != null) ...[
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                    if (patient.user['blood_group'] != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          patient.user['blood_group'],
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
-                          child: Text(
-                            patient.user['blood_group'],
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                        ),
+                      ),
+                    if (patient.hasVitalSigns)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              size: 12,
+                              color: Colors.green.shade700,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    if (patient.hasVitalSigns) ...[
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.favorite,
-                                size: 12,
+                            const SizedBox(width: 4),
+                            Text(
+                              '${patient.vitalSignsCount} Records',
+                              style: TextStyle(
                                 color: Colors.green.shade700,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
                               ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  '${patient.vitalSignsCount} Records',
-                                  style: TextStyle(
-                                    color: Colors.green.shade700,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
                   ],
                 ),
               ],
@@ -383,7 +371,8 @@ class PatientDetailDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 color: notifier.getIconColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: notifier.getIconColor.withOpacity(0.2)),
+                border:
+                    Border.all(color: notifier.getIconColor.withOpacity(0.2)),
               ),
               child: Column(
                 children: [
@@ -395,47 +384,59 @@ class PatientDetailDialog extends StatelessWidget {
                         color: notifier.getIconColor,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Last recorded: ${patient.vitalSignsSummary!['last_recorded_date'] ?? patient.lastVitalSignsDate}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: notifier.getMainText,
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          'Last recorded: ${patient.vitalSignsSummary!['last_recorded_date'] ?? patient.lastVitalSignsDate}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: notifier.getMainText,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 12,
-                    children: [
-                      _buildVitalSignSummaryCard(
-                        'Blood Pressure',
-                        patient.latestBloodPressure,
-                        Icons.monitor_heart,
-                        notifier,
-                      ),
-                      _buildVitalSignSummaryCard(
-                        'Heart Rate',
-                        patient.latestHeartRate,
-                        Icons.favorite,
-                        notifier,
-                      ),
-                      _buildVitalSignSummaryCard(
-                        'Temperature',
-                        patient.latestTemperature,
-                        Icons.thermostat,
-                        notifier,
-                      ),
-                      if (patient.vitalSignsSummary!['oxygen_saturation'] != null)
-                        _buildVitalSignSummaryCard(
-                          'Oxygen Saturation',
-                          patient.vitalSignsSummary!['oxygen_saturation'],
-                          Icons.air,
-                          notifier,
-                        ),
-                    ],
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Wrap(
+                        spacing: 16,
+                        runSpacing: 12,
+                        children: [
+                          _buildVitalSignSummaryCard(
+                            'Blood Pressure',
+                            patient.latestBloodPressure,
+                            Icons.monitor_heart,
+                            notifier,
+                            constraints.maxWidth,
+                          ),
+                          _buildVitalSignSummaryCard(
+                            'Heart Rate',
+                            patient.latestHeartRate,
+                            Icons.favorite,
+                            notifier,
+                            constraints.maxWidth,
+                          ),
+                          _buildVitalSignSummaryCard(
+                            'Temperature',
+                            patient.latestTemperature,
+                            Icons.thermostat,
+                            notifier,
+                            constraints.maxWidth,
+                          ),
+                          if (patient.vitalSignsSummary!['oxygen_saturation'] !=
+                              null)
+                            _buildVitalSignSummaryCard(
+                              'Oxygen Saturation',
+                              patient.vitalSignsSummary!['oxygen_saturation'],
+                              Icons.air,
+                              notifier,
+                              constraints.maxWidth,
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -450,21 +451,25 @@ class PatientDetailDialog extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          ...patient.vitalSigns.map((vitalSign) =>
-              _buildVitalSignItem(context, vitalSign, notifier)),
+          ...patient.vitalSigns.map(
+              (vitalSign) => _buildVitalSignItem(context, vitalSign, notifier)),
         ],
       ),
     );
   }
 
   Widget _buildVitalSignSummaryCard(
-      String title,
-      String value,
-      IconData icon,
-      ColourNotifier notifier,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    ColourNotifier notifier,
+    double maxWidth,
+  ) {
+    // Calculate card width based on available space
+    double cardWidth = maxWidth > 600 ? 120 : (maxWidth / 4).clamp(80, 120);
+
     return Container(
-      width: 120,
+      width: cardWidth,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: notifier.getContainer,
@@ -483,7 +488,7 @@ class PatientDetailDialog extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: notifier.getMainText,
             ),
@@ -494,7 +499,7 @@ class PatientDetailDialog extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9,
               color: notifier.getMaingey,
             ),
             textAlign: TextAlign.center,
@@ -507,10 +512,10 @@ class PatientDetailDialog extends StatelessWidget {
   }
 
   Widget _buildVitalSignItem(
-      BuildContext context,
-      Map<String, dynamic> vitalSign,
-      ColourNotifier notifier,
-      ) {
+    BuildContext context,
+    Map<String, dynamic> vitalSign,
+    ColourNotifier notifier,
+  ) {
     final recordedBy = vitalSign['recorded_by'] ?? {};
     final recordedByName = recordedBy['name'] ?? 'Unknown';
     final recordedByType = recordedBy['type'] ?? '';
@@ -530,12 +535,15 @@ class PatientDetailDialog extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                vitalSign['recorded_date'] ?? 'Unknown Date',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: notifier.getMainText,
+              Expanded(
+                child: Text(
+                  vitalSign['recorded_date'] ?? 'Unknown Date',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: notifier.getMainText,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Column(
@@ -554,6 +562,7 @@ class PatientDetailDialog extends StatelessWidget {
                       fontSize: 10,
                       color: notifier.getMaingey,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -561,64 +570,73 @@ class PatientDetailDialog extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Vital signs in grid
-          Wrap(
-            spacing: 20,
-            runSpacing: 8,
-            children: [
-              _buildVitalSignDetail(
-                'Blood Pressure',
-                vitalSign['blood_pressure'] ?? 'N/A',
-                Icons.monitor_heart,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'Heart Rate',
-                vitalSign['heart_rate'] ?? 'N/A',
-                Icons.favorite,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'Temperature',
-                vitalSign['temperature'] ?? 'N/A',
-                Icons.thermostat,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'Respiratory Rate',
-                vitalSign['respiratory_rate'] ?? 'N/A',
-                Icons.air,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'Oxygen Saturation',
-                vitalSign['oxygen_saturation'] ?? 'N/A',
-                Icons.opacity,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'Weight',
-                vitalSign['weight'] ?? 'N/A',
-                Icons.monitor_weight,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'Height',
-                vitalSign['height'] ?? 'N/A',
-                Icons.height,
-                notifier,
-              ),
-              _buildVitalSignDetail(
-                'BMI',
-                vitalSign['bmi'] ?? 'N/A',
-                Icons.calculate,
-                notifier,
-              ),
-            ],
+          // Vital signs in scrollable horizontal layout
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildVitalSignDetail(
+                  'Blood Pressure',
+                  vitalSign['blood_pressure'] ?? 'N/A',
+                  Icons.monitor_heart,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'Heart Rate',
+                  vitalSign['heart_rate'] ?? 'N/A',
+                  Icons.favorite,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'Temperature',
+                  vitalSign['temperature'] ?? 'N/A',
+                  Icons.thermostat,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'Respiratory Rate',
+                  vitalSign['respiratory_rate'] ?? 'N/A',
+                  Icons.air,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'Oxygen Saturation',
+                  vitalSign['oxygen_saturation'] ?? 'N/A',
+                  Icons.opacity,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'Weight',
+                  vitalSign['weight'] ?? 'N/A',
+                  Icons.monitor_weight,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'Height',
+                  vitalSign['height'] ?? 'N/A',
+                  Icons.height,
+                  notifier,
+                ),
+                const SizedBox(width: 20),
+                _buildVitalSignDetail(
+                  'BMI',
+                  vitalSign['bmi'] ?? 'N/A',
+                  Icons.calculate,
+                  notifier,
+                ),
+              ],
+            ),
           ),
 
           // Notes if available
-          if (vitalSign['notes'] != null && vitalSign['notes'].toString().isNotEmpty) ...[
+          if (vitalSign['notes'] != null &&
+              vitalSign['notes'].toString().isNotEmpty) ...[
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -656,12 +674,12 @@ class PatientDetailDialog extends StatelessWidget {
   }
 
   Widget _buildVitalSignDetail(
-      String label,
-      String value,
-      IconData icon,
-      ColourNotifier notifier,
-      ) {
-    return Container(
+    String label,
+    String value,
+    IconData icon,
+    ColourNotifier notifier,
+  ) {
+    return SizedBox(
       width: 100,
       child: Row(
         children: [
@@ -704,12 +722,11 @@ class PatientDetailDialog extends StatelessWidget {
 
   Widget _buildMedicalRecordsTab(
       BuildContext context, ColourNotifier notifier) {
-    // Sort documents by date if available
     final documents = [...patient.documents];
     documents.sort((a, b) {
       final aDate = a['created_at']?.toString() ?? '';
       final bDate = b['created_at']?.toString() ?? '';
-      return bDate.compareTo(aDate); // Newest first
+      return bDate.compareTo(aDate);
     });
 
     return SingleChildScrollView(
@@ -717,50 +734,87 @@ class PatientDetailDialog extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Medical statistics summary
           SectionHeader(
             title: 'Medical Summary',
             fontSize: 18,
           ),
           const SizedBox(height: 16),
-
-          Row(
-            children: [
-              _buildStatCard(
-                context: context,
-                title: 'Appointments',
-                value: (patient.stats['appointments_count'] ?? 0).toString(),
-                icon: Icons.calendar_today,
-                notifier: notifier,
-              ),
-              const SizedBox(width: 16),
-              _buildStatCard(
-                context: context,
-                title: 'Documents',
-                value: (patient.stats['documents_count'] ?? 0).toString(),
-                icon: Icons.description,
-                notifier: notifier,
-              ),
-              const SizedBox(width: 16),
-              _buildStatCard(
-                context: context,
-                title: 'Vital Signs',
-                value: patient.vitalSignsCount.toString(),
-                icon: Icons.favorite,
-                notifier: notifier,
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 600) {
+                return Column(
+                  children: [
+                    _buildStatCard(
+                      context: context,
+                      title: 'Appointments',
+                      value:
+                          (patient.stats['appointments_count'] ?? 0).toString(),
+                      icon: Icons.calendar_today,
+                      notifier: notifier,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStatCard(
+                      context: context,
+                      title: 'Documents',
+                      value: (patient.stats['documents_count'] ?? 0).toString(),
+                      icon: Icons.description,
+                      notifier: notifier,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStatCard(
+                      context: context,
+                      title: 'Vital Signs',
+                      value: patient.vitalSignsCount.toString(),
+                      icon: Icons.favorite,
+                      notifier: notifier,
+                    ),
+                  ],
+                );
+              } else {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        title: 'Appointments',
+                        value: (patient.stats['appointments_count'] ?? 0)
+                            .toString(),
+                        icon: Icons.calendar_today,
+                        notifier: notifier,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        title: 'Documents',
+                        value:
+                            (patient.stats['documents_count'] ?? 0).toString(),
+                        icon: Icons.description,
+                        notifier: notifier,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        title: 'Vital Signs',
+                        value: patient.vitalSignsCount.toString(),
+                        icon: Icons.favorite,
+                        notifier: notifier,
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
-
           const SizedBox(height: 24),
-
-          // Medical documents
           SectionHeader(
             title: 'Medical Documents',
             fontSize: 18,
           ),
           const SizedBox(height: 16),
-
           if (documents.isEmpty)
             _buildEmptyState(
               context: context,
@@ -771,10 +825,7 @@ class PatientDetailDialog extends StatelessWidget {
           else
             ...documents
                 .map((doc) => _buildDocumentItem(context, doc, notifier)),
-
           const SizedBox(height: 24),
-
-          // Medical template info if present
           if (patient.template != null && patient.template!.isNotEmpty) ...[
             SectionHeader(
               title: 'Medical Information',
@@ -798,12 +849,11 @@ class PatientDetailDialog extends StatelessWidget {
   }
 
   Widget _buildAppointmentsTab(BuildContext context, ColourNotifier notifier) {
-    // Sort appointments by date if available
     final appointments = [...patient.appointments];
     appointments.sort((a, b) {
       final aDate = a['date']?.toString() ?? '';
       final bDate = b['date']?.toString() ?? '';
-      return bDate.compareTo(aDate); // Newest first
+      return bDate.compareTo(aDate);
     });
 
     return SingleChildScrollView(
@@ -838,29 +888,29 @@ class PatientDetailDialog extends StatelessWidget {
     required IconData icon,
     required ColourNotifier notifier,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: notifier.getIconColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: notifier.getIconColor.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: notifier.getIconColor,
-                size: 24,
-              ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: notifier.getIconColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: notifier.getIconColor.withOpacity(0.2),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(width: 16),
-            Column(
+            child: Icon(
+              icon,
+              color: notifier.getIconColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -880,8 +930,8 @@ class PatientDetailDialog extends StatelessWidget {
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -906,7 +956,6 @@ class PatientDetailDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
@@ -916,7 +965,6 @@ class PatientDetailDialog extends StatelessWidget {
                     color: notifier.getMainText,
                     fontSize: 16,
                   ),
-                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

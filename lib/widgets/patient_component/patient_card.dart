@@ -69,24 +69,18 @@ class PatientCard extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Patient info section
-                Flexible(
-                  child: _buildPatientInfo(notifier),
-                ),
+                _buildPatientInfo(notifier),
 
                 const SizedBox(height: 12),
 
                 // Vital signs section (if available)
                 if (patient.hasVitalSigns) ...[
-                  Flexible(
-                    child: _buildVitalSignsSection(notifier),
-                  ),
+                  _buildVitalSignsSection(notifier),
                   const SizedBox(height: 12),
                 ],
 
                 // Statistics section
-                Flexible(
-                  child: _buildStatsSection(notifier),
-                ),
+                _buildStatsSection(notifier),
 
                 const Spacer(),
 
@@ -178,7 +172,7 @@ class PatientCard extends StatelessWidget {
 
         const SizedBox(width: 16),
 
-        // Name and ID
+        // Name and ID - Fixed: Removed nested Expanded/Flexible
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,6 +380,7 @@ class PatientCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
+          // Fixed: Removed nested Flexible widgets within Row
           Row(
             children: [
               _buildVitalChip(
@@ -394,6 +389,7 @@ class PatientCard extends StatelessWidget {
                 Icons.monitor_heart,
                 Colors.red,
                 notifier,
+                flex: 1,
               ),
               const SizedBox(width: 2),
               _buildVitalChip(
@@ -402,6 +398,7 @@ class PatientCard extends StatelessWidget {
                 Icons.favorite,
                 Colors.pink,
                 notifier,
+                flex: 1,
               ),
               const SizedBox(width: 2),
               _buildVitalChip(
@@ -410,6 +407,7 @@ class PatientCard extends StatelessWidget {
                 Icons.thermostat,
                 Colors.orange,
                 notifier,
+                flex: 1,
               ),
             ],
           ),
@@ -427,6 +425,7 @@ class PatientCard extends StatelessWidget {
           Icons.calendar_today_outlined,
           Colors.blue,
           notifier,
+          flex: 1,
         ),
         const SizedBox(width: 4),
         _buildStatCard(
@@ -435,6 +434,7 @@ class PatientCard extends StatelessWidget {
           Icons.description_outlined,
           Colors.green,
           notifier,
+          flex: 1,
         ),
         const SizedBox(width: 4),
         _buildStatCard(
@@ -443,6 +443,7 @@ class PatientCard extends StatelessWidget {
           Icons.favorite_outline,
           Colors.red,
           notifier,
+          flex: 1,
         ),
       ],
     );
@@ -578,14 +579,16 @@ class PatientCard extends StatelessWidget {
       String value,
       IconData icon,
       Color color,
-      ColourNotifier notifier,
-      ) {
-    return Flexible(
+      ColourNotifier notifier, {
+        int flex = 1,
+      }) {
+    return Expanded(
+      flex: flex,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Column(
@@ -593,14 +596,14 @@ class PatientCard extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 8,
+              size: 10,
               color: color,
             ),
-            const SizedBox(height: 1),
+            const SizedBox(height: 2),
             Text(
               value,
               style: TextStyle(
-                fontSize: 7,
+                fontSize: 8,
                 fontWeight: FontWeight.bold,
                 color: notifier.getMainText,
               ),
@@ -611,10 +614,11 @@ class PatientCard extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 6,
+                fontSize: 7,
                 color: color,
                 fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -627,14 +631,16 @@ class PatientCard extends StatelessWidget {
       String value,
       IconData icon,
       Color color,
-      ColourNotifier notifier,
-      ) {
-    return Flexible(
+      ColourNotifier notifier, {
+        int flex = 1,
+      }) {
+    return Expanded(
+      flex: flex,
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: color.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withOpacity(0.1)),
         ),
         child: Column(
@@ -643,13 +649,13 @@ class PatientCard extends StatelessWidget {
             Icon(
               icon,
               color: color,
-              size: 12,
+              size: 14,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: notifier.getMainText,
               ),
@@ -658,7 +664,7 @@ class PatientCard extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 8,
+                fontSize: 9,
                 color: notifier.getMaingey,
                 fontWeight: FontWeight.w500,
               ),
