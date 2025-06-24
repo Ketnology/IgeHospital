@@ -10,6 +10,8 @@ import 'package:ige_hospital/widgets/nurse_components/edit_nurse_dialog.dart';
 import 'package:ige_hospital/widgets/nurse_components/nurse_card.dart';
 import 'package:ige_hospital/widgets/nurse_components/nurse_detail_dialog.dart';
 import 'package:ige_hospital/widgets/nurse_components/nurse_filters.dart';
+import 'package:ige_hospital/widgets/permission_wrapper.dart';
+import 'package:ige_hospital/widgets/permission_button.dart';
 import 'package:provider/provider.dart';
 
 class NursesPage extends StatefulWidget {
@@ -27,7 +29,6 @@ class _NursesPageState extends State<NursesPage> {
   @override
   void initState() {
     super.initState();
-    // Initialize and find or create the NurseController
     _initNurseController();
   }
 
@@ -35,7 +36,6 @@ class _NursesPageState extends State<NursesPage> {
     try {
       _nurseController = Get.find<NurseController>();
     } catch (e) {
-      // If not found, create a new one
       _nurseController = Get.put(NurseController());
     }
   }
@@ -56,7 +56,8 @@ class _NursesPageState extends State<NursesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const CommonTitle(title: 'Nurses', path: "Hospital Staff"),
+            // Updated title
+            const CommonTitle(title: 'Receptionists', path: "Hospital Staff"),
             _buildPageTopBar(context, notifier),
             if (_showFilters)
               NurseFilters(
@@ -68,16 +69,19 @@ class _NursesPageState extends State<NursesPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: notifier.getIconColor,
-        onPressed: () {
-          setState(() {
-            _showFilters = !_showFilters;
-          });
-        },
-        child: Icon(
-          _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
-          color: notifier.getBgColor,
+      floatingActionButton: PermissionWrapper(
+        permission: 'create_nurses',
+        child: FloatingActionButton(
+          backgroundColor: notifier.getIconColor,
+          onPressed: () {
+            setState(() {
+              _showFilters = !_showFilters;
+            });
+          },
+          child: Icon(
+            _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+            color: notifier.getBgColor,
+          ),
         ),
       ),
     );
@@ -89,7 +93,6 @@ class _NursesPageState extends State<NursesPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Toggle Filters Button
           IconButton(
             onPressed: () {
               setState(() {
@@ -103,36 +106,38 @@ class _NursesPageState extends State<NursesPage> {
             tooltip: _showFilters ? 'Hide filters' : 'Show filters',
           ),
 
-          // Add Nurse Button
-          ElevatedButton(
-            onPressed: () {
-              _showAddNurseDialog(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: appMainColor,
-              fixedSize: const Size.fromHeight(40),
-              elevation: 0,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  "assets/plus-circle.svg",
-                  color: Colors.white,
-                  width: 18,
-                  height: 18,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "Add Nurse",
-                  style: TextStyle(
+          // Add Receptionist Button - Only visible with permission
+          PermissionButton(
+            permission: 'create_nurses',
+            onPressed: () => _showAddNurseDialog(context),
+            child: ElevatedButton(
+              onPressed: null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appMainColor,
+                fixedSize: const Size.fromHeight(40),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    "assets/plus-circle.svg",
                     color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w200,
+                    width: 18,
+                    height: 18,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  const Text(
+                    "Add Receptionist", // Updated from "Add Nurse"
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w200,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -157,17 +162,22 @@ class _NursesPageState extends State<NursesPage> {
                 Icon(Icons.search_off, size: 64, color: notifier.getMaingey),
                 const SizedBox(height: 16),
                 Text(
-                  'No nurses found',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: notifier.getMainText,
-                  ),
+                  'No receptionists found', // Updated text
+                  style: TextStyle(fontSize: 18, color: notifier.getMainText),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Try adjusting your filters or add a new nurse',
-                  style: TextStyle(
-                    color: notifier.getMaingey,
+                  'Try adjusting your filters or add a new receptionist', // Updated text
+                  style: TextStyle(color: notifier.getMaingey),
+                ),
+                const SizedBox(height: 16),
+                PermissionButton(
+                  permission: 'create_nurses',
+                  onPressed: () => _showAddNurseDialog(context),
+                  child: ElevatedButton(
+                    onPressed: null,
+                    style: ElevatedButton.styleFrom(backgroundColor: appMainColor),
+                    child: const Text('Add Receptionist', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -214,7 +224,6 @@ class _NursesPageState extends State<NursesPage> {
       context: context,
       builder: (context) => AddNurseDialog(nurseController: _nurseController),
     ).then((_) {
-      // Refresh data after dialog is closed
       _nurseController.loadNurses();
     });
   }
@@ -229,7 +238,6 @@ class _NursesPageState extends State<NursesPage> {
     ).then((_) {
       if (mounted) {
         _nurseController.loadNurses();
-        // Trigger UI update
         setState(() {});
       }
     });
@@ -242,7 +250,7 @@ class _NursesPageState extends State<NursesPage> {
       builder: (context) => AlertDialog(
         backgroundColor: notifier.getContainer,
         title: Text(
-          'Delete Nurse',
+          'Delete Receptionist', // Updated title
           style: TextStyle(color: notifier.getMainText),
         ),
         content: Text(
@@ -257,23 +265,27 @@ class _NursesPageState extends State<NursesPage> {
               style: TextStyle(color: notifier.getMainText),
             ),
           ),
-          ElevatedButton(
+          PermissionButton(
+            permission: 'delete_nurses',
             onPressed: () {
               _nurseController.deleteNurse(nurse.id);
               Navigator.pop(context);
               Get.snackbar(
                 'Success',
-                'Nurse deleted successfully',
+                'Receptionist deleted successfully', // Updated message
                 snackPosition: SnackPosition.BOTTOM,
                 backgroundColor: Colors.green,
                 colorText: Colors.white,
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            child: ElevatedButton(
+              onPressed: null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
             ),
-            child: const Text('Delete'),
           ),
         ],
       ),

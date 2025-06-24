@@ -27,7 +27,7 @@ class AuthController extends GetxController {
     if (authService.currentUser.value != null) {
       userName.value = authService.getUserName();
       userEmail.value = authService.getUserEmail();
-      userRole.value = authService.getUserType();
+      userRole.value = authService.getUserType(); // This returns the friendly name
     } else {
       userName.value = "Guest User";
       userEmail.value = "";
@@ -39,7 +39,10 @@ class AuthController extends GetxController {
     if (_validateInputs()) {
       isLoading.value = true;
       // await authService.login(emailController.text, passwordController.text);
-      await authService.login('igehospital@gmail.com', 'password');
+      // await authService.login('igehospital@gmail.com', 'password');
+      // await authService.login('111@www.ss', 'password'); // nurse
+      await authService.login('aaa1@bb.ss', 'password'); // doctor
+      // await authService.login('patient@gmail.com', 'password');
       isLoading.value = false;
     }
   }

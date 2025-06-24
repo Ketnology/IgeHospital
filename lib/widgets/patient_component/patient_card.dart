@@ -8,15 +8,15 @@ import 'package:provider/provider.dart';
 class PatientCard extends StatelessWidget {
   final PatientModel patient;
   final VoidCallback onView;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const PatientCard({
     super.key,
     required this.patient,
     required this.onView,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -244,10 +244,10 @@ class PatientCard extends StatelessWidget {
                   onView();
                   break;
                 case 'edit':
-                  onEdit();
+                  onEdit?.call();
                   break;
                 case 'delete':
-                  onDelete();
+                  onDelete?.call();
                   break;
               }
             },
@@ -262,26 +262,28 @@ class PatientCard extends StatelessWidget {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, size: 16, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    Text('Edit Patient', style: TextStyle(color: notifier.getMainText)),
-                  ],
+              if (onEdit != null)
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 16, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Text('Edit Patient', style: TextStyle(color: notifier.getMainText)),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, size: 16, color: Colors.red),
-                    const SizedBox(width: 8),
-                    Text('Delete', style: TextStyle(color: notifier.getMainText)),
-                  ],
+              if (onDelete != null)
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, size: 16, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: notifier.getMainText)),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -388,7 +390,6 @@ class PatientCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Fixed: Completely remove nested Flexible/Expanded conflicts
           Row(
             children: [
               _buildVitalChip(
@@ -470,34 +471,38 @@ class PatientCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 6),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        if (onEdit != null) ...[
+          const SizedBox(width: 6),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            ),
+            child: IconButton(
+              onPressed: onEdit,
+              icon: Icon(Icons.edit, color: Colors.blue, size: 16),
+              tooltip: 'Edit',
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
           ),
-          child: IconButton(
-            onPressed: onEdit,
-            icon: Icon(Icons.edit, color: Colors.blue, size: 16),
-            tooltip: 'Edit',
-            padding: EdgeInsets.all(8),
-            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+        ],
+        if (onDelete != null) ...[
+          const SizedBox(width: 6),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.red.withOpacity(0.3)),
+            ),
+            child: IconButton(
+              onPressed: onDelete,
+              icon: Icon(Icons.delete, color: Colors.red, size: 16),
+              tooltip: 'Delete',
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
           ),
-        ),
-        const SizedBox(width: 6),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
-          ),
-          child: IconButton(
-            onPressed: onDelete,
-            icon: Icon(Icons.delete, color: Colors.red, size: 16),
-            tooltip: 'Delete',
-            padding: EdgeInsets.all(8),
-            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
-          ),
-        ),
+        ],
       ],
     );
   }
