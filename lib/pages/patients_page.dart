@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/patient_controller.dart';
 import 'package:ige_hospital/models/patient_model.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/provider/permission_service.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/patient_component/add_patient_dialog.dart';
 import 'package:ige_hospital/widgets/patient_component/edit_patient_dialog.dart';
@@ -11,6 +12,8 @@ import 'package:ige_hospital/widgets/patient_component/patient_detail_dialog.dar
 import 'package:ige_hospital/widgets/patient_component/patient_filters.dart';
 import 'package:ige_hospital/widgets/patient_component/patient_pagination.dart';
 import 'package:ige_hospital/widgets/patient_component/patient_card.dart';
+import 'package:ige_hospital/widgets/permission_wrapper.dart';
+import 'package:ige_hospital/widgets/permission_button.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:provider/provider.dart';
 
@@ -24,6 +27,7 @@ class PatientsPage extends StatefulWidget {
 class _PatientsPageState extends State<PatientsPage> {
   late PatientController controller;
   final TextEditingController searchController = TextEditingController();
+  final PermissionService permissionService = Get.find<PermissionService>();
   bool _showFilters = false;
 
   @override
@@ -71,7 +75,7 @@ class _PatientsPageState extends State<PatientsPage> {
         patient: patient,
       ),
     ).then((result) {
-      if (result == 'edit') {
+      if (result == 'edit' && permissionService.hasPermission('edit_patients')) {
         _showEditPatientDialog(patient);
       }
     });
@@ -100,16 +104,19 @@ class _PatientsPageState extends State<PatientsPage> {
               style: TextStyle(color: notifier.getMainText),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              controller.deletePatient(patient.id);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+          PermissionWrapper(
+            permission: 'delete_patients',
+            child: ElevatedButton(
+              onPressed: () {
+                controller.deletePatient(patient.id);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
             ),
-            child: const Text('Delete'),
           ),
         ],
       ),
@@ -139,16 +146,19 @@ class _PatientsPageState extends State<PatientsPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: notifier.getIconColor,
-        onPressed: () {
-          setState(() {
-            _showFilters = !_showFilters;
-          });
-        },
-        child: Icon(
-          _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
-          color: notifier.getBgColor,
+      floatingActionButton: PermissionWrapper(
+        permission: 'create_patients',
+        child: FloatingActionButton(
+          backgroundColor: notifier.getIconColor,
+          onPressed: () {
+            setState(() {
+              _showFilters = !_showFilters;
+            });
+          },
+          child: Icon(
+            _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+            color: notifier.getBgColor,
+          ),
         ),
       ),
     );
@@ -209,34 +219,38 @@ class _PatientsPageState extends State<PatientsPage> {
             ],
           ),
 
-          // Add Patient Button
-          ElevatedButton(
+          // Add Patient Button - Only show if user can create patients
+          PermissionButton(
+            permission: 'create_patients',
             onPressed: _showAddPatientDialog,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: appMainColor,
-              fixedSize: const Size.fromHeight(40),
-              elevation: 0,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  "assets/plus-circle.svg",
-                  color: Colors.white,
-                  width: 18,
-                  height: 18,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "Add Patient",
-                  style: TextStyle(
+            child: ElevatedButton(
+              onPressed: null, // Will be overridden by PermissionButton
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appMainColor,
+                fixedSize: const Size.fromHeight(40),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    "assets/plus-circle.svg",
                     color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w200,
+                    width: 18,
+                    height: 18,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  const Text(
+                    "Add Patient",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w200,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -440,15 +454,25 @@ class _PatientsPageState extends State<PatientsPage> {
           itemCount: patients.length,
           itemBuilder: (context, index) {
             final patient = patients[index];
-            return PatientCard(
-              patient: patient,
-              onView: () => _showPatientDetail(patient),
-              onEdit: () => _showEditPatientDialog(patient),
-              onDelete: () => _showDeleteConfirmation(patient),
-            );
+            return _buildPatientCardWithPermissions(patient);
           },
         );
       },
+    );
+  }
+
+  Widget _buildPatientCardWithPermissions(PatientModel patient) {
+    final notifier = Provider.of<ColourNotifier>(context, listen: false);
+
+    return PatientCard(
+      patient: patient,
+      onView: () => _showPatientDetail(patient),
+      onEdit: permissionService.hasPermission('edit_patients')
+          ? () => _showEditPatientDialog(patient)
+          : null,
+      onDelete: permissionService.hasPermission('delete_patients')
+          ? () => _showDeleteConfirmation(patient)
+          : null,
     );
   }
 
@@ -529,25 +553,35 @@ class _PatientsPageState extends State<PatientsPage> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: controller.searchQuery.value.isNotEmpty
-                ? () {
-              searchController.clear();
-              controller.resetFilters();
-            }
-                : _showAddPatientDialog,
-            icon: Icon(controller.searchQuery.value.isNotEmpty
-                ? Icons.clear
-                : Icons.person_add),
-            label: Text(controller.searchQuery.value.isNotEmpty
-                ? 'Clear Filters'
-                : 'Add Patient'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: notifier.getIconColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          if (controller.searchQuery.value.isNotEmpty)
+            ElevatedButton.icon(
+              onPressed: () {
+                searchController.clear();
+                controller.resetFilters();
+              },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear Filters'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: notifier.getIconColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              ),
+            )
+          else
+            PermissionButton(
+              permission: 'create_patients',
+              onPressed: _showAddPatientDialog,
+              child: ElevatedButton.icon(
+                onPressed: null,
+                icon: const Icon(Icons.person_add),
+                label: const Text('Add Patient'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: notifier.getIconColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );

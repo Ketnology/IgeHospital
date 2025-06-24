@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:ige_hospital/constants/api_endpoints.dart';
+import 'package:ige_hospital/constants/user_roles.dart';
 import 'package:ige_hospital/routes.dart';
 import 'package:ige_hospital/utils/snack_bar_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,7 +38,7 @@ class UserModel {
       phone: json['phone'] ?? '',
       designation: json['designation'] ?? '',
       gender: json['gender'] ?? '',
-      userType: json['user_type'] ?? '',
+      userType: UserRoles.normalizeRole(json['user_type'] ?? ''), // Normalize user type
       profileImage: null,
       additionalData: json,
     );
@@ -102,6 +103,7 @@ class AuthService extends GetxService {
           UserModel? user;
           if (data["data"]["user"] != null) {
             user = UserModel.fromJson(data["data"]["user"]);
+            Get.log("User logged in as: ${user.userType}"); // Debug log
           }
 
           await _saveSession(accessToken, tokenExpiration, user);
@@ -177,7 +179,7 @@ class AuthService extends GetxService {
       // Convert Unix timestamp (seconds since epoch) to DateTime
       final int timestamp = int.parse(tokenExpiration.value);
       final expirationDate =
-          DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
       if (now.isAfter(expirationDate)) {
@@ -188,7 +190,7 @@ class AuthService extends GetxService {
       } else {
         // If token expires in less than 10 minutes, try to refresh it
         final tenMinutesBeforeExpiry =
-            expirationDate.subtract(const Duration(minutes: 10));
+        expirationDate.subtract(const Duration(minutes: 10));
         if (now.isAfter(tenMinutesBeforeExpiry)) {
           Get.log("Token expiring soon. Refreshing...");
           validateToken();
@@ -207,7 +209,7 @@ class AuthService extends GetxService {
       // Convert Unix timestamp (seconds since epoch) to DateTime
       final int timestamp = int.parse(tokenExpiration.value);
       final expirationDate =
-          DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
       final now = DateTime.now();
 
       // Token is valid if it has not expired
@@ -253,6 +255,7 @@ class AuthService extends GetxService {
       try {
         final userData = jsonDecode(userJson);
         currentUser.value = UserModel.fromJson(userData);
+        Get.log("Loaded user: ${currentUser.value?.userType}"); // Debug log
       } catch (e) {
         Get.log("Error parsing user data: $e");
       }
@@ -268,6 +271,7 @@ class AuthService extends GetxService {
     if (user != null) {
       await prefs.setString("user", jsonEncode(user.toJson()));
       currentUser.value = user;
+      Get.log("Saved user session: ${user.userType}"); // Debug log
     }
 
     token.value = accessToken;
@@ -296,6 +300,23 @@ class AuthService extends GetxService {
   }
 
   String getUserType() {
+    final userType = currentUser.value?.userType ?? "";
+    // Return user-friendly names
+    switch (userType) {
+      case 'admin':
+        return 'Administrator';
+      case 'doctor':
+        return 'Doctor';
+      case 'receptionist':
+        return 'Receptionist';
+      case 'patient':
+        return 'Patient';
+      default:
+        return userType.isNotEmpty ? userType.capitalize ?? userType : 'User';
+    }
+  }
+
+  String getRawUserType() {
     return currentUser.value?.userType ?? "";
   }
 }

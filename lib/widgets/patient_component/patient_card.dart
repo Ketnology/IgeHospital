@@ -8,15 +8,15 @@ import 'package:provider/provider.dart';
 class PatientCard extends StatelessWidget {
   final PatientModel patient;
   final VoidCallback onView;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const PatientCard({
     super.key,
     required this.patient,
     required this.onView,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -60,17 +60,28 @@ class PatientCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(16),
+            child: _buildCardLayout(notifier),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardLayout(ColourNotifier notifier) {
+    return Column(
+      children: [
+        // Scrollable content area
+        Expanded(
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header with profile and status
                 _buildHeader(notifier),
-
                 const SizedBox(height: 12),
 
                 // Patient info section
                 _buildPatientInfo(notifier),
-
                 const SizedBox(height: 12),
 
                 // Vital signs section (if available)
@@ -81,16 +92,15 @@ class PatientCard extends StatelessWidget {
 
                 // Statistics section
                 _buildStatsSection(notifier),
-
-                const Spacer(),
-
-                // Action buttons
-                _buildActionButtons(notifier),
               ],
             ),
           ),
         ),
-      ),
+
+        // Fixed action buttons at bottom
+        const SizedBox(height: 12),
+        _buildActionButtons(notifier),
+      ],
     );
   }
 
@@ -172,7 +182,7 @@ class PatientCard extends StatelessWidget {
 
         const SizedBox(width: 16),
 
-        // Name and ID - Fixed: Removed nested Expanded/Flexible
+        // Name and ID
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,10 +244,10 @@ class PatientCard extends StatelessWidget {
                   onView();
                   break;
                 case 'edit':
-                  onEdit();
+                  onEdit?.call();
                   break;
                 case 'delete':
-                  onDelete();
+                  onDelete?.call();
                   break;
               }
             },
@@ -252,26 +262,28 @@ class PatientCard extends StatelessWidget {
                   ],
                 ),
               ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, size: 16, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    Text('Edit Patient', style: TextStyle(color: notifier.getMainText)),
-                  ],
+              if (onEdit != null)
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 16, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Text('Edit Patient', style: TextStyle(color: notifier.getMainText)),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, size: 16, color: Colors.red),
-                    const SizedBox(width: 8),
-                    Text('Delete', style: TextStyle(color: notifier.getMainText)),
-                  ],
+              if (onDelete != null)
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, size: 16, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: notifier.getMainText)),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -288,7 +300,6 @@ class PatientCard extends StatelessWidget {
         border: Border.all(color: notifier.getBorderColor.withOpacity(0.5)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           _buildInfoRow(
             icon: Icons.email_outlined,
@@ -342,7 +353,6 @@ class PatientCard extends StatelessWidget {
         border: Border.all(color: Colors.red.withOpacity(0.1)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -380,7 +390,6 @@ class PatientCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Fixed: Removed nested Flexible widgets within Row
           Row(
             children: [
               _buildVitalChip(
@@ -389,7 +398,6 @@ class PatientCard extends StatelessWidget {
                 Icons.monitor_heart,
                 Colors.red,
                 notifier,
-                flex: 1,
               ),
               const SizedBox(width: 2),
               _buildVitalChip(
@@ -398,7 +406,6 @@ class PatientCard extends StatelessWidget {
                 Icons.favorite,
                 Colors.pink,
                 notifier,
-                flex: 1,
               ),
               const SizedBox(width: 2),
               _buildVitalChip(
@@ -407,7 +414,6 @@ class PatientCard extends StatelessWidget {
                 Icons.thermostat,
                 Colors.orange,
                 notifier,
-                flex: 1,
               ),
             ],
           ),
@@ -425,7 +431,6 @@ class PatientCard extends StatelessWidget {
           Icons.calendar_today_outlined,
           Colors.blue,
           notifier,
-          flex: 1,
         ),
         const SizedBox(width: 4),
         _buildStatCard(
@@ -434,7 +439,6 @@ class PatientCard extends StatelessWidget {
           Icons.description_outlined,
           Colors.green,
           notifier,
-          flex: 1,
         ),
         const SizedBox(width: 4),
         _buildStatCard(
@@ -443,7 +447,6 @@ class PatientCard extends StatelessWidget {
           Icons.favorite_outline,
           Colors.red,
           notifier,
-          flex: 1,
         ),
       ],
     );
@@ -468,34 +471,38 @@ class PatientCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 6),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        if (onEdit != null) ...[
+          const SizedBox(width: 6),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            ),
+            child: IconButton(
+              onPressed: onEdit,
+              icon: Icon(Icons.edit, color: Colors.blue, size: 16),
+              tooltip: 'Edit',
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
           ),
-          child: IconButton(
-            onPressed: onEdit,
-            icon: Icon(Icons.edit, color: Colors.blue, size: 16),
-            tooltip: 'Edit',
-            padding: EdgeInsets.all(8),
-            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+        ],
+        if (onDelete != null) ...[
+          const SizedBox(width: 6),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.red.withOpacity(0.3)),
+            ),
+            child: IconButton(
+              onPressed: onDelete,
+              icon: Icon(Icons.delete, color: Colors.red, size: 16),
+              tooltip: 'Delete',
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
           ),
-        ),
-        const SizedBox(width: 6),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
-          ),
-          child: IconButton(
-            onPressed: onDelete,
-            icon: Icon(Icons.delete, color: Colors.red, size: 16),
-            tooltip: 'Delete',
-            padding: EdgeInsets.all(8),
-            constraints: BoxConstraints(minWidth: 32, minHeight: 32),
-          ),
-        ),
+        ],
       ],
     );
   }
@@ -579,11 +586,9 @@ class PatientCard extends StatelessWidget {
       String value,
       IconData icon,
       Color color,
-      ColourNotifier notifier, {
-        int flex = 1,
-      }) {
+      ColourNotifier notifier,
+      ) {
     return Expanded(
-      flex: flex,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         decoration: BoxDecoration(
@@ -592,7 +597,6 @@ class PatientCard extends StatelessWidget {
           border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
@@ -631,11 +635,9 @@ class PatientCard extends StatelessWidget {
       String value,
       IconData icon,
       Color color,
-      ColourNotifier notifier, {
-        int flex = 1,
-      }) {
+      ColourNotifier notifier,
+      ) {
     return Expanded(
-      flex: flex,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -644,7 +646,6 @@ class PatientCard extends StatelessWidget {
           border: Border.all(color: color.withOpacity(0.1)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,

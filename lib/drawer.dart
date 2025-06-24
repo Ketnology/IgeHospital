@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/provider/permission_service.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/widgets/permission_wrapper.dart';
 import 'package:provider/provider.dart';
 
 class DrawerCode extends StatefulWidget {
@@ -16,6 +18,7 @@ class DrawerCode extends StatefulWidget {
 class _DrawerCodeState extends State<DrawerCode> {
   AppConst obj = AppConst();
   final AppConst controller = Get.put(AppConst());
+  final PermissionService permissionService = Get.find<PermissionService>();
 
   final screenWidth = Get.width;
   bool isPresent = false;
@@ -48,7 +51,6 @@ class _DrawerCodeState extends State<DrawerCode> {
                       bottom: isPresent ? 10 : 12),
                   child: InkWell(
                     onTap: () {
-                      // controller.changePage(0);
                       Get.back();
                     },
                     child: Row(
@@ -57,11 +59,8 @@ class _DrawerCodeState extends State<DrawerCode> {
                         SvgPicture.asset(
                           "assets/app-logo.svg",
                           height: 48,
-                          // width: 48,
                         ),
-                        const SizedBox(
-                          width: 10,
-                        ),
+                        const SizedBox(width: 10),
                       ],
                     ),
                   ),
@@ -75,272 +74,189 @@ class _DrawerCodeState extends State<DrawerCode> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              height: isPresent ? 10 : 8,
+                            SizedBox(height: isPresent ? 10 : 8),
+
+                            // Overview - Available to all logged-in users
+                            PermissionWrapper(
+                              permission: 'view_dashboard',
+                              child: _buildSingleTile(
+                                  header: "Overview",
+                                  iconPath: "assets/chart-bar-vertical.svg",
+                                  index: '',
+                                  onTap: () {
+                                    controller.changePage('');
+                                    Get.back();
+                                  }
+                              ),
                             ),
-                            _buildSingleTile(
-                                header: "Overview",
-                                iconPath: "assets/chart-bar-vertical.svg",
-                                index: '',
-                                onTap: () {
-                                  controller.changePage('');
-                                  Get.back();
-                                }),
-                            _buildDivider(title: 'Hospital Operations'),
-                            _buildSingleTile(
-                                header: "Appointments",
-                                iconPath: "assets/calendar.svg",
-                                index: 'appointments',
-                                onTap: () {
-                                  controller.changePage('appointments');
-                                  Get.back();
-                                }),
-                            _buildSingleTile(
-                                header: "Patient Records",
-                                iconPath: "assets/file-list.svg",
-                                index: 'patients',
-                                onTap: () {
-                                  controller.changePage('patients');
-                                  Get.back();
-                                }),
-                            _buildSingleTile(
-                                header: "Doctors",
-                                iconPath: "assets/users33.svg",
-                                index: 'doctors',
-                                onTap: () {
-                                  controller.changePage('doctors');
-                                  Get.back();
-                                }),
-                            _buildSingleTile(
-                                header: "Nurses",
-                                iconPath: "assets/chat-info.svg",
-                                index: 'nurses',
-                                onTap: () {
-                                  controller.changePage('nurses');
-                                  Get.back();
-                                }),
-                            _buildDivider(title: 'Medical Services'),
-                            _buildSingleTile(
-                                header: "Live Consultations",
-                                iconPath: "assets/video.svg",
-                                index: 'live-consultations',
-                                onTap: () {
-                                  controller.changePage('live-consultations');
-                                  Get.back();
-                                }),
-                            _buildDivider(title: 'Finance & Accounting'),
-                            _buildSingleTile(
-                                header: "Accounting",
-                                iconPath: "assets/hand-holding-dollar.svg",
-                                index: 'accounting',
-                                onTap: () {
-                                  controller.changePage('accounting');
-                                  Get.back();
-                                }),
-                            // _buildSingleTile(
-                            //     header: "Hospital Stay",
-                            //     iconPath: "assets/home.svg",
-                            //     index: 'in-patient',
-                            //     onTap: () {
-                            //       // controller.changePage('in-patient');
-                            //       Get.back();
-                            //     }),
-                            // _buildDivider(title: 'Clinical Documentation'),
-                            // _buildSingleTile(
-                            //     header: "Prescriptions",
-                            //     iconPath: "assets/clipboard-check.svg",
-                            //     index: 'prescriptions',
-                            //     onTap: () {
-                            //       // controller.changePage(12);
-                            //       Get.back();
-                            //     }),
-                            // _buildSingleTile(
-                            //     header: "Reports",
-                            //     iconPath: "assets/file-text.svg",
-                            //     index: 'reports',
-                            //     onTap: () {
-                            //       // controller.changePage(12);
-                            //       Get.back();
-                            //     }),
-                            // _buildDivider(title: 'Treatment'),
-                            // _buildSingleTile(
-                            //     header: "Procedures",
-                            //     iconPath: "assets/settings.svg",
-                            //     index: 'procedures',
-                            //     onTap: () {
-                            //       // controller.changePage(12);
-                            //       Get.back();
-                            //     }),
-                            // _buildSingleTile(
-                            //     header: "Surgery",
-                            //     iconPath: "assets/grid-web-5.svg",
-                            //     index: 'surgery',
-                            //     onTap: () {
-                            //       // controller.changePage(12);
-                            //       Get.back();
-                            //     }),
-                            _buildDivider(title: 'Updates & Support'),
+
+                            // Hospital Operations Section
+                            if (permissionService.hasAnyPermission([
+                              'view_appointments',
+                              'view_own_appointments',
+                              'view_patients',
+                              'view_doctors',
+                              'view_nurses'
+                            ]))
+                              _buildDivider(title: 'Hospital Operations'),
+
+                            PermissionWrapper(
+                              anyOf: ['view_appointments', 'view_own_appointments'],
+                              child: _buildSingleTile(
+                                  header: "Appointments",
+                                  iconPath: "assets/calendar.svg",
+                                  index: 'appointments',
+                                  onTap: () {
+                                    controller.changePage('appointments');
+                                    Get.back();
+                                  }
+                              ),
+                            ),
+
+                            PermissionWrapper(
+                              permission: 'view_patients',
+                              child: _buildSingleTile(
+                                  header: "Patient Records",
+                                  iconPath: "assets/file-list.svg",
+                                  index: 'patients',
+                                  onTap: () {
+                                    controller.changePage('patients');
+                                    Get.back();
+                                  }
+                              ),
+                            ),
+
+                            PermissionWrapper(
+                              permission: 'view_doctors',
+                              child: _buildSingleTile(
+                                  header: "Doctors",
+                                  iconPath: "assets/users33.svg",
+                                  index: 'doctors',
+                                  onTap: () {
+                                    controller.changePage('doctors');
+                                    Get.back();
+                                  }
+                              ),
+                            ),
+
+                            PermissionWrapper(
+                              permission: 'view_nurses',
+                              child: _buildSingleTile(
+                                  header: "Receptionists", // Updated from "Nurses"
+                                  iconPath: "assets/chat-info.svg",
+                                  index: 'nurses',
+                                  onTap: () {
+                                    controller.changePage('nurses');
+                                    Get.back();
+                                  }
+                              ),
+                            ),
+
+                            // Medical Services Section
+                            PermissionWrapper(
+                              permission: 'view_consultations',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDivider(title: 'Medical Services'),
+                                  _buildSingleTile(
+                                      header: "Live Consultations",
+                                      iconPath: "assets/video.svg",
+                                      index: 'live-consultations',
+                                      onTap: () {
+                                        controller.changePage('live-consultations');
+                                        Get.back();
+                                      }
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Finance & Accounting Section
+                            PermissionWrapper(
+                              permission: 'view_accounting',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDivider(title: 'Finance & Accounting'),
+                                  _buildSingleTile(
+                                      header: "Accounting",
+                                      iconPath: "assets/hand-holding-dollar.svg",
+                                      index: 'accounting',
+                                      onTap: () {
+                                        controller.changePage('accounting');
+                                        Get.back();
+                                      }
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // System Management (Admin only)
+                            PermissionWrapper(
+                              permission: 'view_admins',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDivider(title: 'System Management'),
+                                  _buildSingleTile(
+                                      header: "Administrators",
+                                      iconPath: "assets/users33.svg",
+                                      index: 'admins',
+                                      onTap: () {
+                                        controller.changePage('admins');
+                                        Get.back();
+                                      }
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Profile Section - Available to all users
+                            _buildDivider(title: 'Profile & Settings'),
+
+                            PermissionWrapper(
+                              permission: 'view_own_profile',
+                              child: _buildSingleTile(
+                                  header: 'My Profile',
+                                  iconPath: 'assets/user.svg',
+                                  index: 'profile',
+                                  onTap: () {
+                                    controller.changePage('profile');
+                                    Get.back();
+                                  }
+                              ),
+                            ),
+
+                            // Updates & Support Section
+                            _buildDivider(title: 'Support & Communication'),
+
                             _buildSingleTile(
                                 header: 'Notifications',
                                 iconPath: 'assets/bell-notification.svg',
                                 index: 'notifications',
                                 onTap: () {
-                                  // controller.changePage(38);
                                   Get.back();
-                                }),
-                            // _buildExpansionTilt(
-                            //     index: 8,
-                            //     children: Row(
-                            //       children: [
-                            //         Expanded(
-                            //           child: Column(children: [
-                            //             InkWell(
-                            //                 onTap: () {
-                            //                   // controller.changePage(37);
-                            //                   Get.back();
-                            //                 },
-                            //                 child: Row(
-                            //                   children: [
-                            //                     const SizedBox(
-                            //                       width: 16,
-                            //                     ),
-                            //                     _buildCommonDash(index: 0),
-                            //                     _buildCommonText(
-                            //                         title: 'Level 1.1',
-                            //                         index: 0),
-                            //                   ],
-                            //                 )),
-                            //             ListTileTheme(
-                            //               contentPadding:
-                            //                   const EdgeInsets.symmetric(
-                            //                       horizontal: 10),
-                            //               child: ExpansionTile(
-                            //                 title: Transform.translate(
-                            //                     offset: const Offset(-16, 0),
-                            //                     child: Text(
-                            //                       'Level 1.2',
-                            //                       style: TextStyle(
-                            //                           color:
-                            //                               notifier!.getMainText,
-                            //                           fontSize: 13),
-                            //                     )),
-                            //                 leading: Transform.translate(
-                            //                     offset: const Offset(5, 8),
-                            //                     child:
-                            //                         _buildCommonDash(index: 0)),
-                            //                 children: [
-                            //                   InkWell(
-                            //                       onTap: () {
-                            //                         // controller.changePage(37);
-                            //                         Get.back();
-                            //                       },
-                            //                       child: Row(
-                            //                         children: [
-                            //                           const SizedBox(
-                            //                             width: 40,
-                            //                           ),
-                            //                           _buildCommonDash(
-                            //                               index: 0),
-                            //                           _buildCommonText(
-                            //                               title: 'Level 2.1',
-                            //                               index: 0),
-                            //                         ],
-                            //                       )),
-                            //                   ListTileTheme(
-                            //                     contentPadding:
-                            //                         const EdgeInsets.only(
-                            //                             right: 10),
-                            //                     child: ExpansionTile(
-                            //                       title: Transform.translate(
-                            //                           offset:
-                            //                               const Offset(18, 0),
-                            //                           child: Text(
-                            //                             'Level 2.2',
-                            //                             style: TextStyle(
-                            //                                 color: notifier!
-                            //                                     .getMainText,
-                            //                                 fontSize: 13),
-                            //                           )),
-                            //                       leading: Transform.translate(
-                            //                           offset:
-                            //                               const Offset(40, 8),
-                            //                           child: _buildCommonDash(
-                            //                               index: 0)),
-                            //                       children: [
-                            //                         InkWell(
-                            //                             onTap: () {
-                            //                               // controller
-                            //                               //     .changePage(37);
-                            //                               Get.back();
-                            //                             },
-                            //                             child: Row(
-                            //                               children: [
-                            //                                 const SizedBox(
-                            //                                   width: 60,
-                            //                                 ),
-                            //                                 _buildCommonDash(
-                            //                                     index: 0),
-                            //                                 _buildCommonText(
-                            //                                     title:
-                            //                                         'Level 3.1',
-                            //                                     index: 0),
-                            //                               ],
-                            //                             )),
-                            //                         ListTileTheme(
-                            //                           contentPadding:
-                            //                               const EdgeInsets.only(
-                            //                                   right: 10),
-                            //                           child: ExpansionTile(
-                            //                             title:
-                            //                                 Transform.translate(
-                            //                                     offset:
-                            //                                         const Offset(
-                            //                                             36, 0),
-                            //                                     child: Text(
-                            //                                       'Level 3.2',
-                            //                                       style: TextStyle(
-                            //                                           color: notifier!
-                            //                                               .getMainText,
-                            //                                           fontSize:
-                            //                                               13),
-                            //                                     )),
-                            //                             leading: Transform.translate(
-                            //                                 offset:
-                            //                                     const Offset(
-                            //                                         60, 8),
-                            //                                 child:
-                            //                                     _buildCommonDash(
-                            //                                         index: 0)),
-                            //                           ),
-                            //                         ),
-                            //                       ],
-                            //                     ),
-                            //                   ),
-                            //                 ],
-                            //               ),
-                            //             ),
-                            //           ]),
-                            //         ),
-                            //       ],
-                            //     ),
-                            //     header: 'Menu Level',
-                            //     iconPath: 'assets/more-horizontal-circle.svg'),
+                                }
+                            ),
+
                             _buildSingleTile(
                                 header: 'Staff Communication',
                                 iconPath: 'assets/chats.svg',
                                 index: 'chat',
                                 onTap: () {
-                                  // controller.changePage(44);
                                   Get.back();
-                                }),
+                                }
+                            ),
+
                             _buildSingleTile(
                                 header: 'Feedback',
                                 iconPath: 'assets/chat-exclamation.svg',
                                 index: 'support',
                                 onTap: () {
-                                  // controller.changePage(45);
                                   Get.back();
-                                }),
+                                }
+                            ),
                           ],
                         ),
                       ),
@@ -355,36 +271,37 @@ class _DrawerCodeState extends State<DrawerCode> {
     });
   }
 
-  Widget _buildSingleTile(
-      {required String header,
-      required String iconPath,
-      required String index,
-      required void Function() onTap}) {
+  Widget _buildSingleTile({
+    required String header,
+    required String iconPath,
+    required String index,
+    required void Function() onTap
+  }) {
     return Obx(() => ListTileTheme(
-          horizontalTitleGap: 12.0,
-          dense: true,
-          child: ListTile(
-            hoverColor: Colors.transparent,
-            onTap: onTap,
-            title: Text(
-              header,
-              style: mediumBlackTextStyle.copyWith(
-                  fontSize: 14,
-                  color: controller.selectedPageKey.value == index
-                      ? appMainColor
-                      : notifier!.getMainText),
-            ),
-            leading: SvgPicture.asset(iconPath,
-                height: 18,
-                width: 18,
-                color: controller.selectedPageKey.value == index
-                    ? appMainColor
-                    : notifier!.getMainText),
-            trailing: const SizedBox(),
-            contentPadding: EdgeInsets.symmetric(
-                vertical: isPresent ? 5 : 2, horizontal: 8),
-          ),
-        ));
+      horizontalTitleGap: 12.0,
+      dense: true,
+      child: ListTile(
+        hoverColor: Colors.transparent,
+        onTap: onTap,
+        title: Text(
+          header,
+          style: mediumBlackTextStyle.copyWith(
+              fontSize: 14,
+              color: controller.selectedPageKey.value == index
+                  ? appMainColor
+                  : notifier!.getMainText),
+        ),
+        leading: SvgPicture.asset(iconPath,
+            height: 18,
+            width: 18,
+            color: controller.selectedPageKey.value == index
+                ? appMainColor
+                : notifier!.getMainText),
+        trailing: const SizedBox(),
+        contentPadding: EdgeInsets.symmetric(
+            vertical: isPresent ? 5 : 2, horizontal: 8),
+      ),
+    ));
   }
 
   Widget _buildDivider({required String title}) {
@@ -396,17 +313,13 @@ class _DrawerCodeState extends State<DrawerCode> {
             width: isPresent ? 230 : 260,
             child: Center(
                 child: Divider(color: notifier!.getBorderColor, height: 1))),
-        SizedBox(
-          height: isPresent ? 15 : 10,
-        ),
+        SizedBox(height: isPresent ? 15 : 10),
         Text(
           title,
           style: mainTextStyle.copyWith(
               fontSize: 14, color: notifier!.getMainText),
         ),
-        SizedBox(
-          height: isPresent ? 10 : 8,
-        ),
+        SizedBox(height: isPresent ? 10 : 8),
       ],
     );
   }

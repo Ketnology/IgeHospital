@@ -10,16 +10,22 @@ import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/consultation_service.dart';
 import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/provider/department_service.dart';
+import 'package:ige_hospital/provider/permission_service.dart';
 import 'package:ige_hospital/screen/auth/splash_screen.dart';
 import 'package:ige_hospital/routes.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize core services first
   await Get.putAsync(() => AuthService().init());
   Get.put(AuthController());
-  Get.put(AccountingController());
 
+  // Initialize PermissionService after AuthService
+  Get.put(PermissionService()); // Add this line
+
+  Get.put(AccountingController());
   await Get.putAsync(() => DashboardService().init());
   await Get.putAsync(() => DepartmentService().init());
   Get.put(ConsultationService());
@@ -58,7 +64,6 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSwatch().copyWith(
             primary: const Color(0xFF0059E7),
           ),
-          // colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF0C3150)),
         ),
         home: const MyHomePage(),
       ),
@@ -85,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+  };
 }
