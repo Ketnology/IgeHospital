@@ -37,14 +37,14 @@ class ConsultationCard extends StatelessWidget {
       elevation: 2,
       color: notifier.getContainer,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: notifier.getBorderColor),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: notifier.getBorderColor, width: 1),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,80 +57,108 @@ class ConsultationCard extends StatelessWidget {
                       consultation.consultationTitle,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: isCompact ? 14 : 16,
+                        fontSize: isCompact ? 16 : 18,
                         color: notifier.getMainText,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   ConsultationStatusBadge(statusInfo: consultation.statusInfo),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // Type and meeting info
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: consultationController.getTypeColor(consultation.type).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: consultationController.getTypeColor(consultation.type).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: consultationController.getTypeColor(consultation.type).withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        consultationController.getTypeIcon(consultation.type),
-                        const SizedBox(width: 4),
+                        Icon(
+                          _getTypeIcon(consultation.type),
+                          size: 14,
+                          color: consultationController.getTypeColor(consultation.type),
+                        ),
+                        const SizedBox(width: 6),
                         Text(
                           consultation.type.capitalizeFirst ?? consultation.type,
                           style: TextStyle(
                             color: consultationController.getTypeColor(consultation.type),
                             fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: notifier.getIconColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: notifier.getIconColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${consultation.consultationDurationMinutes} min',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: notifier.getIconColor,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.access_time,
-                    size: 14,
-                    color: notifier.getMaingey,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${consultation.consultationDurationMinutes} min',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: notifier.getMaingey,
-                    ),
-                  ),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // Date and time
+              // Date and time card
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: notifier.getBgColor,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: notifier.getBorderColor),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: notifier.getIconColor,
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: notifier.getIconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: notifier.getIconColor,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +167,7 @@ class ConsultationCard extends StatelessWidget {
                             consultation.dateHuman,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                              fontSize: 14,
                               color: notifier.getMainText,
                             ),
                           ),
@@ -148,49 +176,42 @@ class ConsultationCard extends StatelessWidget {
                             Text(
                               consultation.timeUntilConsultation!,
                               style: TextStyle(
-                                fontSize: 11,
-                                color: notifier.getMaingey,
+                                fontSize: 12,
+                                color: notifier.getIconColor,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ],
                       ),
                     ),
+                    if (consultation.statusInfo.isUpcoming)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Upcoming',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
 
               if (!isCompact) ...[
-                const SizedBox(height: 12),
-
-                // Doctor and Patient info
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildPersonInfo(
-                        context,
-                        'Doctor',
-                        consultation.doctor.name,
-                        consultation.doctor.specialist,
-                        Icons.medical_services,
-                        notifier,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildPersonInfo(
-                        context,
-                        'Patient',
-                        consultation.patient.name,
-                        consultation.patient.patientUniqueId,
-                        Icons.person,
-                        notifier,
-                      ),
-                    ),
-                  ],
-                ),
-
                 const SizedBox(height: 16),
+
+                // Participants info
+                _buildParticipantInfo(notifier),
+
+                const SizedBox(height: 20),
 
                 // Action buttons
                 _buildActionButtons(context, notifier),
@@ -202,67 +223,109 @@ class ConsultationCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPersonInfo(
-      BuildContext context,
-      String label,
+  Widget _buildParticipantInfo(ColourNotifier notifier) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildPersonCard(
+            'Doctor',
+            'Dr. ${consultation.doctor.name}',
+            consultation.doctor.specialist,
+            Icons.medical_services,
+            Colors.blue,
+            notifier,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildPersonCard(
+            'Patient',
+            consultation.patient.name,
+            consultation.patient.patientUniqueId,
+            Icons.person,
+            Colors.green,
+            notifier,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPersonCard(
+      String role,
       String name,
       String subtitle,
       IconData icon,
+      Color accentColor,
       ColourNotifier notifier,
       ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              icon,
-              size: 14,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accentColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accentColor.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, size: 14, color: accentColor),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  role,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: accentColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            name,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: notifier.getMainText,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 11,
               color: notifier.getMaingey,
             ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: notifier.getMaingey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          name,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-            color: notifier.getMainText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 11,
-            color: notifier.getMaingey,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildActionButtons(BuildContext context, ColourNotifier notifier) {
     List<Widget> buttons = [];
 
-    // Join button
+    // Join button - highest priority
     if (consultation.permissions.canJoin && consultation.statusInfo.isActive) {
       buttons.add(
-        _buildActionButton(
-          label: 'Join',
+        _buildPrimaryActionButton(
+          label: 'Join Meeting',
           icon: Icons.video_call,
           color: Colors.green,
           onPressed: onJoin,
@@ -271,10 +334,10 @@ class ConsultationCard extends StatelessWidget {
     }
 
     // Start button (for doctors)
-    if (consultation.permissions.canStart) {
+    else if (consultation.permissions.canStart) {
       buttons.add(
-        _buildActionButton(
-          label: 'Start',
+        _buildPrimaryActionButton(
+          label: 'Start Meeting',
           icon: Icons.play_arrow,
           color: Colors.blue,
           onPressed: onStart,
@@ -283,10 +346,10 @@ class ConsultationCard extends StatelessWidget {
     }
 
     // End button (for doctors)
-    if (consultation.permissions.canEnd) {
+    else if (consultation.permissions.canEnd) {
       buttons.add(
-        _buildActionButton(
-          label: 'End',
+        _buildPrimaryActionButton(
+          label: 'End Meeting',
           icon: Icons.stop,
           color: Colors.red,
           onPressed: onEnd,
@@ -294,73 +357,133 @@ class ConsultationCard extends StatelessWidget {
       );
     }
 
-    // Edit button
+    // Secondary actions row
+    List<Widget> secondaryActions = [];
+
     if (consultation.permissions.canEdit) {
-      buttons.add(
-        _buildActionButton(
+      secondaryActions.add(
+        _buildSecondaryActionButton(
           label: 'Edit',
-          icon: Icons.edit,
+          icon: Icons.edit_outlined,
           color: notifier.getIconColor,
           onPressed: onEdit,
         ),
       );
     }
 
-    // Delete button
     if (consultation.permissions.canDelete) {
-      buttons.add(
-        _buildActionButton(
+      secondaryActions.add(
+        _buildSecondaryActionButton(
           label: 'Delete',
-          icon: Icons.delete,
+          icon: Icons.delete_outline,
           color: Colors.red,
           onPressed: onDelete,
         ),
       );
     }
 
-    if (buttons.isEmpty) {
-      return const SizedBox();
-    }
+    // View details button (always available)
+    secondaryActions.add(
+      _buildSecondaryActionButton(
+        label: 'Details',
+        icon: Icons.info_outline,
+        color: notifier.getIconColor,
+        onPressed: onTap,
+      ),
+    );
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: buttons,
+    return Column(
+      children: [
+        // Primary action (if any)
+        if (buttons.isNotEmpty) ...[
+          SizedBox(
+            width: double.infinity,
+            child: buttons.first,
+          ),
+          if (secondaryActions.isNotEmpty) const SizedBox(height: 12),
+        ],
+
+        // Secondary actions
+        if (secondaryActions.isNotEmpty)
+          Row(
+            children: secondaryActions
+                .map((button) => Expanded(child: button))
+                .toList(),
+          ),
+      ],
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildPrimaryActionButton({
     required String label,
     required IconData icon,
     required Color color,
     VoidCallback? onPressed,
   }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.3)),
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18, color: Colors.white),
+      label: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
+  }
+
+  Widget _buildSecondaryActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    VoidCallback? onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 16, color: color),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: color.withOpacity(0.3)),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getTypeIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'scheduled':
+        return Icons.schedule;
+      case 'follow-up':
+        return Icons.repeat;
+      case 'emergency':
+        return Icons.emergency;
+      case 'comprehensive':
+        return Icons.medical_services;
+      default:
+        return Icons.video_call;
+    }
   }
 }
