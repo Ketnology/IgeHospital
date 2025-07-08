@@ -53,13 +53,71 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
     );
   }
 
+  Widget _buildStatCard(
+      String title,
+      String value,
+      IconData icon,
+      Color color,
+      ColourNotifier notifier,
+      ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: notifier.getContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: notifier.getBorderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const Spacer(),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: notifier.getMainText,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: notifier.getMaingey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPageTopBar(BuildContext context, ColourNotifier notifier) {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Toggle Filters Button
+          // Quick actions
           Row(
             children: [
               IconButton(
@@ -75,60 +133,63 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
                 tooltip: _showFilters ? 'Hide filters' : 'Show filters',
               ),
               const SizedBox(width: 8),
-              Obx(() => Text(
-                controller.pageInfo,
-                style: TextStyle(
-                  color: notifier.getMaingey,
-                  fontSize: 14,
-                ),
-              )),
-            ],
-          ),
-
-          // Action buttons
-          Row(
-            children: [
-              // Refresh button
               IconButton(
                 onPressed: () {
                   controller.loadConsultations();
                   controller.loadUpcomingConsultations();
                   controller.loadTodaysConsultations();
+                  controller.loadStatistics();
                 },
                 icon: Icon(Icons.refresh, color: notifier.getIconColor),
                 tooltip: 'Refresh',
               ),
-              const SizedBox(width: 8),
-              // Create Consultation Button
-              ElevatedButton(
-                onPressed: () {
-                  _showCreateConsultationDialog(context);
-                },
+            ],
+          ),
+
+          const Spacer(),
+
+          // Page info and actions
+          Row(
+            children: [
+              Obx(() => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: notifier.getIconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  controller.pageInfo,
+                  style: TextStyle(
+                    color: notifier.getIconColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              )),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: () => _showCreateConsultationDialog(context),
+                icon: SvgPicture.asset(
+                  "assets/plus-circle.svg",
+                  color: Colors.white,
+                  width: 16,
+                  height: 16,
+                ),
+                label: const Text(
+                  "New Consultation",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: appMainColor,
-                  fixedSize: const Size.fromHeight(40),
                   elevation: 0,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      "assets/plus-circle.svg",
-                      color: Colors.white,
-                      width: 18,
-                      height: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Create New",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w200,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ],
@@ -143,40 +204,16 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
       child: Obx(() {
         if (controller.isLoading.value) {
           return Center(
-            child: CircularProgressIndicator(color: notifier.getIconColor),
-          );
-        }
-
-        if (controller.filteredConsultations.isEmpty) {
-          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.video_call_outlined, size: 64, color: notifier.getMaingey),
+                CircularProgressIndicator(color: notifier.getIconColor),
                 const SizedBox(height: 16),
                 Text(
-                  'No consultations found',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: notifier.getMainText,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Try adjusting your filters or create a new consultation',
+                  'Loading consultations...',
                   style: TextStyle(
                     color: notifier.getMaingey,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => _showCreateConsultationDialog(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: appMainColor,
-                  ),
-                  child: const Text(
-                    'Create Consultation',
-                    style: TextStyle(color: Colors.white),
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -184,16 +221,20 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
           );
         }
 
+        if (controller.filteredConsultations.isEmpty) {
+          return _buildEmptyState(notifier);
+        }
+
         return Column(
           children: [
-            // Consultations list
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // Responsive grid
-                  if (constraints.maxWidth > 1200) {
+                  if (constraints.maxWidth > 1400) {
+                    return _buildGridView(4, notifier);
+                  } else if (constraints.maxWidth > 1000) {
                     return _buildGridView(3, notifier);
-                  } else if (constraints.maxWidth > 800) {
+                  } else if (constraints.maxWidth > 700) {
                     return _buildGridView(2, notifier);
                   } else {
                     return _buildListView(notifier);
@@ -201,12 +242,84 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
                 },
               ),
             ),
-
-            // Pagination
             _buildPagination(notifier),
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildEmptyState(ColourNotifier notifier) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: notifier.getIconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.video_call_outlined,
+                size: 64,
+                color: notifier.getIconColor,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'No consultations found',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: notifier.getMainText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try adjusting your filters or create a new consultation',
+              style: TextStyle(
+                color: notifier.getMaingey,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => controller.resetFilters(),
+                  icon: Icon(Icons.refresh, color: notifier.getIconColor),
+                  label: Text(
+                    'Reset Filters',
+                    style: TextStyle(color: notifier.getIconColor),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: notifier.getIconColor),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => _showCreateConsultationDialog(context),
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text(
+                    'Create Consultation',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: appMainColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -215,45 +328,40 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
       padding: const EdgeInsets.all(20),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: 1.3,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
+        childAspectRatio: crossAxisCount > 2 ? 1.2 : 1.1,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
       ),
       itemCount: controller.filteredConsultations.length,
       itemBuilder: (context, index) {
         final consultation = controller.filteredConsultations[index];
-        return ConsultationCard(
-          consultation: consultation,
-          onTap: () => _showConsultationDetail(context, consultation),
-          onEdit: () => _showEditConsultationDialog(context, consultation),
-          onDelete: () => _showDeleteConfirmation(context, consultation, notifier),
-          onJoin: () => _handleJoinConsultation(consultation.id),
-          onStart: () => _handleStartConsultation(consultation.id),
-          onEnd: () => _handleEndConsultation(consultation.id),
-        );
+        return _buildConsultationCard(consultation, notifier);
       },
     );
   }
 
   Widget _buildListView(ColourNotifier notifier) {
-    return ListView.builder(
+    return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: controller.filteredConsultations.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final consultation = controller.filteredConsultations[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: ConsultationCard(
-            consultation: consultation,
-            onTap: () => _showConsultationDetail(context, consultation),
-            onEdit: () => _showEditConsultationDialog(context, consultation),
-            onDelete: () => _showDeleteConfirmation(context, consultation, notifier),
-            onJoin: () => _handleJoinConsultation(consultation.id),
-            onStart: () => _handleStartConsultation(consultation.id),
-            onEnd: () => _handleEndConsultation(consultation.id),
-          ),
-        );
+        return _buildConsultationCard(consultation, notifier, isListView: true);
       },
+    );
+  }
+
+  Widget _buildConsultationCard(LiveConsultation consultation, ColourNotifier notifier, {bool isListView = false}) {
+    return ConsultationCard(
+      consultation: consultation,
+      isCompact: !isListView,
+      onTap: () => _showConsultationDetail(context, consultation),
+      onEdit: () => _showEditConsultationDialog(context, consultation),
+      onDelete: () => _showDeleteConfirmation(context, consultation, notifier),
+      onJoin: () => _handleJoinConsultation(consultation.id),
+      onStart: () => _handleStartConsultation(consultation.id),
+      onEnd: () => _handleEndConsultation(consultation.id),
     );
   }
 
@@ -262,56 +370,119 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
       if (controller.lastPage.value <= 1) return const SizedBox();
 
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: notifier.getContainer,
           border: Border(top: BorderSide(color: notifier.getBorderColor)),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Previous button
             ElevatedButton.icon(
               onPressed: controller.hasPreviousPage
                   ? () => controller.previousPage()
                   : null,
-              icon: const Icon(Icons.chevron_left),
+              icon: const Icon(Icons.chevron_left, size: 18),
               label: const Text('Previous'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: controller.hasPreviousPage
                     ? notifier.getIconColor
                     : notifier.getMaingey,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
             ),
 
-            // Page info
-            Text(
-              'Page ${controller.currentPage.value} of ${controller.lastPage.value}',
-              style: TextStyle(
-                color: notifier.getMainText,
-                fontWeight: FontWeight.w500,
-              ),
+            const Spacer(),
+
+            // Page numbers
+            Row(
+              children: _buildPageNumbers(notifier),
             ),
+
+            const Spacer(),
 
             // Next button
             ElevatedButton.icon(
               onPressed: controller.hasNextPage
                   ? () => controller.nextPage()
                   : null,
-              icon: const Icon(Icons.chevron_right),
+              icon: const Icon(Icons.chevron_right, size: 18),
               label: const Text('Next'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: controller.hasNextPage
                     ? notifier.getIconColor
                     : notifier.getMaingey,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
             ),
           ],
         ),
       );
     });
+  }
+
+  List<Widget> _buildPageNumbers(ColourNotifier notifier) {
+    List<Widget> pageNumbers = [];
+    final currentPage = controller.currentPage.value;
+    final lastPage = controller.lastPage.value;
+
+    // Show first page
+    if (currentPage > 3) {
+      pageNumbers.add(_buildPageButton(1, notifier));
+      if (currentPage > 4) {
+        pageNumbers.add(Text('...', style: TextStyle(color: notifier.getMaingey)));
+      }
+    }
+
+    // Show pages around current page
+    for (int i = (currentPage - 2).clamp(1, lastPage);
+    i <= (currentPage + 2).clamp(1, lastPage);
+    i++) {
+      pageNumbers.add(_buildPageButton(i, notifier));
+    }
+
+    // Show last page
+    if (currentPage < lastPage - 2) {
+      if (currentPage < lastPage - 3) {
+        pageNumbers.add(Text('...', style: TextStyle(color: notifier.getMaingey)));
+      }
+      pageNumbers.add(_buildPageButton(lastPage, notifier));
+    }
+
+    return pageNumbers.map((widget) =>
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 2), child: widget)
+    ).toList();
+  }
+
+  Widget _buildPageButton(int page, ColourNotifier notifier) {
+    final isCurrentPage = controller.currentPage.value == page;
+
+    return InkWell(
+      onTap: () => controller.changePage(page),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isCurrentPage ? notifier.getIconColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isCurrentPage ? notifier.getIconColor : notifier.getBorderColor,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            page.toString(),
+            style: TextStyle(
+              color: isCurrentPage ? Colors.white : notifier.getMainText,
+              fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showCreateConsultationDialog(BuildContext context) {
@@ -347,13 +518,74 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: notifier.getContainer,
-        title: Text(
-          'Delete Consultation',
-          style: TextStyle(color: notifier.getMainText),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Row(
+          children: [
+            Icon(Icons.warning, color: Colors.red, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              'Delete Consultation',
+              style: TextStyle(
+                color: notifier.getMainText,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
-        content: Text(
-          'Are you sure you want to delete "${consultation.consultationTitle}"?',
-          style: TextStyle(color: notifier.getMainText),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to delete this consultation?',
+              style: TextStyle(color: notifier.getMainText),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: notifier.getBgColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: notifier.getBorderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    consultation.consultationTitle,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: notifier.getMainText,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Dr. ${consultation.doctor.name} • ${consultation.patient.name}',
+                    style: TextStyle(
+                      color: notifier.getMaingey,
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    consultation.dateHuman,
+                    style: TextStyle(
+                      color: notifier.getMaingey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'This action cannot be undone.',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
