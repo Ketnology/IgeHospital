@@ -248,6 +248,7 @@ class ConsultationService extends GetxService {
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
+        // Updated to handle the new response structure where data is directly an array
         final List<dynamic> consultationsList = result['data'] ?? [];
         return consultationsList
             .map((json) => LiveConsultation.fromJson(json))
@@ -267,6 +268,7 @@ class ConsultationService extends GetxService {
       final dynamic result = await _httpClient.get('$_consultationsEndpoint/today');
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
+        // Updated to handle the new response structure where data is directly an array
         final List<dynamic> consultationsList = result['data'] ?? [];
         return consultationsList
             .map((json) => LiveConsultation.fromJson(json))

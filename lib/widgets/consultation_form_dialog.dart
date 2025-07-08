@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/consultation_controller.dart';
+import 'package:ige_hospital/controllers/doctor_controller.dart';
 import 'package:ige_hospital/models/consultation_model.dart';
+import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/constants/static_data.dart';
+import 'package:ige_hospital/constants/user_roles.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -24,7 +27,8 @@ class ConsultationFormDialog extends StatefulWidget {
 class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final ConsultationController consultationController =
-      Get.find<ConsultationController>();
+  Get.find<ConsultationController>();
+  final AuthService authService = Get.find<AuthService>();
 
   // Text controllers
   late final TextEditingController titleController;
@@ -40,9 +44,11 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
   late String selectedTimeZone;
   late bool hostVideo;
   late bool participantVideo;
+  String? selectedDoctorId;
 
   // Loading state
   bool isLoading = false;
+  bool isDoctorsLoading = false;
 
   // Options
   final List<int> durationOptions = [15, 30, 45, 60, 90, 120];
@@ -59,10 +65,21 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     'Asia/Tokyo'
   ];
 
+  // Doctor data
+  List<Map<String, String>> doctors = [];
+
+  // Check if current user is a doctor
+  bool get isCurrentUserDoctor {
+    return authService.getRawUserType() == UserRoles.doctor;
+  }
+
   @override
   void initState() {
     super.initState();
     _initializeControllers();
+    if (!isCurrentUserDoctor) {
+      _loadDoctors();
+    }
   }
 
   void _initializeControllers() {
@@ -72,7 +89,15 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
           TextEditingController(text: consultation.consultationTitle);
       descriptionController =
           TextEditingController(text: consultation.description ?? '');
-      doctorIdController = TextEditingController(text: consultation.doctor.id);
+
+      if (isCurrentUserDoctor) {
+        // For doctors, use current user's ID
+        doctorIdController = TextEditingController(text: authService.currentUser.value?.id ?? '');
+      } else {
+        doctorIdController = TextEditingController(text: consultation.doctor.id);
+        selectedDoctorId = consultation.doctor.id;
+      }
+
       patientIdController =
           TextEditingController(text: consultation.patient.id);
 
@@ -86,7 +111,14 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     } else {
       titleController = TextEditingController();
       descriptionController = TextEditingController();
-      doctorIdController = TextEditingController();
+
+      if (isCurrentUserDoctor) {
+        // For doctors, use current user's ID
+        doctorIdController = TextEditingController(text: authService.currentUser.value?.id ?? '');
+      } else {
+        doctorIdController = TextEditingController();
+      }
+
       patientIdController = TextEditingController();
 
       selectedDate = DateTime.now().add(const Duration(days: 1));
@@ -96,6 +128,42 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
       selectedTimeZone = 'UTC';
       hostVideo = true;
       participantVideo = true;
+    }
+  }
+
+  Future<void> _loadDoctors() async {
+    if (isCurrentUserDoctor) return;
+
+    setState(() {
+      isDoctorsLoading = true;
+    });
+
+    try {
+      final doctorController = Get.find<DoctorController>();
+      await doctorController.loadDoctors();
+
+      setState(() {
+        doctors = doctorController.doctors.map((doctor) => {
+          'id': doctor.id,
+          'name': doctor.fullName,
+          'department': doctor.department,
+          'specialist': doctor.specialty,
+        }).toList();
+      });
+    } catch (e) {
+      Get.log("Error loading doctors: $e");
+      // Show error message but don't block the dialog
+      Get.snackbar(
+        "Warning",
+        "Could not load doctors list. Please enter doctor ID manually.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        isDoctorsLoading = false;
+      });
     }
   }
 
@@ -146,7 +214,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                         decoration: _inputDecoration(
                             'Consultation Title', notifier, Icons.title),
                         validator: (value) =>
-                            value!.isEmpty ? 'Required' : null,
+                        value!.isEmpty ? 'Required' : null,
                         style: TextStyle(color: notifier.getMainText),
                       ),
                       const SizedBox(height: 16),
@@ -288,32 +356,139 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                       _buildSectionTitle('Participants', notifier),
                       const SizedBox(height: 16),
 
-                      // Doctor and Patient IDs
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: doctorIdController,
-                              decoration: _inputDecoration('Doctor ID',
-                                  notifier, Icons.medical_services),
-                              validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
-                              style: TextStyle(color: notifier.getMainText),
+                      // Doctor and Patient fields - conditional layout
+                      if (isCurrentUserDoctor) ...[
+                        // Full width patient field for doctors
+                        TextFormField(
+                          controller: patientIdController,
+                          decoration: _inputDecoration(
+                              'Patient ID', notifier, Icons.person),
+                          validator: (value) =>
+                          value!.isEmpty ? 'Required' : null,
+                          style: TextStyle(color: notifier.getMainText),
+                        ),
+                      ] else ...[
+                        // Doctor dropdown and patient field for non-doctors
+                        Row(
+                          children: [
+                            Expanded(
+                              child: isDoctorsLoading
+                                  ? Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: notifier.getBorderColor),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                            notifier.getIconColor),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Loading doctors...',
+                                      style: TextStyle(
+                                          color: notifier.getMaingey),
+                                    ),
+                                  ],
+                                ),
+                              )
+                                  : DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                value: selectedDoctorId,
+                                decoration: _inputDecoration('Select Doctor',
+                                    notifier, Icons.medical_services),
+                                hint: Text('Choose a doctor',
+                                    style: TextStyle(
+                                        color: notifier.getMaingey)),
+                                items: [
+                                  // Manual entry option
+                                  DropdownMenuItem<String>(
+                                    value: 'manual',
+                                    child: Text(
+                                      'Enter Doctor ID manually',
+                                      style: TextStyle(
+                                        color: notifier.getMainText,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                  ...doctors.map((doctor) {
+                                    return DropdownMenuItem<String>(
+                                      value: doctor['id'],
+                                      child: Container(
+                                        width: double.infinity,
+                                        child: Text(
+                                          '${doctor['name']} (${doctor['specialist']})',
+                                          style: TextStyle(
+                                            color: notifier.getMainText,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedDoctorId = value;
+                                    if (value == 'manual') {
+                                      doctorIdController.clear();
+                                    } else if (value != null) {
+                                      doctorIdController.text = value;
+                                    }
+                                  });
+                                },
+                                validator: (value) {
+                                  if (selectedDoctorId == 'manual') {
+                                    return doctorIdController.text.isEmpty
+                                        ? 'Required'
+                                        : null;
+                                  }
+                                  return value == null ? 'Required' : null;
+                                },
+                                dropdownColor: notifier.getContainer,
+                                style:
+                                TextStyle(color: notifier.getMainText),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: patientIdController,
-                              decoration: _inputDecoration(
-                                  'Patient ID', notifier, Icons.person),
-                              validator: (value) =>
-                                  value!.isEmpty ? 'Required' : null,
-                              style: TextStyle(color: notifier.getMainText),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: patientIdController,
+                                decoration: _inputDecoration(
+                                    'Patient ID', notifier, Icons.person),
+                                validator: (value) =>
+                                value!.isEmpty ? 'Required' : null,
+                                style: TextStyle(color: notifier.getMainText),
+                              ),
                             ),
+                          ],
+                        ),
+
+                        // Manual doctor ID field (shown when manual option is selected)
+                        if (selectedDoctorId == 'manual') ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: doctorIdController,
+                            decoration: _inputDecoration('Doctor ID',
+                                notifier, Icons.medical_services),
+                            validator: (value) =>
+                            value!.isEmpty ? 'Required' : null,
+                            style: TextStyle(color: notifier.getMainText),
                           ),
                         ],
-                      ),
+                      ],
+
                       const SizedBox(height: 24),
 
                       _buildSectionTitle('Video Settings', notifier),
@@ -326,7 +501,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                             child: CheckboxListTile(
                               title: Text('Host Video',
                                   style:
-                                      TextStyle(color: notifier.getMainText)),
+                                  TextStyle(color: notifier.getMainText)),
                               value: hostVideo,
                               onChanged: (value) {
                                 setState(() {
@@ -341,7 +516,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                             child: CheckboxListTile(
                               title: Text('Participant Video',
                                   style:
-                                      TextStyle(color: notifier.getMainText)),
+                                  TextStyle(color: notifier.getMainText)),
                               value: participantVideo,
                               onChanged: (value) {
                                 setState(() {
@@ -420,7 +595,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
               foregroundColor: notifier.getMainText,
             ),
             child:
-                Text('Cancel', style: TextStyle(color: notifier.getMainText)),
+            Text('Cancel', style: TextStyle(color: notifier.getMainText)),
           ),
           const SizedBox(width: 12),
           ElevatedButton(
@@ -432,16 +607,16 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
             ),
             child: isLoading
                 ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.0,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
                 : Text(widget.isEdit
-                    ? 'Update Consultation'
-                    : 'Create Consultation'),
+                ? 'Update Consultation'
+                : 'Create Consultation'),
           ),
         ],
       ),
@@ -570,7 +745,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
           'time_zone': selectedTimeZone,
           'type': selectedType,
           'doctor_id': doctorIdController.text,
-          'patient_id': patientIdController.text,
+          'patient_unique_id': patientIdController.text,
           'meta': {
             'created_via': 'admin_panel',
           },
