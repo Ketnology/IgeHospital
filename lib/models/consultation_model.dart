@@ -25,6 +25,8 @@ class LiveConsultation {
   final ConsultationDoctor doctor;
   final ConsultationPatient patient;
   final ConsultationJoinInfo? joinInfo;
+  final String durationFormatted;
+  final DateTime endTime;
 
   LiveConsultation({
     required this.id,
@@ -53,6 +55,8 @@ class LiveConsultation {
     required this.doctor,
     required this.patient,
     this.joinInfo,
+    required this.durationFormatted,
+    required this.endTime,
   });
 
   factory LiveConsultation.fromJson(Map<String, dynamic> json) {
@@ -71,7 +75,9 @@ class LiveConsultation {
       timeZone: json['time_zone'] ?? '',
       password: json['password'] ?? '',
       status: json['status'] ?? '',
-      meta: json['meta'] ?? {},
+      meta: json['meta'] is String
+          ? {} // If meta is a JSON string, we'd need to decode it, but for now just empty map
+          : (json['meta'] ?? {}),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       consultationDateFormatted: json['consultation_date_formatted'] ?? '',
@@ -85,6 +91,8 @@ class LiveConsultation {
       joinInfo: json['join_info'] != null
           ? ConsultationJoinInfo.fromJson(json['join_info'])
           : null,
+      durationFormatted: json['duration_formatted'] ?? '',
+      endTime: DateTime.parse(json['end_time']),
     );
   }
 
@@ -221,19 +229,25 @@ class ConsultationPatient {
 }
 
 class ConsultationJoinInfo {
-  final String joinUrl;
+  final bool canJoinNow;
+  final DateTime joinWindowStart;
+  final DateTime joinWindowEnd;
   final ConsultationMeetingInstructions meetingInstructions;
   final ConsultationTechnicalRequirements technicalRequirements;
 
   ConsultationJoinInfo({
-    required this.joinUrl,
+    required this.canJoinNow,
+    required this.joinWindowStart,
+    required this.joinWindowEnd,
     required this.meetingInstructions,
     required this.technicalRequirements,
   });
 
   factory ConsultationJoinInfo.fromJson(Map<String, dynamic> json) {
     return ConsultationJoinInfo(
-      joinUrl: json['join_url'] ?? '',
+      canJoinNow: json['can_join_now'] ?? false,
+      joinWindowStart: DateTime.parse(json['join_window_start']),
+      joinWindowEnd: DateTime.parse(json['join_window_end']),
       meetingInstructions: ConsultationMeetingInstructions.fromJson(
           json['meeting_instructions'] ?? {}),
       technicalRequirements: ConsultationTechnicalRequirements.fromJson(
@@ -244,11 +258,13 @@ class ConsultationJoinInfo {
 
 class ConsultationMeetingInstructions {
   final List<String> beforeMeeting;
+  final List<String> joiningMeeting;
   final List<String> duringMeeting;
   final List<String> troubleshooting;
 
   ConsultationMeetingInstructions({
     required this.beforeMeeting,
+    required this.joiningMeeting,
     required this.duringMeeting,
     required this.troubleshooting,
   });
@@ -256,6 +272,7 @@ class ConsultationMeetingInstructions {
   factory ConsultationMeetingInstructions.fromJson(Map<String, dynamic> json) {
     return ConsultationMeetingInstructions(
       beforeMeeting: List<String>.from(json['before_meeting'] ?? []),
+      joiningMeeting: List<String>.from(json['joining_meeting'] ?? []),
       duringMeeting: List<String>.from(json['during_meeting'] ?? []),
       troubleshooting: List<String>.from(json['troubleshooting'] ?? []),
     );
@@ -267,12 +284,14 @@ class ConsultationTechnicalRequirements {
   final Map<String, String> bandwidth;
   final List<String> devices;
   final List<String> permissions;
+  final List<String> zoomSpecific;
 
   ConsultationTechnicalRequirements({
     required this.browsers,
     required this.bandwidth,
     required this.devices,
     required this.permissions,
+    required this.zoomSpecific,
   });
 
   factory ConsultationTechnicalRequirements.fromJson(
@@ -282,6 +301,7 @@ class ConsultationTechnicalRequirements {
       bandwidth: Map<String, String>.from(json['bandwidth'] ?? {}),
       devices: List<String>.from(json['devices'] ?? []),
       permissions: List<String>.from(json['permissions'] ?? []),
+      zoomSpecific: List<String>.from(json['zoom_specific'] ?? []),
     );
   }
 }
@@ -293,6 +313,9 @@ class ConsultationStatistics {
   final int ongoingConsultations;
   final int scheduledConsultations;
   final double completionRate;
+  final int consultationsWithRecordings;
+  final double recordingRate;
+  final double? averageDurationMinutes;
   final List<DailyStatistic> dailyStatistics;
 
   ConsultationStatistics({
@@ -302,6 +325,9 @@ class ConsultationStatistics {
     required this.ongoingConsultations,
     required this.scheduledConsultations,
     required this.completionRate,
+    required this.consultationsWithRecordings,
+    required this.recordingRate,
+    this.averageDurationMinutes,
     required this.dailyStatistics,
   });
 
@@ -313,6 +339,9 @@ class ConsultationStatistics {
       ongoingConsultations: json['ongoing_consultations'] ?? 0,
       scheduledConsultations: json['scheduled_consultations'] ?? 0,
       completionRate: (json['completion_rate'] ?? 0).toDouble(),
+      consultationsWithRecordings: json['consultations_with_recordings'] ?? 0,
+      recordingRate: (json['recording_rate'] ?? 0).toDouble(),
+      averageDurationMinutes: json['average_duration_minutes']?.toDouble(),
       dailyStatistics: (json['daily_statistics'] as List? ?? [])
           .map((stat) => DailyStatistic.fromJson(stat))
           .toList(),

@@ -29,6 +29,15 @@ class AppDropdownField<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ColourNotifier>(
       builder: (BuildContext context, notifier, Widget? child) {
+        // Validate that the current value exists in the items list
+        T? validatedValue = value;
+        if (value != null) {
+          final bool valueExists = items.any((item) => item.value == value);
+          if (!valueExists) {
+            validatedValue = null; // Reset to null if value doesn't exist in items
+          }
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -44,7 +53,7 @@ class AppDropdownField<T> extends StatelessWidget {
               const SizedBox(height: 8),
             ],
             DropdownButtonFormField<T>(
-              value: value,
+              value: validatedValue,
               items: items,
               onChanged: enabled ? onChanged : null,
               validator: validator,
@@ -53,6 +62,7 @@ class AppDropdownField<T> extends StatelessWidget {
                 fontSize: 14,
               ),
               dropdownColor: notifier.getContainer,
+              isExpanded: true, // Add this to prevent overflow
               decoration: InputDecoration(
                 hintText: hint,
                 hintStyle: mediumGreyTextStyle.copyWith(

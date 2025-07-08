@@ -316,7 +316,7 @@ class ConsultationDetailDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (consultation.joinInfo != null) ...[
-            _buildSectionHeader(context, 'Join Information', notifier),
+            _buildSectionHeader(context, 'Meeting Access Information', notifier),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -330,44 +330,173 @@ class ConsultationDetailDialog extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.link, color: notifier.getIconColor),
+                      Icon(Icons.schedule, color: notifier.getIconColor),
                       const SizedBox(width: 8),
                       Text(
-                        'Meeting Link',
+                        'Join Window',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: notifier.getMainText,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Available from ${_formatDateTime(consultation.joinInfo!.joinWindowStart)} to ${_formatDateTime(consultation.joinInfo!.joinWindowEnd)}',
+                    style: TextStyle(
+                      color: notifier.getMainText,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: consultation.joinInfo!.canJoinNow
+                              ? Colors.green
+                              : Colors.orange,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        consultation.joinInfo!.canJoinNow
+                            ? 'You can join now'
+                            : 'Not yet available to join',
+                        style: TextStyle(
+                          color: consultation.joinInfo!.canJoinNow
+                              ? Colors.green
+                              : Colors.orange,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Meeting ID and Password Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: notifier.getBgColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: notifier.getBorderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.meeting_room, color: notifier.getIconColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Meeting Details',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: notifier.getMainText,
                         ),
                       ),
                       const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Meeting ID',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: notifier.getMaingey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              consultation.meetingId,
+                              style: TextStyle(
+                                color: notifier.getMainText,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       IconButton(
-                        icon: Icon(Icons.copy, color: notifier.getIconColor),
+                        icon: Icon(Icons.copy, size: 16, color: notifier.getIconColor),
                         onPressed: () => _copyToClipboard(
                           context,
-                          consultation.joinInfo!.joinUrl,
-                          'Meeting link copied to clipboard',
+                          consultation.meetingId,
+                          'Meeting ID copied to clipboard',
                         ),
-                        tooltip: 'Copy link',
+                        tooltip: 'Copy Meeting ID',
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    consultation.joinInfo!.joinUrl,
-                    style: TextStyle(
-                      color: notifier.getMaingey,
-                      fontFamily: 'monospace',
-                    ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Password',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: notifier.getMaingey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              consultation.password,
+                              style: TextStyle(
+                                color: notifier.getMainText,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.copy, size: 16, color: notifier.getIconColor),
+                        onPressed: () => _copyToClipboard(
+                          context,
+                          consultation.password,
+                          'Password copied to clipboard',
+                        ),
+                        tooltip: 'Copy Password',
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
+
             _buildSectionHeader(context, 'Meeting Instructions', notifier),
             _buildInstructionsSection(
               'Before the Meeting',
               consultation.joinInfo!.meetingInstructions.beforeMeeting,
               Icons.schedule,
+              notifier,
+            ),
+            const SizedBox(height: 16),
+            _buildInstructionsSection(
+              'Joining the Meeting',
+              consultation.joinInfo!.meetingInstructions.joiningMeeting,
+              Icons.meeting_room,
               notifier,
             ),
             const SizedBox(height: 16),
@@ -420,6 +549,15 @@ class ConsultationDetailDialog extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Helper method for formatting date time
+  String _formatDateTime(DateTime dateTime) {
+    try {
+      return DateFormat('MMM dd, yyyy - hh:mm a').format(dateTime);
+    } catch (e) {
+      return dateTime.toString();
+    }
   }
 
   Widget _buildFooter(BuildContext context, ColourNotifier notifier, ConsultationController controller) {
@@ -801,6 +939,16 @@ class ConsultationDetailDialog extends StatelessWidget {
           notifier,
         ),
         const SizedBox(height: 12),
+        // Add Zoom-specific requirements if available
+        if (requirements.zoomSpecific.isNotEmpty) ...[
+          _buildRequirementCard(
+            'Zoom-Specific Requirements',
+            requirements.zoomSpecific,
+            Icons.video_call,
+            notifier,
+          ),
+          const SizedBox(height: 12),
+        ],
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
