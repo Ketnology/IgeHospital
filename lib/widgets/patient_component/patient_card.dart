@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/models/patient_model.dart';
-import 'package:ige_hospital/pages/vital_signs_page.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/widgets/permission_wrapper.dart';
-import 'package:ige_hospital/widgets/ui/status_badge.dart';
 import 'package:provider/provider.dart';
 
 class PatientCard extends StatelessWidget {
@@ -461,25 +460,25 @@ class PatientCard extends StatelessWidget {
   }
 
   Widget _buildActionButtons(ColourNotifier notifier, BuildContext context) {
+    final appConst = Get.find<AppConst>();
+
     return Row(
       children: [
+        // Vital Signs Button - Navigate using GetX page mapping
         PermissionWrapper(
           anyOf: ['view_patients', 'edit_patients'],
           child: ElevatedButton.icon(
             onPressed: () {
-              Navigator.pop(context); // Close current dialog
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VitalSignsPage(
-                    patientId: patient.id,
-                    patientName: patient.user['full_name'] ?? 'Unknown Patient',
-                  ),
-                ),
-              );
+              // Store patient data in AppConst for the vital signs page to access
+              appConst.selectedPatientId = patient.id;
+              appConst.selectedPatientName =
+                  patient.user['full_name'] ?? 'Unknown Patient';
+
+              // Navigate using GetX page mapping
+              appConst.changePage('vital-signs');
             },
             icon: const Icon(Icons.monitor_heart, size: 18),
-            label: const Text('VS'),
+            label: const Text(''),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -490,6 +489,8 @@ class PatientCard extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(width: 6),
+
         Expanded(
           child: ElevatedButton.icon(
             onPressed: onView,

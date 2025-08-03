@@ -17,6 +17,10 @@ class AppConst extends GetxController implements GetxService {
   RxDouble size = 550.0.obs;
   int selectCategory = 0;
 
+  // Patient data storage for vital signs navigation
+  String selectedPatientId = '';
+  String selectedPatientName = '';
+
   changeCurrentIndex({int? index}) {
     selectCategory = index ?? 0;
     update();
