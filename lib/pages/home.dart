@@ -113,7 +113,7 @@ class _DefaultPageState extends State<DefaultPage> {
 
                                   // Receptionists Card
                                   Obx(() => DashboardDataCard(
-                                    title: "Receptionists",
+                                    title: "Nurses",
                                     count: dashboardService.receptionistCount
                                         .toString(),
                                     icon: Icons.support_agent,

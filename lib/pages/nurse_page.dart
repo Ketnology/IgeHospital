@@ -57,7 +57,7 @@ class _NursesPageState extends State<NursesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Updated title
-            const CommonTitle(title: 'Receptionists', path: "Hospital Staff"),
+            const CommonTitle(title: 'Nurses', path: "Hospital Staff"),
             _buildPageTopBar(context, notifier),
             if (_showFilters)
               NurseFilters(
@@ -106,7 +106,6 @@ class _NursesPageState extends State<NursesPage> {
             tooltip: _showFilters ? 'Hide filters' : 'Show filters',
           ),
 
-          // Add Receptionist Button - Only visible with permission
           PermissionButton(
             permission: 'create_nurses',
             onPressed: () => _showAddNurseDialog(context),
@@ -128,7 +127,7 @@ class _NursesPageState extends State<NursesPage> {
                   ),
                   const SizedBox(width: 8),
                   const Text(
-                    "Add Receptionist", // Updated from "Add Nurse"
+                    "Add Nurse",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -177,7 +176,7 @@ class _NursesPageState extends State<NursesPage> {
                   child: ElevatedButton(
                     onPressed: null,
                     style: ElevatedButton.styleFrom(backgroundColor: appMainColor),
-                    child: const Text('Add Receptionist', style: TextStyle(color: Colors.white)),
+                    child: const Text('Add Nurse', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
