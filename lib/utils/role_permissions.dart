@@ -41,6 +41,7 @@ class RolePermissions {
       Permissions.viewSystemSettings,
       Permissions.editSystemSettings,
       Permissions.viewOwnProfile,
+      Permissions.viewOwnAppointments,
     ],
 
     UserRoles.doctor: [
@@ -60,7 +61,7 @@ class RolePermissions {
       Permissions.viewOwnProfile,
     ],
 
-    UserRoles.receptionist: [ // Updated from nurse
+    UserRoles.receptionist: [
       Permissions.viewDashboard,
       Permissions.viewPatients,
       Permissions.createPatients,
@@ -75,6 +76,8 @@ class RolePermissions {
     ],
 
     UserRoles.patient: [
+      // Patients have limited permissions
+      Permissions.viewDashboard, // Allow dashboard access
       Permissions.viewOwnProfile,
       Permissions.viewOwnAppointments,
       Permissions.createAppointments, // Patients can book appointments
@@ -84,21 +87,43 @@ class RolePermissions {
 
   static List<String> getPermissionsForRole(String role) {
     final normalizedRole = UserRoles.normalizeRole(role);
-    return _rolePermissions[normalizedRole] ?? [];
+    final permissions = _rolePermissions[normalizedRole] ?? [];
+
+    // Debug logging
+    if (permissions.isEmpty) {
+      print(
+          "⚠️ No permissions found for role: $normalizedRole (original: $role)");
+      print("Available roles: ${_rolePermissions.keys}");
+    } else {
+      print("✅ Found ${permissions
+          .length} permissions for role: $normalizedRole");
+    }
+
+    return permissions;
   }
 
   static bool hasPermission(String role, String permission) {
     final permissions = getPermissionsForRole(role);
-    return permissions.contains(permission);
+    final hasAccess = permissions.contains(permission);
+
+    // Debug logging for specific permission checks
+    if (!hasAccess && role == UserRoles.patient) {
+      print("🔒 Patient denied permission: $permission");
+      print("Patient permissions: $permissions");
+    }
+
+    return hasAccess;
   }
 
   static bool hasAnyPermission(String role, List<String> permissions) {
     final userPermissions = getPermissionsForRole(role);
-    return permissions.any((permission) => userPermissions.contains(permission));
+    return permissions.any((permission) =>
+        userPermissions.contains(permission));
   }
 
   static bool hasAllPermissions(String role, List<String> permissions) {
     final userPermissions = getPermissionsForRole(role);
-    return permissions.every((permission) => userPermissions.contains(permission));
+    return permissions.every((permission) =>
+        userPermissions.contains(permission));
   }
 }

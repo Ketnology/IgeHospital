@@ -18,21 +18,46 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize core services first
-  await Get.putAsync(() => AuthService().init());
-  Get.put(AuthController());
+  try {
+    Get.log("🚀 Starting app initialization...");
 
-  // Initialize PermissionService after AuthService
-  Get.put(PermissionService()); // Add this line
+    // Initialize core services first
+    Get.log("📱 Initializing AuthService...");
+    await Get.putAsync(() => AuthService().init());
 
-  Get.put(AccountingController());
-  await Get.putAsync(() => DashboardService().init());
-  await Get.putAsync(() => DepartmentService().init());
-  Get.put(ConsultationService());
+    Get.log("🔐 Initializing AuthController...");
+    Get.put(AuthController());
 
-  // Initialize controllers
-  Get.put(NurseController());
-  Get.put(ConsultationController());
+    // Initialize PermissionService after AuthService
+    Get.log("🛡️ Initializing PermissionService...");
+    Get.put(PermissionService());
+
+    // Initialize other services
+    Get.log("💰 Initializing AccountingController...");
+    Get.put(AccountingController());
+
+    Get.log("📊 Initializing DashboardService...");
+    await Get.putAsync(() => DashboardService().init());
+
+    Get.log("🏥 Initializing DepartmentService...");
+    await Get.putAsync(() => DepartmentService().init());
+
+    Get.log("🩺 Initializing ConsultationService...");
+    Get.put(ConsultationService());
+
+    // Initialize controllers
+    Get.log("👩‍⚕️ Initializing NurseController...");
+    Get.put(NurseController());
+
+    Get.log("📞 Initializing ConsultationController...");
+    Get.put(ConsultationController());
+
+    Get.log("✅ All services initialized successfully!");
+
+  } catch (e) {
+    Get.log("❌ Error during initialization: $e");
+    // Continue anyway, but log the error
+  }
 
   runApp(const MyApp());
 }
@@ -66,6 +91,15 @@ class MyApp extends StatelessWidget {
           ),
         ),
         home: const MyHomePage(),
+        // Add error handling
+        unknownRoute: GetPage(
+          name: '/notfound',
+          page: () => const Scaffold(
+            body: Center(
+              child: Text('Page not found'),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -8,7 +8,9 @@ class PermissionService extends GetxService {
 
   String get currentUserRole {
     final rawType = _authService.currentUser.value?.userType ?? '';
-    return UserRoles.normalizeRole(rawType);
+    final normalizedRole = UserRoles.normalizeRole(rawType);
+    Get.log("PermissionService - Current user role: $normalizedRole (raw: $rawType)"); // Debug log
+    return normalizedRole;
   }
 
   String get currentUserId {
@@ -17,8 +19,9 @@ class PermissionService extends GetxService {
 
   bool hasPermission(String permission) {
     final role = currentUserRole;
-    Get.log("Checking permission '$permission' for role '$role'"); // Debug log
-    return RolePermissions.hasPermission(role, permission);
+    final hasAccess = RolePermissions.hasPermission(role, permission);
+    Get.log("Checking permission '$permission' for role '$role': $hasAccess"); // Debug log
+    return hasAccess;
   }
 
   bool hasAnyPermission(List<String> permissions) {
@@ -30,12 +33,16 @@ class PermissionService extends GetxService {
   }
 
   bool canAccessPage(String pageKey) {
+    final role = currentUserRole;
+    Get.log("Checking page access for '$pageKey' with role '$role'"); // Debug log
+
     switch (pageKey) {
       case '':
       case 'overview':
-        return hasPermission('view_dashboard');
+      // Dashboard should be accessible to all logged-in users
+        return _authService.isAuthenticated.value;
       case 'patients':
-        return hasPermission('view_patients');
+        return hasAnyPermission(['view_patients', 'view_own_profile']);
       case 'doctors':
         return hasPermission('view_doctors');
       case 'nurses':
@@ -46,13 +53,15 @@ class PermissionService extends GetxService {
       case 'appointments':
         return hasAnyPermission(['view_appointments', 'view_own_appointments']);
       case 'live-consultations':
-        return hasPermission('view_consultations');
+        return hasAnyPermission(['view_consultations', 'join_consultations']);
       case 'accounting':
         return hasPermission('view_accounting');
       case 'profile':
         return hasPermission('view_own_profile');
       default:
-        return false;
+      // For unknown pages, allow access for all authenticated users
+        Get.log("Unknown page '$pageKey', allowing access for authenticated users");
+        return _authService.isAuthenticated.value;
     }
   }
 
@@ -72,7 +81,11 @@ class PermissionService extends GetxService {
   List<String> getAvailablePages() {
     final List<String> availablePages = [];
 
-    if (canAccessPage('')) availablePages.add('overview');
+    // Dashboard should always be available for authenticated users
+    if (_authService.isAuthenticated.value) {
+      availablePages.add('overview');
+    }
+
     if (canAccessPage('appointments')) availablePages.add('appointments');
     if (canAccessPage('patients')) availablePages.add('patients');
     if (canAccessPage('doctors')) availablePages.add('doctors');
@@ -82,6 +95,7 @@ class PermissionService extends GetxService {
     if (canAccessPage('accounting')) availablePages.add('accounting');
     if (canAccessPage('profile')) availablePages.add('profile');
 
+    Get.log("Available pages for role '$currentUserRole': $availablePages"); // Debug log
     return availablePages;
   }
 

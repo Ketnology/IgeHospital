@@ -6,6 +6,7 @@ import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/dashboard_data_card.dart';
+import 'package:ige_hospital/widgets/permission_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; // Add this import for date formatting
 
@@ -46,93 +47,109 @@ class _DefaultPageState extends State<DefaultPage> {
 
               _buildRefreshButton(),
 
-              // Dashboard Summary Cards
+              // Hospital Overview Section - Only visible to Admins
+              PermissionWrapper(
+                permission: 'view_admins', // Only admins can see this
+                child: Column(
+                  children: [
+                    // Dashboard Summary Cards
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Hospital Overview",
+                            style: TextStyle(
+                              color: notifier.getMainText,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Dashboard Cards
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Responsive layout
+                              final crossAxisCount = constraints.maxWidth < 600
+                                  ? 1
+                                  : constraints.maxWidth < 900
+                                  ? 2
+                                  : 4;
+
+                              return GridView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: 3.0,
+                                ),
+                                children: [
+                                  // Doctors Card
+                                  Obx(() => DashboardDataCard(
+                                    title: "Doctors",
+                                    count:
+                                    dashboardService.doctorCount.toString(),
+                                    icon: Icons.medical_services,
+                                    iconColor: Colors.blue,
+                                    onTap: () => Get.find<AppConst>()
+                                        .changePage('doctors'),
+                                  )),
+
+                                  // Patients Card
+                                  Obx(() => DashboardDataCard(
+                                    title: "Patients",
+                                    count:
+                                    dashboardService.patientCount.toString(),
+                                    icon: Icons.people,
+                                    iconColor: appMainColor,
+                                    onTap: () => Get.find<AppConst>()
+                                        .changePage('patients'),
+                                  )),
+
+                                  // Receptionists Card
+                                  Obx(() => DashboardDataCard(
+                                    title: "Receptionists",
+                                    count: dashboardService.receptionistCount
+                                        .toString(),
+                                    icon: Icons.support_agent,
+                                    iconColor: Colors.orange,
+                                    onTap: () =>
+                                        Get.find<AppConst>().changePage('nurses'),
+                                  )),
+
+                                  // Admins Card
+                                  Obx(() => DashboardDataCard(
+                                    title: "Administrators",
+                                    count: dashboardService.adminCount.toString(),
+                                    icon: Icons.admin_panel_settings,
+                                    iconColor: Colors.purple,
+                                    onTap: () =>
+                                        Get.find<AppConst>().changePage('admins'),
+                                  )),
+                                ],
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Recent Appointments Section - Visible to all staff
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Hospital Overview",
-                      style: TextStyle(
-                        color: notifier.getMainText,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Dashboard Cards
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Responsive layout
-                        final crossAxisCount = constraints.maxWidth < 600
-                            ? 1
-                            : constraints.maxWidth < 900
-                            ? 2
-                            : 4;
-
-                        return GridView(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 3.0,
-                          ),
-                          children: [
-                            // Doctors Card
-                            Obx(() => DashboardDataCard(
-                              title: "Doctors",
-                              count:
-                              dashboardService.doctorCount.toString(),
-                              icon: Icons.medical_services,
-                              iconColor: Colors.blue,
-                              onTap: () => Get.find<AppConst>()
-                                  .changePage('doctors'),
-                            )),
-
-                            // Patients Card
-                            Obx(() => DashboardDataCard(
-                              title: "Patients",
-                              count:
-                              dashboardService.patientCount.toString(),
-                              icon: Icons.people,
-                              iconColor: appMainColor,
-                              onTap: () => Get.find<AppConst>()
-                                  .changePage('patients'),
-                            )),
-
-                            // Receptionists Card
-                            Obx(() => DashboardDataCard(
-                              title: "Receptionists",
-                              count: dashboardService.receptionistCount
-                                  .toString(),
-                              icon: Icons.support_agent,
-                              iconColor: Colors.orange,
-                              onTap: () =>
-                                  Get.find<AppConst>().changePage('nurses'),
-                            )),
-
-                            // Admins Card
-                            Obx(() => DashboardDataCard(
-                              title: "Administrators",
-                              count: dashboardService.adminCount.toString(),
-                              icon: Icons.admin_panel_settings,
-                              iconColor: Colors.purple,
-                              onTap: () =>
-                                  Get.find<AppConst>().changePage('admins'),
-                            )),
-                          ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Recent Appointments Section
                     Text(
                       "Recent Appointments",
                       style: TextStyle(
