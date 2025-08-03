@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/models/patient_model.dart';
+import 'package:ige_hospital/pages/vital_signs_page.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/widgets/permission_wrapper.dart';
 import 'package:ige_hospital/widgets/ui/status_badge.dart';
 import 'package:provider/provider.dart';
 
@@ -60,14 +62,14 @@ class PatientCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: _buildCardLayout(notifier),
+            child: _buildCardLayout(notifier, context),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCardLayout(ColourNotifier notifier) {
+  Widget _buildCardLayout(ColourNotifier notifier, BuildContext context) {
     return Column(
       children: [
         // Scrollable content area
@@ -99,7 +101,7 @@ class PatientCard extends StatelessWidget {
 
         // Fixed action buttons at bottom
         const SizedBox(height: 12),
-        _buildActionButtons(notifier),
+        _buildActionButtons(notifier, context),
       ],
     );
   }
@@ -128,24 +130,24 @@ class PatientCard extends StatelessWidget {
               ),
               child: patient.user['profile_image'] != null
                   ? ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: Image.network(
-                  patient.user['profile_image'],
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, _) => Icon(
-                    Icons.person,
-                    size: 30,
-                    color: notifier.getIconColor,
-                  ),
-                ),
-              )
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.network(
+                        patient.user['profile_image'],
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, _) => Icon(
+                          Icons.person,
+                          size: 30,
+                          color: notifier.getIconColor,
+                        ),
+                      ),
+                    )
                   : Icon(
-                Icons.person,
-                size: 30,
-                color: notifier.getIconColor,
-              ),
+                      Icons.person,
+                      size: 30,
+                      color: notifier.getIconColor,
+                    ),
             ),
 
             // Status indicator dot
@@ -256,9 +258,11 @@ class PatientCard extends StatelessWidget {
                 value: 'view',
                 child: Row(
                   children: [
-                    Icon(Icons.visibility, size: 16, color: notifier.getIconColor),
+                    Icon(Icons.visibility,
+                        size: 16, color: notifier.getIconColor),
                     const SizedBox(width: 8),
-                    Text('View Details', style: TextStyle(color: notifier.getMainText)),
+                    Text('View Details',
+                        style: TextStyle(color: notifier.getMainText)),
                   ],
                 ),
               ),
@@ -269,7 +273,8 @@ class PatientCard extends StatelessWidget {
                     children: [
                       Icon(Icons.edit, size: 16, color: Colors.blue),
                       const SizedBox(width: 8),
-                      Text('Edit Patient', style: TextStyle(color: notifier.getMainText)),
+                      Text('Edit Patient',
+                          style: TextStyle(color: notifier.getMainText)),
                     ],
                   ),
                 ),
@@ -280,7 +285,8 @@ class PatientCard extends StatelessWidget {
                     children: [
                       Icon(Icons.delete, size: 16, color: Colors.red),
                       const SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: notifier.getMainText)),
+                      Text('Delete',
+                          style: TextStyle(color: notifier.getMainText)),
                     ],
                   ),
                 ),
@@ -318,7 +324,9 @@ class PatientCard extends StatelessWidget {
               Expanded(
                 child: _buildInfoChip(
                   icon: Icons.person_outline,
-                  text: (patient.user['gender'] ?? 'N/A').toString().capitalizeFirst!,
+                  text: (patient.user['gender'] ?? 'N/A')
+                      .toString()
+                      .capitalizeFirst!,
                   color: Colors.blue,
                   notifier: notifier,
                 ),
@@ -452,9 +460,36 @@ class PatientCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(ColourNotifier notifier) {
+  Widget _buildActionButtons(ColourNotifier notifier, BuildContext context) {
     return Row(
       children: [
+        PermissionWrapper(
+          anyOf: ['view_patients', 'edit_patients'],
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context); // Close current dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VitalSignsPage(
+                    patientId: patient.id,
+                    patientName: patient.user['full_name'] ?? 'Unknown Patient',
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.monitor_heart, size: 18),
+            label: const Text('VS'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: onView,
@@ -582,12 +617,12 @@ class PatientCard extends StatelessWidget {
   }
 
   Widget _buildVitalChip(
-      String label,
-      String value,
-      IconData icon,
-      Color color,
-      ColourNotifier notifier,
-      ) {
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    ColourNotifier notifier,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
@@ -631,12 +666,12 @@ class PatientCard extends StatelessWidget {
   }
 
   Widget _buildStatCard(
-      String label,
-      String value,
-      IconData icon,
-      Color color,
-      ColourNotifier notifier,
-      ) {
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    ColourNotifier notifier,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(8),

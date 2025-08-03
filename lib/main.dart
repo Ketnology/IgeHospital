@@ -11,6 +11,7 @@ import 'package:ige_hospital/provider/consultation_service.dart';
 import 'package:ige_hospital/provider/dashboard_service.dart';
 import 'package:ige_hospital/provider/department_service.dart';
 import 'package:ige_hospital/provider/permission_service.dart';
+import 'package:ige_hospital/provider/vital_signs_service.dart';
 import 'package:ige_hospital/screen/auth/splash_screen.dart';
 import 'package:ige_hospital/routes.dart';
 import 'package:provider/provider.dart';
@@ -51,6 +52,9 @@ void main() async {
 
     Get.log("📞 Initializing ConsultationController...");
     Get.put(ConsultationController());
+
+    Get.log("🫀 Initializing VitalSignsService...");
+    Get.put(VitalSignsService());
 
     Get.log("✅ All services initialized successfully!");
 

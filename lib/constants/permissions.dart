@@ -53,4 +53,9 @@ class Permissions {
   // System permissions
   static const String viewSystemSettings = 'view_system_settings';
   static const String editSystemSettings = 'edit_system_settings';
+
+  static const String viewVitalSigns = 'view_vital_signs';
+  static const String createVitalSigns = 'create_vital_signs';
+  static const String editVitalSigns = 'edit_vital_signs';
+  static const String deleteVitalSigns = 'delete_vital_signs';
 }
