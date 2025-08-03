@@ -66,10 +66,7 @@ class RolePermissions {
       Permissions.viewPatients,
       Permissions.createPatients,
       Permissions.editPatients,
-      Permissions.viewAppointments,
-      Permissions.createAppointments,
-      Permissions.editAppointments,
-      Permissions.viewOwnAppointments,
+      // Removed appointment permissions for receptionists
       Permissions.viewConsultations,
       Permissions.joinConsultations,
       Permissions.viewOwnProfile,

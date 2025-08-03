@@ -247,13 +247,6 @@ class _RoleBasedDashboardState extends State<RoleBasedDashboard> {
     // Common actions for all staff
     actions.addAll([
       _buildActionCard(
-        'Appointments',
-        Icons.calendar_today,
-        appMainColor,
-            () => Get.find<AppConst>().changePage('appointments'),
-        notifier,
-      ),
-      _buildActionCard(
         'Patient Records',
         Icons.folder_shared,
         Colors.blue,
@@ -265,6 +258,13 @@ class _RoleBasedDashboardState extends State<RoleBasedDashboard> {
     // Role-specific actions
     if (userRole == UserRoles.doctor) {
       actions.addAll([
+        _buildActionCard(
+          'Appointments',
+          Icons.calendar_today,
+          appMainColor,
+              () => Get.find<AppConst>().changePage('appointments'),
+          notifier,
+        ),
         _buildActionCard(
           'Consultations',
           Icons.video_call,
@@ -282,13 +282,6 @@ class _RoleBasedDashboardState extends State<RoleBasedDashboard> {
       ]);
     } else if (userRole == UserRoles.receptionist) {
       actions.addAll([
-        _buildActionCard(
-          'Add Patient',
-          Icons.person_add,
-          Colors.green,
-              () => Get.find<AppConst>().changePage('patients'),
-          notifier,
-        ),
         _buildActionCard(
           'My Profile',
           Icons.person,
