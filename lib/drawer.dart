@@ -168,15 +168,6 @@ class _DrawerCodeState extends State<DrawerCode> {
                                         Get.back();
                                       }
                                   ),
-                                  _buildSingleTile(
-                                      header: "Vital Signs",
-                                      iconPath: "assets/pen-tool.svg",
-                                      index: 'patients',
-                                      onTap: () {
-                                        controller.changePage('patients');
-                                        Get.back();
-                                      }
-                                  ),
                                 ],
                               ),
                             ),
