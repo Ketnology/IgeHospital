@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/vital_signs_controller.dart';
 import 'package:ige_hospital/models/vital_signs_model.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/static_data.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/vital_signs_components/add_vital_signs_dialog.dart';
 import 'package:ige_hospital/widgets/vital_signs_components/edit_vital_signs_dialog.dart';
@@ -35,74 +36,6 @@ class _VitalSignsPageState extends State<VitalSignsPage> {
     super.initState();
     controller = Get.put(VitalSignsController());
     controller.initializeForPatient(widget.patientId, widget.patientName);
-  }
-
-  Widget _buildStatsOverview(ColourNotifier notifier) {
-    return Obx(() {
-      if (controller.vitalSigns.isEmpty) {
-        return Container(); // Return empty container if no data
-      }
-
-      final latest = controller.vitalSigns.last;
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: notifier.getContainer,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Latest Readings',
-              style: TextStyle(
-                color: notifier.getMainText,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildStatItem('Blood Pressure', latest.bloodPressure, Icons.favorite,
-                    latest.isBloodPressureNormal ? Colors.green : Colors.red, notifier),
-                _buildStatItem('Heart Rate', latest.heartRate, Icons.monitor_heart,
-                    latest.isHeartRateNormal ? Colors.green : Colors.red, notifier),
-                _buildStatItem('Temperature', latest.temperature, Icons.thermostat,
-                    latest.isTemperatureNormal ? Colors.green : Colors.red, notifier),
-                _buildStatItem('Oxygen', latest.oxygenSaturation, Icons.air,
-                    Colors.blue, notifier),
-              ],
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  Widget _buildStatItem(String title, String value, IconData icon, Color color, ColourNotifier notifier) {
-    return Column(
-      children: [
-        Icon(icon, color: color),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            color: notifier.getMainText,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          title,
-          style: TextStyle(
-            color: notifier.getMaingey,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildVitalSignsList(ColourNotifier notifier) {
@@ -164,7 +97,8 @@ class _VitalSignsPageState extends State<VitalSignsPage> {
     );
   }
 
-  void _showEditVitalSignsDialog(BuildContext context, VitalSignModel vitalSign) {
+  void _showEditVitalSignsDialog(
+      BuildContext context, VitalSignModel vitalSign) {
     showDialog(
       context: context,
       builder: (context) => EditVitalSignsDialog(
@@ -185,11 +119,10 @@ class _VitalSignsPageState extends State<VitalSignsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CommonTitle(
-              title: 'Vital Signs - ${widget.patientName}',
-              path: "Patient Records > Vital Signs",
+              title: 'Vital Signs',
+              path: "Patient Records",
             ),
             _buildPageTopBar(notifier),
-            _buildStatsOverview(notifier),
             _buildVitalSignsList(notifier),
           ],
         ),
@@ -209,6 +142,8 @@ class _VitalSignsPageState extends State<VitalSignsPage> {
   }
 
   Widget _buildPageTopBar(ColourNotifier notifier) {
+    final appConst = Get.find<AppConst>();
+
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Row(
@@ -217,13 +152,30 @@ class _VitalSignsPageState extends State<VitalSignsPage> {
           // Back button and view toggles
           Row(
             children: [
-              IconButton(
-                onPressed: () => Get.back(),
+              ElevatedButton.icon(
+                onPressed: () => appConst.changePage('patients'),
                 icon: Icon(
                   Icons.arrow_back,
-                  color: notifier.getIconColor,
+                  color: Colors.white,
+                  size: 18,
                 ),
-                tooltip: 'Back to Patient Records',
+                label: Text(
+                  'Back',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: notifier.getIconColor,
+                  elevation: 0,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
               const SizedBox(width: 16),
               IconButton(

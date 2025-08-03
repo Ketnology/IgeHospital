@@ -16,7 +16,7 @@ class VitalSignsController extends GetxController {
   // Pagination
   var currentPage = 1.obs;
   var totalVitalSigns = 0.obs;
-  var perPage = 15.obs;
+  var perPage = 20.obs;
   var lastPage = 1.obs;
 
   // Current patient ID
