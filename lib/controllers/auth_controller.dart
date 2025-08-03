@@ -58,9 +58,9 @@ class AuthController extends GetxController {
       try {
         Get.log("AuthController - Attempting login with email: $emailController.text");
 
-        // await authService.login(emailController.text, passwordController.text);
+        await authService.login(emailController.text, passwordController.text);
         // await authService.login('igehospital@gmail.com', 'password');
-        await authService.login('nurse@gmail.com', 'password'); // nurse
+        // await authService.login('nurse@gmail.com', 'password'); // nurse
         // await authService.login('doctor@gmail.com', 'password'); // doctor
         // await authService.login('patient@gmail.com', 'password');
 

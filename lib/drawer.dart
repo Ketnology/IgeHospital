@@ -142,7 +142,7 @@ class _DrawerCodeState extends State<DrawerCode> {
                             PermissionWrapper(
                               permission: 'view_nurses',
                               child: _buildSingleTile(
-                                  header: "Receptionists", // Updated from "Nurses"
+                                  header: "Nurses",
                                   iconPath: "assets/chat-info.svg",
                                   index: 'nurses',
                                   onTap: () {
