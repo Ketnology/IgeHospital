@@ -3,39 +3,48 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/provider/permission_service.dart';
 
 class PermissionWrapper extends StatelessWidget {
-  final String permission;
   final Widget child;
-  final Widget? fallback;
+  final String? permission;
   final List<String>? anyOf;
   final List<String>? allOf;
+  final Widget? fallback;
 
   const PermissionWrapper({
     super.key,
-    this.permission = '',
     required this.child,
-    this.fallback,
+    this.permission,
     this.anyOf,
     this.allOf,
-  });
+    this.fallback,
+  }) : assert(
+  permission != null || anyOf != null || allOf != null,
+  'At least one permission check must be provided',
+  );
 
   @override
   Widget build(BuildContext context) {
-    final permissionService = Get.find<PermissionService>();
+    try {
+      final permissionService = Get.find<PermissionService>();
 
-    bool hasAccess = false;
+      bool hasAccess = false;
 
-    if (permission.isNotEmpty) {
-      hasAccess = permissionService.hasPermission(permission);
-    } else if (anyOf != null && anyOf!.isNotEmpty) {
-      hasAccess = permissionService.hasAnyPermission(anyOf!);
-    } else if (allOf != null && allOf!.isNotEmpty) {
-      hasAccess = permissionService.hasAllPermissions(allOf!);
+      if (permission != null) {
+        hasAccess = permissionService.hasPermission(permission!);
+      } else if (anyOf != null) {
+        hasAccess = permissionService.hasAnyPermission(anyOf!);
+      } else if (allOf != null) {
+        hasAccess = permissionService.hasAllPermissions(allOf!);
+      }
+
+      if (hasAccess) {
+        return child;
+      } else {
+        return fallback ?? const SizedBox.shrink();
+      }
+    } catch (e) {
+      Get.log("PermissionWrapper error: $e");
+      // If there's an error (like service not found), show the fallback or hide the widget
+      return fallback ?? const SizedBox.shrink();
     }
-
-    if (hasAccess) {
-      return child;
-    }
-
-    return fallback ?? const SizedBox.shrink();
   }
 }
