@@ -18,6 +18,12 @@ jobs:
         with:
           flutter-version: '3.27.4'
           channel: stable
+          
+      - name: Debug SSH Key
+        run: |
+          echo "${{ secrets.CPANEL_SSH_PRIVATE_KEY }}" | head -c 50
+          echo "..."
+          echo "Key length: $(echo '${{ secrets.CPANEL_SSH_PRIVATE_KEY }}' | wc -c)"
       
       - name: Install dependencies
         run: flutter pub get
