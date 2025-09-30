@@ -8,48 +8,53 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+      
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.27.4'
           channel: stable
-
+      
       - name: Install dependencies
         run: flutter pub get
-
+      
       - name: Build Flutter Web
         run: flutter build web --release --dart-define=FLUTTER_WEB_RENDERER=html
-
+      
       - name: Clean public_html directory
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USERNAME }}
           key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          port: 22
           script: |
-            rm -rf /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/* 
-
-      - name: Deploy to cPanel via SSH
-        uses: appleboy/scp-action@v0.1.4
+            rm -rf /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/*
+      
+      - name: Deploy to cPanel via SCP
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USERNAME }}
           key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          port: 22
           source: "build/web/*"
           target: "/home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html"
-          strip_components: 1
-
-      - name: Move files to correct location
-        uses: appleboy/ssh-action@v0.1.10
+          strip_components: 2
+          rm: false
+      
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USERNAME }}
           key: ${{ secrets.CPANEL_SSH_PRIVATE_KEY }}
+          port: 22
           script: |
-            mv /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/web/* /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/
-            rm -r /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/web
+            echo "Checking deployed files..."
+            ls -la /home/${{ secrets.CPANEL_USERNAME }}/domains/${{ secrets.CPANEL_DOMAIN }}/public_html/
+            echo "Deployment complete!"
