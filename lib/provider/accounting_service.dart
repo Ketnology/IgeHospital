@@ -29,7 +29,7 @@ class AccountingService extends GetxService {
         'per_page': perPage.toString(),
       };
 
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/accounting/accounts')
+      final Uri uri = Uri.parse(ApiEndpoints.accountingAccountsEndpoint)
           .replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
@@ -48,7 +48,7 @@ class AccountingService extends GetxService {
   Future<Account> getAccountDetails(String id) async {
     try {
       final dynamic result = await _httpClient
-          .get('${ApiEndpoints.baseUrl}/accounting/accounts/$id');
+          .get('${ApiEndpoints.accountingAccountsEndpoint}/$id');
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         return Account.fromJson(result['data']);
@@ -64,7 +64,7 @@ class AccountingService extends GetxService {
   Future<void> createAccount(Map<String, dynamic> accountData) async {
     try {
       final dynamic result = await _httpClient.post(
-        '${ApiEndpoints.baseUrl}/accounting/accounts',
+        ApiEndpoints.accountingAccountsEndpoint,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(accountData),
       );
@@ -88,7 +88,7 @@ class AccountingService extends GetxService {
       String id, Map<String, dynamic> accountData) async {
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.baseUrl}/accounting/accounts/$id',
+        '${ApiEndpoints.accountingAccountsEndpoint}/$id',
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(accountData),
       );
@@ -111,7 +111,7 @@ class AccountingService extends GetxService {
   Future<void> deleteAccount(String id) async {
     try {
       final dynamic result = await _httpClient
-          .delete('${ApiEndpoints.baseUrl}/accounting/accounts/$id');
+          .delete('${ApiEndpoints.accountingAccountsEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -131,7 +131,7 @@ class AccountingService extends GetxService {
   Future<void> toggleAccountStatus(String id) async {
     try {
       final dynamic result = await _httpClient.patch(
-          '${ApiEndpoints.baseUrl}/accounting/accounts/$id/toggle-status');
+          '${ApiEndpoints.accountingAccountsEndpoint}/$id/toggle-status');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -176,7 +176,7 @@ class AccountingService extends GetxService {
         'per_page': perPage.toString(),
       };
 
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/accounting/payments')
+      final Uri uri = Uri.parse(ApiEndpoints.accountingPaymentsEndpoint)
           .replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
@@ -195,7 +195,7 @@ class AccountingService extends GetxService {
   Future<void> createPayment(Map<String, dynamic> paymentData) async {
     try {
       final dynamic result = await _httpClient.post(
-        '${ApiEndpoints.baseUrl}/accounting/payments',
+        ApiEndpoints.accountingPaymentsEndpoint,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(paymentData),
       );
@@ -248,7 +248,7 @@ class AccountingService extends GetxService {
         'per_page': perPage.toString(),
       };
 
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/accounting/bills')
+      final Uri uri = Uri.parse(ApiEndpoints.accountingBillsEndpoint)
           .replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
@@ -277,7 +277,7 @@ class AccountingService extends GetxService {
   Future<Bill> getBillDetails(String id) async {
     try {
       final dynamic result =
-          await _httpClient.get('${ApiEndpoints.baseUrl}/accounting/bills/$id');
+          await _httpClient.get('${ApiEndpoints.accountingBillsEndpoint}/$id');
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         return Bill.fromJson(result['data']);
@@ -293,7 +293,7 @@ class AccountingService extends GetxService {
   Future<void> createBill(Map<String, dynamic> billData) async {
     try {
       final dynamic result = await _httpClient.post(
-        '${ApiEndpoints.baseUrl}/accounting/bills',
+        ApiEndpoints.accountingBillsEndpoint,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(billData),
       );
@@ -316,7 +316,7 @@ class AccountingService extends GetxService {
   Future<void> updateBill(String id, Map<String, dynamic> billData) async {
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.baseUrl}/accounting/bills/$id',
+        '${ApiEndpoints.accountingBillsEndpoint}/$id',
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(billData),
       );
@@ -339,7 +339,7 @@ class AccountingService extends GetxService {
   Future<void> deleteBill(String id) async {
     try {
       final dynamic result = await _httpClient
-          .delete('${ApiEndpoints.baseUrl}/accounting/bills/$id');
+          .delete('${ApiEndpoints.accountingBillsEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -359,7 +359,7 @@ class AccountingService extends GetxService {
   Future<void> updateBillStatus(String id, String status) async {
     try {
       final dynamic result = await _httpClient.patch(
-        '${ApiEndpoints.baseUrl}/accounting/bills/$id/status',
+        '${ApiEndpoints.accountingBillsEndpoint}/$id/status',
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'status': status}),
       );
@@ -385,7 +385,7 @@ class AccountingService extends GetxService {
   Future<Map<String, dynamic>> getAccountingDashboard() async {
     try {
       final dynamic result =
-          await _httpClient.get('${ApiEndpoints.baseUrl}/accounting/dashboard');
+          await _httpClient.get(ApiEndpoints.accountingDashboardEndpoint);
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         return result['data'];
@@ -402,7 +402,7 @@ class AccountingService extends GetxService {
   Future<Map<String, dynamic>> getFinancialOverview() async {
     try {
       final dynamic result = await _httpClient.get(
-          '${ApiEndpoints.baseUrl}/accounting/dashboard/financial-overview');
+          ApiEndpoints.accountingFinancialOverviewEndpoint);
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         return result['data'];

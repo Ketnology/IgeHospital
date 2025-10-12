@@ -8,8 +8,6 @@ import 'package:ige_hospital/utils/snack_bar_utils.dart';
 class ConsultationService extends GetxService {
   final HttpClient _httpClient = HttpClient();
 
-  static const String _consultationsEndpoint = "${ApiEndpoints.baseUrl}/live-consultations";
-
   // Get all consultations with filters
   Future<Map<String, dynamic>> getConsultations({
     String? doctorId,
@@ -37,7 +35,7 @@ class ConsultationService extends GetxService {
         'per_page': perPage.toString(),
       };
 
-      final Uri uri = Uri.parse(_consultationsEndpoint).replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.liveConsultationsEndpoint).replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
@@ -65,7 +63,7 @@ class ConsultationService extends GetxService {
   // Get consultation by ID
   Future<LiveConsultation> getConsultationById(String id) async {
     try {
-      final dynamic result = await _httpClient.get('$_consultationsEndpoint/$id');
+      final dynamic result = await _httpClient.get('${ApiEndpoints.liveConsultationsEndpoint}/$id');
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         return LiveConsultation.fromJson(result['data']);
@@ -82,7 +80,7 @@ class ConsultationService extends GetxService {
   Future<LiveConsultation> createConsultation(Map<String, dynamic> consultationData) async {
     try {
       final dynamic result = await _httpClient.post(
-        _consultationsEndpoint,
+        ApiEndpoints.liveConsultationsEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -109,7 +107,7 @@ class ConsultationService extends GetxService {
   Future<LiveConsultation> updateConsultation(String id, Map<String, dynamic> consultationData) async {
     try {
       final dynamic result = await _httpClient.put(
-        '$_consultationsEndpoint/$id',
+        '${ApiEndpoints.liveConsultationsEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -135,7 +133,7 @@ class ConsultationService extends GetxService {
   // Delete consultation
   Future<void> deleteConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient.delete('$_consultationsEndpoint/$id');
+      final dynamic result = await _httpClient.delete('${ApiEndpoints.liveConsultationsEndpoint}/$id');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -155,7 +153,7 @@ class ConsultationService extends GetxService {
   // Join consultation
   Future<void> joinConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient.post('$_consultationsEndpoint/$id/join');
+      final dynamic result = await _httpClient.post('${ApiEndpoints.liveConsultationsEndpoint}/$id/join');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -175,7 +173,7 @@ class ConsultationService extends GetxService {
   // Start consultation (doctor only)
   Future<void> startConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient.post('$_consultationsEndpoint/$id/start');
+      final dynamic result = await _httpClient.post('${ApiEndpoints.liveConsultationsEndpoint}/$id/start');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -195,7 +193,7 @@ class ConsultationService extends GetxService {
   // End consultation (doctor only)
   Future<void> endConsultation(String id) async {
     try {
-      final dynamic result = await _httpClient.post('$_consultationsEndpoint/$id/end');
+      final dynamic result = await _httpClient.post('${ApiEndpoints.liveConsultationsEndpoint}/$id/end');
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 200) {
@@ -216,7 +214,7 @@ class ConsultationService extends GetxService {
   Future<LiveConsultation> changeConsultationStatus(String id, String status) async {
     try {
       final dynamic result = await _httpClient.patch(
-        '$_consultationsEndpoint/$id/status',
+        '${ApiEndpoints.liveConsultationsEndpoint}/$id/status',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -242,7 +240,7 @@ class ConsultationService extends GetxService {
   // Get upcoming consultations
   Future<List<LiveConsultation>> getUpcomingConsultations({int limit = 10}) async {
     try {
-      final Uri uri = Uri.parse('$_consultationsEndpoint/upcoming').replace(
+      final Uri uri = Uri.parse(ApiEndpoints.upcomingConsultationsEndpoint).replace(
         queryParameters: {'limit': limit.toString()},
       );
       final dynamic result = await _httpClient.get(uri.toString());
@@ -265,7 +263,7 @@ class ConsultationService extends GetxService {
   // Get today's consultations
   Future<List<LiveConsultation>> getTodaysConsultations() async {
     try {
-      final dynamic result = await _httpClient.get('$_consultationsEndpoint/today');
+      final dynamic result = await _httpClient.get(ApiEndpoints.todaysConsultationsEndpoint);
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         // Updated to handle the new response structure where data is directly an array
@@ -292,7 +290,7 @@ class ConsultationService extends GetxService {
       if (dateFrom != null && dateFrom.isNotEmpty) queryParams['date_from'] = dateFrom;
       if (dateTo != null && dateTo.isNotEmpty) queryParams['date_to'] = dateTo;
 
-      final Uri uri = Uri.parse('$_consultationsEndpoint/statistics').replace(queryParameters: queryParams);
+      final Uri uri = Uri.parse(ApiEndpoints.consultationStatisticsEndpoint).replace(queryParameters: queryParams);
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
