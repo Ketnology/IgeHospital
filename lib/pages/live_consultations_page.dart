@@ -35,7 +35,7 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
           children: [
             const CommonTitle(title: 'Live Consultations', path: "Medical Services"),
             _buildPageTopBar(context, notifier),
-            if (_showFilters) const ConsultationFilters(initiallyExpanded: true),
+            if (_showFilters) const ConsultationFilters(),
             _buildConsultationsList(notifier),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/consultation_controller.dart';
 import 'package:ige_hospital/controllers/doctor_controller.dart';
+import 'package:ige_hospital/controllers/patient_controller.dart';
 import 'package:ige_hospital/models/consultation_model.dart';
 import 'package:ige_hospital/provider/auth_service.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
@@ -49,6 +50,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
   // Loading state
   bool isLoading = false;
   bool isDoctorsLoading = false;
+  bool isPatientsLoading = false;
 
   // Options
   final List<int> durationOptions = [15, 30, 45, 60, 90, 120];
@@ -65,8 +67,10 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     'Asia/Tokyo'
   ];
 
-  // Doctor data
+  // Doctor and Patient data
   List<Map<String, String>> doctors = [];
+  List<Map<String, String>> patients = [];
+  String? selectedPatientId;
 
   // Check if current user is a doctor
   bool get isCurrentUserDoctor {
@@ -80,6 +84,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     if (!isCurrentUserDoctor) {
       _loadDoctors();
     }
+    _loadPatients();
   }
 
   void _initializeControllers() {
@@ -100,6 +105,7 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
 
       patientIdController =
           TextEditingController(text: consultation.patient.id);
+      selectedPatientId = consultation.patient.id;
 
       selectedDate = consultation.consultationDate;
       selectedTime = TimeOfDay.fromDateTime(consultation.consultationDate);
@@ -163,6 +169,40 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
     } finally {
       setState(() {
         isDoctorsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadPatients() async {
+    setState(() {
+      isPatientsLoading = true;
+    });
+
+    try {
+      final patientController = Get.find<PatientController>();
+      await patientController.loadPatients();
+
+      setState(() {
+        patients = patientController.patients.map((patient) => {
+          'id': patient.id.toString(),
+          'name': patient.user['full_name']?.toString() ?? 'Unknown',
+          'email': patient.user['email']?.toString() ?? '',
+          'phone': patient.user['phone']?.toString() ?? '',
+        }).toList();
+      });
+    } catch (e) {
+      Get.log("Error loading patients: $e");
+      // Show error message but don't block the dialog
+      Get.snackbar(
+        "Warning",
+        "Could not load patients list. Please enter patient ID manually.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        isPatientsLoading = false;
       });
     }
   }
@@ -358,17 +398,104 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
 
                       // Doctor and Patient fields - conditional layout
                       if (isCurrentUserDoctor) ...[
-                        // Full width patient field for doctors
-                        TextFormField(
-                          controller: patientIdController,
+                        // Full width patient dropdown for doctors
+                        isPatientsLoading
+                            ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: notifier.getBorderColor),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      notifier.getIconColor),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Loading patients...',
+                                style: TextStyle(color: notifier.getMaingey),
+                              ),
+                            ],
+                          ),
+                        )
+                            : DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: selectedPatientId,
                           decoration: _inputDecoration(
-                              'Patient ID', notifier, Icons.person),
-                          validator: (value) =>
-                          value!.isEmpty ? 'Required' : null,
+                              'Select Patient', notifier, Icons.person),
+                          hint: Text('Choose a patient',
+                              style: TextStyle(color: notifier.getMaingey)),
+                          items: [
+                            // Manual entry option
+                            DropdownMenuItem<String>(
+                              value: 'manual',
+                              child: Text(
+                                'Enter Patient ID manually',
+                                style: TextStyle(
+                                  color: notifier.getMainText,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                            ...patients.map((patient) {
+                              return DropdownMenuItem<String>(
+                                value: patient['id'],
+                                child: Container(
+                                  width: double.infinity,
+                                  child: Text(
+                                    '${patient['name']} (${patient['email']})',
+                                    style: TextStyle(
+                                      color: notifier.getMainText,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPatientId = value;
+                              if (value == 'manual') {
+                                patientIdController.clear();
+                              } else if (value != null) {
+                                patientIdController.text = value;
+                              }
+                            });
+                          },
+                          validator: (value) {
+                            if (selectedPatientId == 'manual') {
+                              return patientIdController.text.isEmpty
+                                  ? 'Required'
+                                  : null;
+                            }
+                            return value == null ? 'Required' : null;
+                          },
+                          dropdownColor: notifier.getContainer,
                           style: TextStyle(color: notifier.getMainText),
                         ),
+                        // Manual patient ID field (shown when manual option is selected)
+                        if (selectedPatientId == 'manual') ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: patientIdController,
+                            decoration: _inputDecoration(
+                                'Patient ID', notifier, Icons.person),
+                            validator: (value) =>
+                            value!.isEmpty ? 'Required' : null,
+                            style: TextStyle(color: notifier.getMainText),
+                          ),
+                        ],
                       ] else ...[
-                        // Doctor dropdown and patient field for non-doctors
+                        // Doctor dropdown and patient dropdown for non-doctors
                         Row(
                           children: [
                             Expanded(
@@ -463,12 +590,91 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: TextFormField(
-                                controller: patientIdController,
+                              child: isPatientsLoading
+                                  ? Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: notifier.getBorderColor),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                        AlwaysStoppedAnimation<Color>(
+                                            notifier.getIconColor),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Loading patients...',
+                                      style: TextStyle(
+                                          color: notifier.getMaingey),
+                                    ),
+                                  ],
+                                ),
+                              )
+                                  : DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                value: selectedPatientId,
                                 decoration: _inputDecoration(
-                                    'Patient ID', notifier, Icons.person),
-                                validator: (value) =>
-                                value!.isEmpty ? 'Required' : null,
+                                    'Select Patient', notifier, Icons.person),
+                                hint: Text('Choose a patient',
+                                    style: TextStyle(
+                                        color: notifier.getMaingey)),
+                                items: [
+                                  // Manual entry option
+                                  DropdownMenuItem<String>(
+                                    value: 'manual',
+                                    child: Text(
+                                      'Enter Patient ID manually',
+                                      style: TextStyle(
+                                        color: notifier.getMainText,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                  ...patients.map((patient) {
+                                    return DropdownMenuItem<String>(
+                                      value: patient['id'],
+                                      child: Container(
+                                        width: double.infinity,
+                                        child: Text(
+                                          '${patient['name']} (${patient['email']})',
+                                          style: TextStyle(
+                                            color: notifier.getMainText,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedPatientId = value;
+                                    if (value == 'manual') {
+                                      patientIdController.clear();
+                                    } else if (value != null) {
+                                      patientIdController.text = value;
+                                    }
+                                  });
+                                },
+                                validator: (value) {
+                                  if (selectedPatientId == 'manual') {
+                                    return patientIdController.text.isEmpty
+                                        ? 'Required'
+                                        : null;
+                                  }
+                                  return value == null ? 'Required' : null;
+                                },
+                                dropdownColor: notifier.getContainer,
                                 style: TextStyle(color: notifier.getMainText),
                               ),
                             ),
@@ -482,6 +688,19 @@ class _ConsultationFormDialogState extends State<ConsultationFormDialog> {
                             controller: doctorIdController,
                             decoration: _inputDecoration('Doctor ID',
                                 notifier, Icons.medical_services),
+                            validator: (value) =>
+                            value!.isEmpty ? 'Required' : null,
+                            style: TextStyle(color: notifier.getMainText),
+                          ),
+                        ],
+
+                        // Manual patient ID field (shown when manual option is selected)
+                        if (selectedPatientId == 'manual') ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: patientIdController,
+                            decoration: _inputDecoration(
+                                'Patient ID', notifier, Icons.person),
                             validator: (value) =>
                             value!.isEmpty ? 'Required' : null,
                             style: TextStyle(color: notifier.getMainText),
