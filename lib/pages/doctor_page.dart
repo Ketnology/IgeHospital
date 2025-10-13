@@ -63,18 +63,31 @@ class _DoctorsPageState extends State<DoctorsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Toggle Filters Button
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _showFilters = !_showFilters;
-              });
-            },
-            icon: Icon(
-              _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
-              color: notifier.getIconColor,
-            ),
-            tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+          // Stats and Filters Button
+          Row(
+            children: [
+              // Toggle Filters Button
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _showFilters = !_showFilters;
+                  });
+                },
+                icon: Icon(
+                  _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+                  color: notifier.getIconColor,
+                ),
+                tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+              ),
+              const SizedBox(width: 8),
+
+              // Refresh Button
+              IconButton(
+                onPressed: () => controller.loadDoctors(),
+                icon: Icon(Icons.refresh, color: notifier.getIconColor),
+                tooltip: 'Refresh',
+              ),
+            ],
           ),
 
           // Add Doctor Button
