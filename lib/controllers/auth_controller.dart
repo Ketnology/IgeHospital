@@ -60,9 +60,9 @@ class AuthController extends GetxController {
 
         // await authService.login(emailController.text, passwordController.text);
         // await authService.login('igehospital@gmail.com', 'password');
-        await authService.login('nurse@gmail.com', 'password'); // nurse
+        // await authService.login('nurse@gmail.com', 'password'); // nurse
         // await authService.login('doctor@gmail.com', 'password'); // doctor
-        // await authService.login('patient@gmail.com', 'password');
+        await authService.login('patient@gmail.com', 'password');
 
         // Wait a bit for the auth state to settle
         await Future.delayed(const Duration(milliseconds: 100));
