@@ -20,13 +20,15 @@ class VitalSignsService extends GetxService {
         'page': page.toString(),
       };
 
-      final Uri uri = Uri.parse('${ApiEndpoints.baseUrl}/patients/$patientId/vital-signs/staff')
+      final Uri uri = Uri.parse(
+              '${ApiEndpoints.patientsEndpoint}/$patientId/vital-signs/staff')
           .replace(queryParameters: queryParams);
 
       final dynamic result = await _httpClient.get(uri.toString());
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
-        final List<dynamic> vitalSignsList = result['data']['vital_signs'] ?? [];
+        final List<dynamic> vitalSignsList =
+            result['data']['vital_signs'] ?? [];
         final List<VitalSignModel> vitalSigns = vitalSignsList
             .map((json) => VitalSignModel.fromJson(json))
             .toList();
@@ -48,10 +50,11 @@ class VitalSignsService extends GetxService {
   }
 
   // Create new vital signs
-  Future<VitalSignModel> createVitalSigns(Map<String, dynamic> vitalSignsData) async {
+  Future<VitalSignModel> createVitalSigns(
+      Map<String, dynamic> vitalSignsData) async {
     try {
       final dynamic result = await _httpClient.post(
-        '${ApiEndpoints.baseUrl}/vital-signs',
+        ApiEndpoints.vitalSignsEndpoint,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -60,7 +63,8 @@ class VitalSignsService extends GetxService {
 
       if (result is Map<String, dynamic>) {
         if (result['status'] == 201 || result['status'] == 200) {
-          SnackBarUtils.showSuccessSnackBar('Vital signs recorded successfully');
+          SnackBarUtils.showSuccessSnackBar(
+              'Vital signs recorded successfully');
           return VitalSignModel.fromJson(result['data']);
         } else {
           throw Exception(result['message'] ?? 'Failed to create vital signs');
@@ -79,7 +83,7 @@ class VitalSignsService extends GetxService {
       String id, Map<String, dynamic> vitalSignsData) async {
     try {
       final dynamic result = await _httpClient.put(
-        '${ApiEndpoints.baseUrl}/vital-signs/$id',
+        '${ApiEndpoints.vitalSignsEndpoint}/$id',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -106,7 +110,7 @@ class VitalSignsService extends GetxService {
   Future<void> deleteVitalSigns(String id) async {
     try {
       final dynamic result = await _httpClient.delete(
-        '${ApiEndpoints.baseUrl}/vital-signs/$id',
+        '${ApiEndpoints.vitalSignsEndpoint}/$id',
       );
 
       if (result is Map<String, dynamic>) {
@@ -128,13 +132,14 @@ class VitalSignsService extends GetxService {
   Future<VitalSignModel> getVitalSignsById(String id) async {
     try {
       final dynamic result = await _httpClient.get(
-        '${ApiEndpoints.baseUrl}/vital-signs/$id',
+        '${ApiEndpoints.vitalSignsEndpoint}/$id',
       );
 
       if (result is Map<String, dynamic> && result['status'] == 200) {
         return VitalSignModel.fromJson(result['data']);
       } else {
-        throw Exception(result['message'] ?? 'Failed to get vital signs details');
+        throw Exception(
+            result['message'] ?? 'Failed to get vital signs details');
       }
     } catch (e) {
       Get.log("Error in getVitalSignsById: $e");

@@ -63,7 +63,6 @@ class _NursesPageState extends State<NursesPage> {
               NurseFilters(
                 searchController: _searchController,
                 nurseController: _nurseController,
-                initiallyExpanded: true,
               ),
             _buildNursesList(notifier),
           ],
@@ -93,17 +92,31 @@ class _NursesPageState extends State<NursesPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _showFilters = !_showFilters;
-              });
-            },
-            icon: Icon(
-              _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
-              color: notifier.getIconColor,
-            ),
-            tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+          // Stats and Filters Button
+          Row(
+            children: [
+              // Toggle Filters Button
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _showFilters = !_showFilters;
+                  });
+                },
+                icon: Icon(
+                  _showFilters ? Icons.filter_alt_off : Icons.filter_alt,
+                  color: notifier.getIconColor,
+                ),
+                tooltip: _showFilters ? 'Hide filters' : 'Show filters',
+              ),
+              const SizedBox(width: 8),
+
+              // Refresh Button
+              IconButton(
+                onPressed: () => _nurseController.loadNurses(),
+                icon: Icon(Icons.refresh, color: notifier.getIconColor),
+                tooltip: 'Refresh',
+              ),
+            ],
           ),
 
           PermissionButton(

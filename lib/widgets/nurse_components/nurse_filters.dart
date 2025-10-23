@@ -6,30 +6,15 @@ import 'package:ige_hospital/widgets/form/app_dropdown_field.dart';
 import 'package:ige_hospital/widgets/form/app_text_field.dart';
 import 'package:provider/provider.dart';
 
-class NurseFilters extends StatefulWidget {
+class NurseFilters extends StatelessWidget {
   final TextEditingController searchController;
   final NurseController nurseController;
-  final bool initiallyExpanded;
 
   const NurseFilters({
     super.key,
     required this.searchController,
     required this.nurseController,
-    this.initiallyExpanded = false,
   });
-
-  @override
-  State<NurseFilters> createState() => _NurseFiltersState();
-}
-
-class _NurseFiltersState extends State<NurseFilters> {
-  late bool _isFilterExpanded;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFilterExpanded = widget.initiallyExpanded;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +22,7 @@ class _NurseFiltersState extends State<NurseFilters> {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      padding: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
         color: notifier.getContainer,
         borderRadius: BorderRadius.circular(10),
@@ -49,87 +35,20 @@ class _NurseFiltersState extends State<NurseFilters> {
         ],
       ),
       child: Column(
-        children: [
-          // Header with toggle button
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isFilterExpanded = !_isFilterExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Filters & Search",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: notifier.getMainText,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          widget.searchController.clear();
-                          widget.nurseController.resetFilters();
-                        },
-                        icon: Icon(Icons.refresh,
-                            size: 16, color: notifier.getIconColor),
-                        label: Text(
-                          "Reset Filters",
-                          style: TextStyle(color: notifier.getIconColor),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        _isFilterExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: notifier.getIconColor,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Expandable filter content
-          AnimatedCrossFade(
-            firstChild: const SizedBox(height: 0),
-            secondChild: _buildExpandedFilters(notifier),
-            duration: const Duration(milliseconds: 300),
-            crossFadeState: _isFilterExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExpandedFilters(ColourNotifier notifier) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
-      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Search box
           AppTextField(
             label: '',
             hintText: "Search by name, email, specialty...",
-            controller: widget.searchController,
+            controller: searchController,
             prefixIcon: Icons.search,
             suffixIcon:
-            widget.searchController.text.isNotEmpty ? Icons.clear : null,
+            searchController.text.isNotEmpty ? Icons.clear : null,
             onSuffixIconPressed: () {
-              widget.searchController.clear();
-              widget.nurseController.searchQuery.value = '';
-              widget.nurseController.loadNurses();
+              searchController.clear();
+              nurseController.searchQuery.value = '';
+              nurseController.loadNurses();
             },
           ),
           const SizedBox(height: 16),
@@ -137,10 +56,10 @@ class _NurseFiltersState extends State<NurseFilters> {
           // Department dropdown
           Obx(() => AppDropdownField<String>(
             label: 'Department',
-            value: widget.nurseController.selectedDepartment.value.isEmpty
+            value: nurseController.selectedDepartment.value.isEmpty
                 ? 'All Departments'
-                : widget.nurseController.selectedDepartment.value,
-            items: widget.nurseController.departments.map((department) {
+                : nurseController.selectedDepartment.value,
+            items: nurseController.departments.map((department) {
               return DropdownMenuItem(
                 value: department,
                 child: Text(
@@ -152,9 +71,9 @@ class _NurseFiltersState extends State<NurseFilters> {
             }).toList(),
             onChanged: (value) {
               if (value != null) {
-                widget.nurseController.selectedDepartment.value =
+                nurseController.selectedDepartment.value =
                 value == 'All Departments' ? '' : value;
-                widget.nurseController.loadNurses();
+                nurseController.loadNurses();
               }
             },
           )),
@@ -166,12 +85,11 @@ class _NurseFiltersState extends State<NurseFilters> {
               Expanded(
                 child: Obx(() => AppDropdownField<String>(
                   label: 'Specialty',
-                  value: widget
-                      .nurseController.selectedSpecialty.value.isEmpty
+                  value: nurseController.selectedSpecialty.value.isEmpty
                       ? 'All Specialties'
-                      : widget.nurseController.selectedSpecialty.value,
+                      : nurseController.selectedSpecialty.value,
                   items:
-                  widget.nurseController.specialties.map((specialty) {
+                  nurseController.specialties.map((specialty) {
                     return DropdownMenuItem(
                       value: specialty,
                       child: Text(
@@ -183,9 +101,9 @@ class _NurseFiltersState extends State<NurseFilters> {
                   }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      widget.nurseController.selectedSpecialty.value =
+                      nurseController.selectedSpecialty.value =
                       value == 'All Specialties' ? '' : value;
-                      widget.nurseController.loadNurses();
+                      nurseController.loadNurses();
                     }
                   },
                 )),
@@ -195,9 +113,9 @@ class _NurseFiltersState extends State<NurseFilters> {
                 child: Obx(() => AppDropdownField<String>(
                   label: 'Status',
                   value:
-                  widget.nurseController.selectedStatus.value.isEmpty
+                  nurseController.selectedStatus.value.isEmpty
                       ? 'All'
-                      : widget.nurseController.selectedStatus.value,
+                      : nurseController.selectedStatus.value,
                   items:
                   ['All', 'Active', 'Pending', 'Blocked'].map((status) {
                     return DropdownMenuItem(
@@ -226,9 +144,9 @@ class _NurseFiltersState extends State<NurseFilters> {
                   }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      widget.nurseController.selectedStatus.value =
+                      nurseController.selectedStatus.value =
                       value == 'All' ? '' : value.toLowerCase();
-                      widget.nurseController.loadNurses();
+                      nurseController.loadNurses();
                     }
                   },
                 )),
@@ -240,7 +158,7 @@ class _NurseFiltersState extends State<NurseFilters> {
           // Sort Direction
           Obx(() => AppDropdownField<String>(
             label: 'Sort Order',
-            value: widget.nurseController.sortDirection.value,
+            value: nurseController.sortDirection.value,
             items: [
               DropdownMenuItem(
                 value: 'desc',
@@ -273,8 +191,8 @@ class _NurseFiltersState extends State<NurseFilters> {
             ],
             onChanged: (value) {
               if (value != null) {
-                widget.nurseController.sortDirection.value = value;
-                widget.nurseController.loadNurses();
+                nurseController.sortDirection.value = value;
+                nurseController.loadNurses();
               }
             },
           )),

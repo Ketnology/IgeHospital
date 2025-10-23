@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
 import 'package:ige_hospital/provider/appointment_service.dart';
 
-class AppointmentFilters extends StatefulWidget {
+class AppointmentFilters extends StatelessWidget {
   final ColourNotifier notifier;
   final AppointmentsService appointmentsService;
 
@@ -15,153 +15,91 @@ class AppointmentFilters extends StatefulWidget {
   });
 
   @override
-  State<AppointmentFilters> createState() => _AppointmentFiltersState();
-}
-
-class _AppointmentFiltersState extends State<AppointmentFilters> {
-  bool _isFilterExpanded = false;
-
-  @override
   Widget build(BuildContext context) {
     return Obx(
       () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15.0),
         child: Card(
-          color: widget.notifier.getContainer,
+          color: notifier.getContainer,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: widget.notifier.getBorderColor),
+            side: BorderSide(color: notifier.getBorderColor),
           ),
           elevation: 0,
-          child: Column(
-            children: [
-              // Header with toggle button
-              ListTile(
-                onTap: () {
-                  setState(() {
-                    _isFilterExpanded = !_isFilterExpanded;
-                  });
-                },
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                title: Text(
-                  "Filters & Search",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: widget.notifier.getMainText,
-                  ),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        widget.appointmentsService.resetFilters();
-                      },
-                      icon: Icon(Icons.refresh,
-                          size: 16, color: widget.notifier.getIconColor),
-                      label: Text(
-                        "Reset",
-                        style: TextStyle(color: widget.notifier.getIconColor),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      _isFilterExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      color: widget.notifier.getIconColor,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Expandable filter content
-              AnimatedCrossFade(
-                firstChild: const SizedBox(height: 0),
-                secondChild: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 8),
-                      _buildSearchBox(),
-                      const SizedBox(height: 16),
-                      _buildDateRangeFilter(),
-                      const SizedBox(height: 16),
-                      _buildStatusAndSortRow(),
-                    ],
-                  ),
-                ),
-                duration: const Duration(milliseconds: 300),
-                crossFadeState: _isFilterExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildSearchBox(context),
+                const SizedBox(height: 16),
+                _buildDateRangeFilter(context),
+                const SizedBox(height: 16),
+                _buildStatusAndSortRow(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSearchBox() {
+  Widget _buildSearchBox(BuildContext context) {
     final searchController = TextEditingController(
-        text: widget.appointmentsService.searchQuery.value);
+        text: appointmentsService.searchQuery.value);
 
     return TextFormField(
       controller: searchController,
-      style: TextStyle(color: widget.notifier.getMainText),
+      style: TextStyle(color: notifier.getMainText),
       decoration: InputDecoration(
         hintText: "Search by doctor, patient, problem...",
-        hintStyle: TextStyle(color: widget.notifier.getMaingey),
-        prefixIcon: Icon(Icons.search, color: widget.notifier.getIconColor),
+        hintStyle: TextStyle(color: notifier.getMaingey),
+        prefixIcon: Icon(Icons.search, color: notifier.getIconColor),
         filled: true,
-        fillColor: widget.notifier.getPrimaryColor,
+        fillColor: notifier.getPrimaryColor,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.notifier.getBorderColor),
+          borderSide: BorderSide(color: notifier.getBorderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: widget.notifier.getIconColor),
+          borderSide: BorderSide(color: notifier.getIconColor),
         ),
         suffixIcon: searchController.text.isNotEmpty
             ? IconButton(
                 icon: Icon(Icons.clear,
-                    size: 18, color: widget.notifier.getMaingey),
+                    size: 18, color: notifier.getMaingey),
                 onPressed: () {
                   searchController.clear();
-                  widget.appointmentsService.searchQuery.value = '';
-                  widget.appointmentsService.fetchAppointments();
+                  appointmentsService.searchQuery.value = '';
+                  appointmentsService.fetchAppointments();
                 },
               )
             : null,
       ),
       onFieldSubmitted: (value) {
-        widget.appointmentsService.searchQuery.value = value;
-        widget.appointmentsService.fetchAppointments();
+        appointmentsService.searchQuery.value = value;
+        appointmentsService.fetchAppointments();
       },
       onChanged: (value) {
         if (value.isEmpty) {
-          widget.appointmentsService.searchQuery.value = '';
-          widget.appointmentsService.fetchAppointments();
+          appointmentsService.searchQuery.value = '';
+          appointmentsService.fetchAppointments();
         }
       },
     );
   }
 
-  Widget _buildDateRangeFilter() {
+  Widget _buildDateRangeFilter(BuildContext context) {
     return GestureDetector(
       onTap: () async {
         final DateTimeRange? picked = await showDateRangePicker(
           context: context,
           initialDateRange: DateTimeRange(
-            start: widget.appointmentsService.dateFrom.value.isNotEmpty
-                ? DateTime.parse(widget.appointmentsService.dateFrom.value)
+            start: appointmentsService.dateFrom.value.isNotEmpty
+                ? DateTime.parse(appointmentsService.dateFrom.value)
                 : DateTime.now().subtract(const Duration(days: 30)),
-            end: widget.appointmentsService.dateTo.value.isNotEmpty
-                ? DateTime.parse(widget.appointmentsService.dateTo.value)
+            end: appointmentsService.dateTo.value.isNotEmpty
+                ? DateTime.parse(appointmentsService.dateTo.value)
                 : DateTime.now(),
           ),
           firstDate: DateTime(2020),
@@ -170,9 +108,9 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  primary: widget.notifier.getIconColor,
+                  primary: notifier.getIconColor,
                 ),
-                dialogBackgroundColor: widget.notifier.getContainer,
+                dialogBackgroundColor: notifier.getContainer,
               ),
               child: child!,
             );
@@ -180,38 +118,38 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
         );
 
         if (picked != null) {
-          widget.appointmentsService.dateFrom.value =
+          appointmentsService.dateFrom.value =
               DateFormat('yyyy-MM-dd').format(picked.start);
-          widget.appointmentsService.dateTo.value =
+          appointmentsService.dateTo.value =
               DateFormat('yyyy-MM-dd').format(picked.end);
-          widget.appointmentsService.fetchAppointments();
+          appointmentsService.fetchAppointments();
         }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          border: Border.all(color: widget.notifier.getBorderColor),
+          border: Border.all(color: notifier.getBorderColor),
           borderRadius: BorderRadius.circular(8),
-          color: widget.notifier.getPrimaryColor,
+          color: notifier.getPrimaryColor,
         ),
         child: Row(
           children: [
             Icon(Icons.calendar_today,
-                size: 20, color: widget.notifier.getIconColor),
+                size: 20, color: notifier.getIconColor),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                widget.appointmentsService.dateFrom.value.isNotEmpty &&
-                        widget.appointmentsService.dateTo.value.isNotEmpty
-                    ? "${widget.appointmentsService.dateFrom.value} to ${widget.appointmentsService.dateTo.value}"
+                appointmentsService.dateFrom.value.isNotEmpty &&
+                        appointmentsService.dateTo.value.isNotEmpty
+                    ? "${appointmentsService.dateFrom.value} to ${appointmentsService.dateTo.value}"
                     : "Select Date Range",
-                style: TextStyle(color: widget.notifier.getMainText),
+                style: TextStyle(color: notifier.getMainText),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Icon(
               Icons.arrow_drop_down,
-              color: widget.notifier.getMainText,
+              color: notifier.getMainText,
             ),
           ],
         ),
@@ -231,19 +169,19 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               isDense: true,
               filled: true,
-              fillColor: widget.notifier.getPrimaryColor,
+              fillColor: notifier.getPrimaryColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: widget.notifier.getBorderColor),
+                borderSide: BorderSide(color: notifier.getBorderColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: widget.notifier.getBorderColor),
+                borderSide: BorderSide(color: notifier.getBorderColor),
               ),
             ),
-            value: widget.appointmentsService.filterCompleted.value,
-            dropdownColor: widget.notifier.getContainer,
-            style: TextStyle(color: widget.notifier.getMainText),
+            value: appointmentsService.filterCompleted.value,
+            dropdownColor: notifier.getContainer,
+            style: TextStyle(color: notifier.getMainText),
             items: [
               DropdownMenuItem(
                 value: false,
@@ -259,7 +197,7 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                     ),
                     const SizedBox(width: 8),
                     Text('Pending',
-                        style: TextStyle(color: widget.notifier.getMainText)),
+                        style: TextStyle(color: notifier.getMainText)),
                   ],
                 ),
               ),
@@ -277,15 +215,15 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                     ),
                     const SizedBox(width: 8),
                     Text('Completed',
-                        style: TextStyle(color: widget.notifier.getMainText)),
+                        style: TextStyle(color: notifier.getMainText)),
                   ],
                 ),
               ),
             ],
             onChanged: (value) {
               if (value != null) {
-                widget.appointmentsService.filterCompleted.value = value;
-                widget.appointmentsService.fetchAppointments();
+                appointmentsService.filterCompleted.value = value;
+                appointmentsService.fetchAppointments();
               }
             },
           ),
@@ -301,29 +239,29 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               isDense: true,
               filled: true,
-              fillColor: widget.notifier.getPrimaryColor,
+              fillColor: notifier.getPrimaryColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: widget.notifier.getBorderColor),
+                borderSide: BorderSide(color: notifier.getBorderColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: widget.notifier.getBorderColor),
+                borderSide: BorderSide(color: notifier.getBorderColor),
               ),
             ),
-            value: widget.appointmentsService.sortDirection.value,
-            dropdownColor: widget.notifier.getContainer,
-            style: TextStyle(color: widget.notifier.getMainText),
+            value: appointmentsService.sortDirection.value,
+            dropdownColor: notifier.getContainer,
+            style: TextStyle(color: notifier.getMainText),
             items: [
               DropdownMenuItem(
                 value: 'asc',
                 child: Row(
                   children: [
                     Icon(Icons.arrow_upward,
-                        size: 14, color: widget.notifier.getIconColor),
+                        size: 14, color: notifier.getIconColor),
                     const SizedBox(width: 8),
                     Text('Oldest First',
-                        style: TextStyle(color: widget.notifier.getMainText)),
+                        style: TextStyle(color: notifier.getMainText)),
                   ],
                 ),
               ),
@@ -332,18 +270,18 @@ class _AppointmentFiltersState extends State<AppointmentFilters> {
                 child: Row(
                   children: [
                     Icon(Icons.arrow_downward,
-                        size: 14, color: widget.notifier.getIconColor),
+                        size: 14, color: notifier.getIconColor),
                     const SizedBox(width: 8),
                     Text('Newest First',
-                        style: TextStyle(color: widget.notifier.getMainText)),
+                        style: TextStyle(color: notifier.getMainText)),
                   ],
                 ),
               ),
             ],
             onChanged: (value) {
               if (value != null) {
-                widget.appointmentsService.sortDirection.value = value;
-                widget.appointmentsService.fetchAppointments();
+                appointmentsService.sortDirection.value = value;
+                appointmentsService.fetchAppointments();
               }
             },
           ),

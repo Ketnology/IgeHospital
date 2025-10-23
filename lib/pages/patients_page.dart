@@ -216,6 +216,14 @@ class _PatientsPageState extends State<PatientsPage> {
                 ),
                 tooltip: _showFilters ? 'Hide filters' : 'Show filters',
               ),
+              const SizedBox(width: 8),
+
+              // Refresh Button
+              IconButton(
+                onPressed: () => controller.loadPatients(),
+                icon: Icon(Icons.refresh, color: notifier.getIconColor),
+                tooltip: 'Refresh',
+              ),
             ],
           ),
 

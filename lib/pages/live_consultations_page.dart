@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ige_hospital/controllers/consultation_controller.dart';
 import 'package:ige_hospital/models/consultation_model.dart';
 import 'package:ige_hospital/provider/colors_provider.dart';
+import 'package:ige_hospital/provider/permission_service.dart';
 import 'package:ige_hospital/constants/static_data.dart';
 import 'package:ige_hospital/widgets/common_title.dart';
 import 'package:ige_hospital/widgets/consultation_card.dart';
@@ -22,6 +23,9 @@ class LiveConsultationsPage extends StatefulWidget {
 class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
   bool _showFilters = false;
   static final ConsultationController controller = Get.put(ConsultationController());
+  final PermissionService permissionService = Get.find<PermissionService>();
+
+  bool get _canCreateConsultations => permissionService.currentUserRole != 'patient';
 
   @override
   Widget build(BuildContext context) {
@@ -35,21 +39,23 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
           children: [
             const CommonTitle(title: 'Live Consultations', path: "Medical Services"),
             _buildPageTopBar(context, notifier),
-            if (_showFilters) const ConsultationFilters(initiallyExpanded: true),
+            if (_showFilters) const ConsultationFilters(),
             _buildConsultationsList(notifier),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: notifier.getIconColor,
-        onPressed: () {
-          _showCreateConsultationDialog(context);
-        },
-        child: Icon(
-          Icons.add,
-          color: notifier.getBgColor,
-        ),
-      ),
+      floatingActionButton: _canCreateConsultations
+          ? FloatingActionButton(
+              backgroundColor: notifier.getIconColor,
+              onPressed: () {
+                _showCreateConsultationDialog(context);
+              },
+              child: Icon(
+                Icons.add,
+                color: notifier.getBgColor,
+              ),
+            )
+          : null,
     );
   }
 
@@ -149,50 +155,56 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
           const Spacer(),
 
           // Page info and actions
-          Row(
-            children: [
-              Obx(() => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: notifier.getIconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  controller.pageInfo,
-                  style: TextStyle(
-                    color: notifier.getIconColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Obx(() => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: notifier.getIconColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-              )),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: () => _showCreateConsultationDialog(context),
-                icon: SvgPicture.asset(
-                  "assets/plus-circle.svg",
-                  color: Colors.white,
-                  width: 16,
-                  height: 16,
-                ),
-                label: const Text(
-                  "New Consultation",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                  child: Text(
+                    controller.pageInfo,
+                    style: TextStyle(
+                      color: notifier.getIconColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: appMainColor,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                )),
+                if (_canCreateConsultations) ...[
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _showCreateConsultationDialog(context),
+                    icon: SvgPicture.asset(
+                      "assets/plus-circle.svg",
+                      color: Colors.white,
+                      width: 16,
+                      height: 16,
+                    ),
+                    label: const Text(
+                      "New Consultation",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: appMainColor,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -279,7 +291,9 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Try adjusting your filters or create a new consultation',
+              _canCreateConsultations
+                  ? 'Try adjusting your filters or create a new consultation'
+                  : 'Try adjusting your filters',
               style: TextStyle(
                 color: notifier.getMaingey,
                 fontSize: 14,
@@ -302,19 +316,21 @@ class _LiveConsultationsPageState extends State<LiveConsultationsPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: () => _showCreateConsultationDialog(context),
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text(
-                    'Create Consultation',
-                    style: TextStyle(color: Colors.white),
+                if (_canCreateConsultations) ...[
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _showCreateConsultationDialog(context),
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: const Text(
+                      'Create Consultation',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: appMainColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: appMainColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                ),
+                ],
               ],
             ),
           ],

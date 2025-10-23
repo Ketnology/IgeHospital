@@ -32,7 +32,7 @@ void main() async {
     // Initialize PermissionService after AuthService
     Get.log("🛡️ Initializing PermissionService...");
     Get.put(PermissionService());
-
+    
     // Initialize other services
     Get.log("💰 Initializing AccountingController...");
     Get.put(AccountingController());

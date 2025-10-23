@@ -6,11 +6,8 @@ import 'package:ige_hospital/widgets/text_field.dart';
 import 'package:provider/provider.dart';
 
 class ConsultationFilters extends StatefulWidget {
-  final bool initiallyExpanded;
-
   const ConsultationFilters({
     super.key,
-    this.initiallyExpanded = false,
   });
 
   @override
@@ -18,14 +15,12 @@ class ConsultationFilters extends StatefulWidget {
 }
 
 class _ConsultationFiltersState extends State<ConsultationFilters> {
-  late bool _isFilterExpanded;
   final TextEditingController _searchController = TextEditingController();
   final ConsultationController consultationController = Get.find<ConsultationController>();
 
   @override
   void initState() {
     super.initState();
-    _isFilterExpanded = widget.initiallyExpanded;
     _searchController.text = consultationController.searchQuery.value;
   }
 
@@ -41,6 +36,7 @@ class _ConsultationFiltersState extends State<ConsultationFilters> {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: notifier.getContainer,
         borderRadius: BorderRadius.circular(10),
@@ -52,71 +48,11 @@ class _ConsultationFiltersState extends State<ConsultationFilters> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Header with toggle button
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isFilterExpanded = !_isFilterExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Filters & Search",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: notifier.getMainText,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          _searchController.clear();
-                          consultationController.resetFilters();
-                        },
-                        icon: Icon(Icons.refresh,
-                            size: 16, color: notifier.getIconColor),
-                        label: Text(
-                          "Reset Filters",
-                          style: TextStyle(color: notifier.getIconColor),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        _isFilterExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: notifier.getIconColor,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Expandable filter content
-          AnimatedCrossFade(
-            firstChild: const SizedBox(height: 0),
-            secondChild: _buildExpandedFilters(notifier),
-            duration: const Duration(milliseconds: 300),
-            crossFadeState: _isFilterExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-          ),
-        ],
-      ),
+      child: _buildFilters(notifier),
     );
   }
 
-  Widget _buildExpandedFilters(ColourNotifier notifier) {
+  Widget _buildFilters(ColourNotifier notifier) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
       child: Column(

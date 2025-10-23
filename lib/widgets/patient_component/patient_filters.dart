@@ -7,7 +7,7 @@ import 'package:ige_hospital/widgets/form/app_text_field.dart';
 import 'package:ige_hospital/widgets/form/app_dropdown_field.dart';
 import 'package:provider/provider.dart';
 
-class PatientFilters extends StatefulWidget {
+class PatientFilters extends StatelessWidget {
   final PatientController controller;
   final TextEditingController searchController;
   final bool showFilters;
@@ -20,24 +20,12 @@ class PatientFilters extends StatefulWidget {
   });
 
   @override
-  State<PatientFilters> createState() => _PatientFiltersState();
-}
-
-class _PatientFiltersState extends State<PatientFilters> {
-  late bool _isFilterExpanded;
-
-  @override
-  void initState() {
-    super.initState();
-    _isFilterExpanded = widget.showFilters;
-  }
-
-  @override
   Widget build(BuildContext context) {
     final notifier = Provider.of<ColourNotifier>(context);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      padding: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
         color: notifier.getContainer,
         borderRadius: BorderRadius.circular(10),
@@ -50,87 +38,20 @@ class _PatientFiltersState extends State<PatientFilters> {
         ],
       ),
       child: Column(
-        children: [
-          // Header with toggle button
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isFilterExpanded = !_isFilterExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Filters & Search",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: notifier.getMainText,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          widget.searchController.clear();
-                          widget.controller.resetFilters();
-                        },
-                        icon: Icon(Icons.refresh,
-                            size: 16, color: notifier.getIconColor),
-                        label: Text(
-                          "Reset",
-                          style: TextStyle(color: notifier.getIconColor),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        _isFilterExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: notifier.getIconColor,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Expandable filter content
-          AnimatedCrossFade(
-            firstChild: const SizedBox(height: 0),
-            secondChild: _buildExpandedFilters(notifier),
-            duration: const Duration(milliseconds: 300),
-            crossFadeState: _isFilterExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExpandedFilters(ColourNotifier notifier) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
-      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Search box
           AppTextField(
             label: '',
             hintText: "Search by name, email, or phone...",
-            controller: widget.searchController,
+            controller: searchController,
             prefixIcon: Icons.search,
             suffixIcon:
-                widget.searchController.text.isNotEmpty ? Icons.clear : null,
+                searchController.text.isNotEmpty ? Icons.clear : null,
             onSuffixIconPressed: () {
-              widget.searchController.clear();
-              widget.controller.searchQuery.value = '';
-              widget.controller.loadPatients();
+              searchController.clear();
+              controller.searchQuery.value = '';
+              controller.loadPatients();
             },
           ),
           const SizedBox(height: 16),
@@ -160,11 +81,11 @@ class _PatientFiltersState extends State<PatientFilters> {
               );
 
               if (picked != null) {
-                widget.controller.dateFrom.value =
+                controller.dateFrom.value =
                     DateFormat('yyyy-MM-dd').format(picked.start);
-                widget.controller.dateTo.value =
+                controller.dateTo.value =
                     DateFormat('yyyy-MM-dd').format(picked.end);
-                widget.controller.loadPatients();
+                controller.loadPatients();
               }
             },
             child: Container(
@@ -180,14 +101,14 @@ class _PatientFiltersState extends State<PatientFilters> {
                   const SizedBox(width: 8),
                   Obx(() => Expanded(
                         child: Text(
-                          widget.controller.dateFrom.value.isNotEmpty &&
-                                  widget.controller.dateTo.value.isNotEmpty
-                              ? "${widget.controller.dateFrom.value} to ${widget.controller.dateTo.value}"
+                          controller.dateFrom.value.isNotEmpty &&
+                                  controller.dateTo.value.isNotEmpty
+                              ? "${controller.dateFrom.value} to ${controller.dateTo.value}"
                               : "Select Date Range",
                           style: TextStyle(
-                            color: widget
-                                        .controller.dateFrom.value.isNotEmpty &&
-                                    widget.controller.dateTo.value.isNotEmpty
+                            color: controller
+                                        .dateFrom.value.isNotEmpty &&
+                                    controller.dateTo.value.isNotEmpty
                                 ? notifier.getMainText
                                 : notifier.getMaingey,
                           ),
@@ -206,10 +127,10 @@ class _PatientFiltersState extends State<PatientFilters> {
                 child: Obx(() => DropdownButtonFormField<String>(
                       menuMaxHeight: 400,
                       isExpanded: true,
-                      value: widget.controller.selectedGender.value.isEmpty
+                      value: controller.selectedGender.value.isEmpty
                           ? 'All'
-                          : widget
-                              .controller.selectedGender.value.capitalizeFirst,
+                          : controller
+                              .selectedGender.value.capitalizeFirst,
                       decoration: InputDecoration(
                         labelText: 'Gender',
                         labelStyle: TextStyle(color: notifier.getMainText),
@@ -234,7 +155,7 @@ class _PatientFiltersState extends State<PatientFilters> {
                       ),
                       dropdownColor: notifier.getContainer,
                       style: TextStyle(color: notifier.getMainText),
-                      items: widget.controller.genders.map((gender) {
+                      items: controller.genders.map((gender) {
                         return DropdownMenuItem(
                           value: gender,
                           child: SizedBox(
@@ -249,9 +170,9 @@ class _PatientFiltersState extends State<PatientFilters> {
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          widget.controller.selectedGender.value =
+                          controller.selectedGender.value =
                               value == 'All' ? '' : value.toLowerCase();
-                          widget.controller.loadPatients();
+                          controller.loadPatients();
                         }
                       },
                     )),
@@ -261,9 +182,9 @@ class _PatientFiltersState extends State<PatientFilters> {
                 child: Obx(() => DropdownButtonFormField<String>(
                       menuMaxHeight: 400,
                       isExpanded: true,
-                      value: widget.controller.selectedBloodGroup.value.isEmpty
+                      value: controller.selectedBloodGroup.value.isEmpty
                           ? 'All'
-                          : widget.controller.selectedBloodGroup.value,
+                          : controller.selectedBloodGroup.value,
                       decoration: InputDecoration(
                         labelText: 'Blood Group',
                         labelStyle: TextStyle(color: notifier.getMainText),
@@ -288,7 +209,7 @@ class _PatientFiltersState extends State<PatientFilters> {
                       ),
                       dropdownColor: notifier.getContainer,
                       style: TextStyle(color: notifier.getMainText),
-                      items: widget.controller.bloodGroups.map((group) {
+                      items: controller.bloodGroups.map((group) {
                         return DropdownMenuItem(
                           value: group,
                           child: SizedBox(
@@ -303,9 +224,9 @@ class _PatientFiltersState extends State<PatientFilters> {
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          widget.controller.selectedBloodGroup.value =
+                          controller.selectedBloodGroup.value =
                               value == 'All' ? '' : value;
-                          widget.controller.loadPatients();
+                          controller.loadPatients();
                         }
                       },
                     )),
@@ -318,7 +239,7 @@ class _PatientFiltersState extends State<PatientFilters> {
           Obx(() => DropdownButtonFormField<String>(
                 menuMaxHeight: 400,
                 isExpanded: true,
-                value: widget.controller.sortDirection.value,
+                value: controller.sortDirection.value,
                 decoration: InputDecoration(
                   labelText: 'Sort Order',
                   labelStyle: TextStyle(color: notifier.getMainText),
@@ -393,8 +314,8 @@ class _PatientFiltersState extends State<PatientFilters> {
                 ],
                 onChanged: (value) {
                   if (value != null) {
-                    widget.controller.sortDirection.value = value;
-                    widget.controller.loadPatients();
+                    controller.sortDirection.value = value;
+                    controller.loadPatients();
                   }
                 },
               )),
